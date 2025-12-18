@@ -1,0 +1,19 @@
+<h2>Available Jobs</h2>
+
+{% for job in jobs %}
+<div style="border:1px solid #ccc; padding:15px; margin-bottom:10px; cursor:pointer;"
+     onclick="window.location.href='{% url 'job_detail' job.id %}'">
+
+    <h3>{{ job.title }}</h3>
+    <p>{{ job.job_type }} | {{ job.tags }}</p>
+
+    {% if job.negotiable %}
+        <p><strong>Salary:</strong> Negotiable</p>
+    {% else %}
+        <p><strong>Salary:</strong> Nrs {{ job.min_salary }} - {{ job.max_salary }}</p>
+    {% endif %}
+
+</div>
+{% empty %}
+<p>No jobs posted yet.</p>
+{% endfor %}

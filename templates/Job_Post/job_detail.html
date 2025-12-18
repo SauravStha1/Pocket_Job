@@ -1,0 +1,19 @@
+<h2>{{ job.title }}</h2>
+<p><strong>Type:</strong> {{ job.job_type }}</p>
+<p><strong>Tags:</strong> {{ job.tags }}</p>
+
+<hr>
+
+<h3>Description</h3>
+<p>{{ job.description }}</p>
+
+<h3>Responsibilities</h3>
+<p>{{ job.responsibilities }}</p>
+
+<hr>
+
+{% if job.negotiable %}
+<p><strong>Salary:</strong> Negotiable</p>
+{% else %}
+<p><strong>Salary:</strong> Nrs {{ job.min_salary }} - {{ job.max_salary }}</p>
+{% endif %}

@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Post a Job</title>
+    <link rel="stylesheet" href="{% static 'css/job_post.css' %}">
+</head>
+<body>
+
+<h2>Post a Job</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Job Title</label>
+    {{ form.title }}
+
+    <label>Tags</label>
+    {{ form.tags }}
+
+    <label>Job Role</label>
+    {{ form.job_type }}
+
+    <h3>Salary</h3>
+    <label>Minimum Salary (Nrs)</label>
+    {{ form.min_salary }}
+
+    <label>Maximum Salary (Nrs)</label>
+    {{ form.max_salary }}
+
+    <br>
+    {{ form.negotiable }} Negotiable
+
+    <h3>Description</h3>
+    {{ form.description }}
+
+    <h3>Responsibilities</h3>
+    {{ form.responsibilities }}
+
+    <br><br>
+    <button type="submit">Post Job →</button>
+</form>
+
+</body>
+</html>

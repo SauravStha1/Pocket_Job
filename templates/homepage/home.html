@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pocket Job | Find Jobs</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="navbar">
+    <div class="logo">Pocket Job</div>
+
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Find Employers</a>
+        <a href="#">Dashboard</a>
+        <a href="#">Job Alerts</a>
+        <a href="#">Customer Support</a>
+    </nav>
+
+    <div class="profile">
+        <span>Nepal</span>
+        <span>Saurav Shrestha</span>
+    </div>
+</header>
+
+<!-- ================= SEARCH SECTION ================= -->
+<section class="search-section">
+    <input type="text" placeholder="Job title, keyword...">
+    <input type="text" placeholder="Location">
+    <select>
+        <option>Select Category</option>
+        <option>Barista</option>
+        <option>Junior Barista</option>
+        <option>Trainer</option>
+    </select>
+    <button>Find Job</button>
+</section>
+
+<!-- ================= JOB LISTING SECTION ================= -->
+<section class="jobs">
+
+    {% for job in jobs %}
+    <div class="job-card {% if job.negotiable %}featured{% endif %}">
+        
+        <h3>{{ job.title }}</h3>
+
+        <p class="role">{{ job.job_role }}</p>
+
+        <small class="tags">{{ job.tags }}</small>
+
+        <p class="salary">
+            {% if job.negotiable %}
+                Salary: <strong>Negotiable</strong>
+            {% else %}
+                Salary: <strong>NPR {{ job.min_salary }} – {{ job.max_salary }}</strong>
+            {% endif %}
+        </p>
+
+        <p class="posted">
+            Posted on {{ job.created_at|date:"M d, Y" }}
+        </p>
+
+    </div>
+    {% empty %}
+        <p style="padding: 40px;">No jobs available at the moment.</p>
+    {% endfor %}
+
+</section>
+
+<!-- ================= PAGINATION (STATIC FOR NOW) ================= -->
+<div class="pagination">
+    <a href="#">01</a>
+    <a href="#">02</a>
+    <a href="#">03</a>
+</div>
+
+</body>
+</html>
