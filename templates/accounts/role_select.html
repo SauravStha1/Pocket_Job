@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pocket Job - Login</title>
+</head>
+<body>
+
+<h2>Welcome to Pocket Job</h2>
+
+<br>
+
+<a href="{% url 'applicant_login' %}">
+    <button>Login as Applicant</button>
+</a>
+
+<br><br>
+
+<a href="{% url 'recruiter_login' %}">
+    <button>Login as Recruiter</button>
+</a>
+
+<br><br><hr><br>
+
+<p>New here?</p>
+
+<a href="{% url 'register' %}">
+    <button>Create New Account</button>
+</a>
+
+</body>
+</html>
