@@ -13,7 +13,7 @@
     <div class="logo">Pocket Job</div>
 
     <nav>
-        <a href="#">Home</a>
+        <a href="{% url 'home' %}">Home</a>
         <a href="#">Find Employers</a>
         <a href="#">Dashboard</a>
         <a href="#">Job Alerts</a>
@@ -43,27 +43,29 @@
 <section class="jobs">
 
     {% for job in jobs %}
-    <div class="job-card {% if job.negotiable %}featured{% endif %}">
-        
-        <h3>{{ job.title }}</h3>
+    <a href="{% url 'job_detail' job.id %}" class="job-link">
+        <div class="job-card {% if job.negotiable %}featured{% endif %}">
+            
+            <h3>{{ job.title }}</h3>
 
-        <p class="role">{{ job.job_role }}</p>
+            <p class="role">{{ job.job_role }}</p>
 
-        <small class="tags">{{ job.tags }}</small>
+            <small class="tags">{{ job.tags }}</small>
 
-        <p class="salary">
-            {% if job.negotiable %}
-                Salary: <strong>Negotiable</strong>
-            {% else %}
-                Salary: <strong>NPR {{ job.min_salary }} – {{ job.max_salary }}</strong>
-            {% endif %}
-        </p>
+            <p class="salary">
+                {% if job.negotiable %}
+                    Salary: <strong>Negotiable</strong>
+                {% else %}
+                    Salary: <strong>NPR {{ job.min_salary }} – {{ job.max_salary }}</strong>
+                {% endif %}
+            </p>
 
-        <p class="posted">
-            Posted on {{ job.created_at|date:"M d, Y" }}
-        </p>
+            <p class="posted">
+                Posted on {{ job.created_at|date:"M d, Y" }}
+            </p>
 
-    </div>
+        </div>
+    </a>
     {% empty %}
         <p style="padding: 40px;">No jobs available at the moment.</p>
     {% endfor %}

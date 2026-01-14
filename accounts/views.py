@@ -1,96 +1,96 @@
-import random
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth import authenticate, login
-
-from .models import EmailOTP
+import random
 
 
-def role_select(request):
-    return render(request, 'accounts/role_select.html')
-
-
-def applicant_login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+# =========================
+# LOGIN VIEW
+# =========================
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
         user = authenticate(request, username=username, password=password)
 
-        if user:
+        if user is not None:
             login(request, user)
-            return redirect('home')
+            return redirect("home")
+        else:
+            messages.error(request, "Invalid username or password")
 
-        return render(request, 'accounts/applicant_login.html', {
-            'error': 'Invalid credentials'
-        })
-
-    return render(request, 'accounts/applicant_login.html')
+    return render(request, "accounts/login.html")
 
 
-def recruiter_login(request):
-    return render(request, 'accounts/recruiter_login.html')
-
-
+# =========================
+# REGISTER VIEW (EMAIL DUPLICATES ALLOWED)
+# =========================
 def register(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+    if request.method == "POST":
 
-        if User.objects.filter(username=username).exists():
-            return render(request, 'accounts/register.html', {
-                'error': 'Username already exists'
-            })
+        # =========================
+        # SEND OTP
+        # =========================
+        if "send_otp" in request.POST:
+            username = request.POST.get("username")
+            email = request.POST.get("email")
+            password = request.POST.get("password")
 
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            is_active=False
-        )
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already exists.")
+                return redirect("register")
 
-        otp = str(random.randint(100000, 999999))
+            otp = random.randint(100000, 999999)
 
-        EmailOTP.objects.create(user=user, otp=otp)
+            request.session["register_otp"] = str(otp)
+            request.session["register_data"] = {
+                "username": username,
+                "email": email,
+                "password": password,
+            }
 
-        send_mail(
-            'Pocket Job OTP Verification',
-            f'Your OTP is {otp}',
-            settings.EMAIL_HOST_USER,
-            [email],
-            fail_silently=False
-        )
+            # ✅ SEND OTP EMAIL
+            send_mail(
+                subject="Pocket Job - OTP Verification",
+                message=f"Your OTP code is {otp}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
 
-        request.session['user_id'] = user.id
-        return redirect('verify_otp')
+            messages.success(request, "OTP has been sent to your email.")
+            return redirect("register")
 
-    return render(request, 'accounts/register.html')
+        # =========================
+        # VERIFY OTP & CREATE USER
+        # =========================
+        if "verify_otp" in request.POST:
+            otp_entered = request.POST.get("otp")
+            session_otp = request.session.get("register_otp")
+            data = request.session.get("register_data")
 
+            if not session_otp or not data:
+                messages.error(request, "Session expired. Please try again.")
+                return redirect("register")
 
+            if otp_entered != session_otp:
+                messages.error(request, "Invalid OTP.")
+                return redirect("register")
 
-def verify_otp(request):
-    user_id = request.session.get('user_id')
+            User.objects.create_user(
+                username=data["username"],
+                email=data["email"],
+                password=data["password"]
+            )
 
-    if not user_id:
-        return redirect('register')
+            del request.session["register_otp"]
+            del request.session["register_data"]
 
-    user = User.objects.get(id=user_id)
-    otp_obj = EmailOTP.objects.get(user=user)
+            messages.success(request, "Account created successfully. Please login.")
+            return redirect("login")
 
-    if request.method == 'POST':
-        entered_otp = request.POST.get('otp')
-
-        if entered_otp == otp_obj.otp:
-            user.is_active = True
-            user.save()
-            otp_obj.delete()
-            return redirect('applicant_login')
-
-        return render(request, 'accounts/verify_otp.html', {
-            'error': 'Invalid OTP'
-        })
-
-    return render(request, 'accounts/verify_otp.html')
+    return render(request, "accounts/register.html")

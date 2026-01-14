@@ -1,40 +1,61 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register</title>
+    <title>Register | Pocket Job</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 </head>
 <body>
 
-<h2>Create Account</h2>
+<div class="auth-container">
+    <div class="auth-card">
 
-{% if error %}
-<p style="color:red">{{ error }}</p>
-{% endif %}
+        <h2>Create Account</h2>
+        <p class="subtitle">Join Pocket Job and start your journey</p>
 
-<form method="POST">
-    {% csrf_token %}
+        {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+        {% endfor %}
 
-    <label>Username</label>
-    <input type="text" name="username" required>
+        <!-- SEND OTP -->
+        <form method="POST">
+            {% csrf_token %}
 
-    <br><br>
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Enter username">
 
-    <label>Email</label>
-    <input type="email" name="email" required>
+            <label>Email</label>
+            <input type="email" name="email" placeholder="Enter email">
 
-    <br><br>
+            <button type="submit" name="send_otp" class="btn-primary">
+                Send OTP
+            </button>
+        </form>
 
-    <label>Password</label>
-    <input type="password" name="password" required>
+        <hr>
 
-    <br><br>
+        <!-- VERIFY OTP -->
+        <form method="POST">
+            {% csrf_token %}
 
-    <button type="submit">Register</button>
-</form>
+            <label>OTP Code</label>
+            <input type="text" name="otp" placeholder="Enter OTP">
 
-<br>
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Create password">
 
-<a href="{% url 'applicant_login' %}">Back to Login</a>
+            <button type="submit" name="verify_otp" class="btn-success">
+                Create Account
+            </button>
+        </form>
+
+        <p class="bottom-text">
+            Already have an account?
+            <a href="{% url 'login' %}">Login</a>
+        </p>
+
+    </div>
+</div>
 
 </body>
 </html>
