@@ -28,15 +28,36 @@
 
 <!-- ================= SEARCH SECTION ================= -->
 <section class="search-section">
-    <input type="text" placeholder="Job title, keyword...">
-    <input type="text" placeholder="Location">
-    <select>
-        <option>Select Category</option>
-        <option>Barista</option>
-        <option>Junior Barista</option>
-        <option>Trainer</option>
-    </select>
-    <button>Find Job</button>
+    <form method="GET" action="{% url 'home' %}">
+        
+        <input 
+            type="text" 
+            name="q" 
+            placeholder="Job title, keyword..."
+            value="{{ query|default:'' }}"
+        >
+
+        <select name="job_type">
+            <option value="All">All Types</option>
+
+            <option value="Part Time" 
+                {% if selected_job_type == "Part Time" %}selected{% endif %}>
+                Part Time
+            </option>
+
+            <option value="Full Time" 
+                {% if selected_job_type == "Full Time" %}selected{% endif %}>
+                Full Time
+            </option>
+
+            <option value="Flexible" 
+                {% if selected_job_type == "Flexible" %}selected{% endif %}>
+                Flexible
+            </option>
+        </select>
+
+        <button type="submit">Find Job</button>
+    </form>
 </section>
 
 <!-- ================= JOB LISTING SECTION ================= -->
@@ -48,7 +69,7 @@
             
             <h3>{{ job.title }}</h3>
 
-            <p class="role">{{ job.job_role }}</p>
+            <p class="role">{{ job.job_type }}</p>
 
             <small class="tags">{{ job.tags }}</small>
 
@@ -67,7 +88,7 @@
         </div>
     </a>
     {% empty %}
-        <p style="padding: 40px;">No jobs available at the moment.</p>
+        <p style="padding: 40px;">No jobs available matching your search.</p>
     {% endfor %}
 
 </section>
