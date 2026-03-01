@@ -27,18 +27,17 @@ def login_view(request):
 
 
 # =========================
-# REGISTER VIEW (EMAIL DUPLICATES ALLOWED)
+# REGISTER VIEW WITH OTP (FIXED VERSION)
 # =========================
 def register(request):
     if request.method == "POST":
 
         # =========================
-        # SEND OTP
+        # STEP 1: SEND OTP
         # =========================
         if "send_otp" in request.POST:
             username = request.POST.get("username")
             email = request.POST.get("email")
-            password = request.POST.get("password")
 
             if User.objects.filter(username=username).exists():
                 messages.error(request, "Username already exists.")
@@ -46,14 +45,14 @@ def register(request):
 
             otp = random.randint(100000, 999999)
 
+            # Store only non-sensitive data in session
             request.session["register_otp"] = str(otp)
             request.session["register_data"] = {
                 "username": username,
                 "email": email,
-                "password": password,
             }
 
-            # ✅ SEND OTP EMAIL
+            # Send OTP Email
             send_mail(
                 subject="Pocket Job - OTP Verification",
                 message=f"Your OTP code is {otp}",
@@ -66,10 +65,11 @@ def register(request):
             return redirect("register")
 
         # =========================
-        # VERIFY OTP & CREATE USER
+        # STEP 2: VERIFY OTP & CREATE USER
         # =========================
         if "verify_otp" in request.POST:
             otp_entered = request.POST.get("otp")
+            password = request.POST.get("password")  # Get password again securely
             session_otp = request.session.get("register_otp")
             data = request.session.get("register_data")
 
@@ -81,12 +81,18 @@ def register(request):
                 messages.error(request, "Invalid OTP.")
                 return redirect("register")
 
+            if not password:
+                messages.error(request, "Password cannot be empty.")
+                return redirect("register")
+
+            # Create user with fresh password
             User.objects.create_user(
                 username=data["username"],
                 email=data["email"],
-                password=data["password"]
+                password=password
             )
 
+            # Clear session
             del request.session["register_otp"]
             del request.session["register_data"]
 
