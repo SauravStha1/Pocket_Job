@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
 from django.conf import settings
+from .models import Profile
 import random
 
 
@@ -19,7 +20,16 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect("home")
+
+            # Redirect based on role
+            try:
+                if user.profile.role == "APPLICANT":
+                    return redirect("home")  # change later to applicant dashboard
+                elif user.profile.role == "RECRUITER":
+                    return redirect("home")  # change later to recruiter dashboard
+            except:
+                return redirect("home")
+
         else:
             messages.error(request, "Invalid username or password")
 
@@ -27,29 +37,31 @@ def login_view(request):
 
 
 # =========================
-# STEP 1: REGISTER VIEW - ENTER INFO & SEND OTP
+# STEP 1: REGISTER VIEW
 # =========================
 def register(request):
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
+        role = request.POST.get("role")
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
             return redirect("register")
 
-        if not username or not email or not password:
+        if not username or not email or not password or not role:
             messages.error(request, "All fields are required.")
             return redirect("register")
 
         otp = random.randint(100000, 999999)
 
-        # Save registration info and OTP in session
+        # Save registration info in session
         request.session["register_data"] = {
             "username": username,
             "email": email,
-            "password": password
+            "password": password,
+            "role": role
         }
         request.session["register_otp"] = str(otp)
 
@@ -92,12 +104,22 @@ def verify_otp(request):
             password=data["password"]
         )
 
+        # Create Profile with role
+        Profile.objects.create(
+            user=user,
+            role=data["role"]
+        )
+
         # Clear session
         del request.session["register_otp"]
         del request.session["register_data"]
 
-        messages.success(request, "Account created successfully. You are now logged in.")
         login(request, user)
-        return redirect("home")
+
+        # Redirect based on role
+        if data["role"] == "APPLICANT":
+            return redirect("home")  # later change to applicant dashboard
+        elif data["role"] == "RECRUITER":
+            return redirect("home")  # later change to recruiter dashboard
 
     return render(request, "accounts/verify_otp.html")
