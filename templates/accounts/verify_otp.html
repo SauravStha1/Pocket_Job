@@ -1,21 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Verify OTP</title>
+    <title>Verify OTP | Pocket Job</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 </head>
 <body>
 
-<h2>Verify OTP</h2>
+<div class="auth-container">
+    <div class="auth-card">
 
-{% if error %}
-<p style="color:red">{{ error }}</p>
-{% endif %}
+        <h2>Verify OTP</h2>
+        <p class="subtitle">Enter the OTP sent to your email</p>
 
-<form method="POST">
-    {% csrf_token %}
-    <input type="text" name="otp" placeholder="Enter OTP" required>
-    <button type="submit">Verify</button>
-</form>
+        {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+        {% endfor %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>OTP Code</label>
+            <input type="text" name="otp" placeholder="Enter OTP" required>
+
+            <button type="submit" class="btn-success">Verify OTP & Create Account</button>
+        </form>
+
+        <p class="bottom-text">
+            Didn't receive OTP? <a href="{% url 'register' %}">Register Again</a>
+        </p>
+
+    </div>
+</div>
 
 </body>
 </html>

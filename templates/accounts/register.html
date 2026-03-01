@@ -17,61 +17,23 @@
             <div class="alert">{{ message }}</div>
         {% endfor %}
 
-        <!-- ========================= -->
-        <!-- STEP 1: SEND OTP -->
-        <!-- ========================= -->
         <form method="POST">
             {% csrf_token %}
 
             <label>Username</label>
-            <input type="text" 
-                   name="username" 
-                   placeholder="Enter username" 
-                   required>
+            <input type="text" name="username" placeholder="Enter username" required>
 
             <label>Email</label>
-            <input type="email" 
-                   name="email" 
-                   placeholder="Enter email" 
-                   required>
+            <input type="email" name="email" placeholder="Enter email" required>
 
-            <button type="submit" 
-                    name="send_otp" 
-                    class="btn-primary">
-                Send OTP
-            </button>
-        </form>
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Create password" required>
 
-        <hr>
-
-        <!-- ========================= -->
-        <!-- STEP 2: VERIFY OTP -->
-        <!-- ========================= -->
-        <form method="POST">
-            {% csrf_token %}
-
-            <label>OTP Code</label>
-            <input type="text" 
-                   name="otp" 
-                   placeholder="Enter OTP" 
-                   required>
-
-            <label>Create Password</label>
-            <input type="password" 
-                   name="password" 
-                   placeholder="Create password" 
-                   required>
-
-            <button type="submit" 
-                    name="verify_otp" 
-                    class="btn-success">
-                Create Account
-            </button>
+            <button type="submit" class="btn-primary">Send OTP</button>
         </form>
 
         <p class="bottom-text">
-            Already have an account?
-            <a href="{% url 'login' %}">Login</a>
+            Already have an account? <a href="{% url 'login' %}">Login</a>
         </p>
 
     </div>
