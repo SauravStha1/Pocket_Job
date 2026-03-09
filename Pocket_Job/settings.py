@@ -135,3 +135,10 @@ EMAIL_HOST_USER = 'pocketjob67@gmail.com'
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# ===============================
+# MEDIA FILES (User Uploads)
+# ===============================
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

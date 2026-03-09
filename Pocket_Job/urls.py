@@ -14,14 +14,28 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+"""
+URL configuration for Pocket_Job project.
+"""
+
 from django.contrib import admin
 from django.urls import path, include
+
+# NEW IMPORTS
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Home page
-    path('', include('homepage.urls')),      # Home page
-    path('jobs/', include('Job_Post.urls')), # Jobs
-    path('', include('accounts.urls')), 
+    path('', include('homepage.urls')),
+    path('jobs/', include('Job_Post.urls')),
+    path('', include('accounts.urls')),
 ]
+
+
+# SERVE MEDIA FILES DURING DEVELOPMENT
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

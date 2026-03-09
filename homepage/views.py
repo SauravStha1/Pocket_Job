@@ -2,11 +2,12 @@ from django.shortcuts import render
 from django.db.models import Q
 from Job_Post.models import Job
 
+
 def home(request):
     query = request.GET.get('q')
     job_type = request.GET.get('job_type')
 
-    jobs = Job.objects.all()
+    jobs = Job.objects.filter(is_active=True)
 
     if query:
         jobs = jobs.filter(

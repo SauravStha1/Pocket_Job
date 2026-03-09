@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recruiter Dashboard | Pocket Job</title>
+</head>
+<body>
+
+<h2>Recruiter Dashboard</h2>
+
+<p>Welcome, {{ request.user.username }}</p>
+
+<br>
+
+<a href="{% url 'job_create' %}">
+    <button>Post New Job</button>
+</a>
+
+<br><br><hr><br>
+
+<h3>Your Posted Jobs</h3>
+
+{% if jobs %}
+    <ul>
+        {% for job in jobs %}
+            <li>
+                <strong>{{ job.title }}</strong>
+                ({{ job.job_type }})
+
+                <br>
+
+                <a href="{% url 'job_detail' job.pk %}">View</a> |
+                <a href="{% url 'job_edit' job.pk %}">Edit</a> |
+                <a href="{% url 'job_delete' job.pk %}">Delete</a>
+
+                <hr>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You have not posted any jobs yet.</p>
+{% endif %}
+
+</body>
+</html>

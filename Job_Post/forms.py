@@ -1,9 +1,12 @@
 from django import forms
 from .models import Job
 
+
 class JobForm(forms.ModelForm):
+
     class Meta:
         model = Job
+
         fields = [
             'title',
             'tags',
@@ -13,10 +16,12 @@ class JobForm(forms.ModelForm):
             'negotiable',
             'description',
             'responsibilities',
+            'image',   # NEW FIELD
         ]
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': 'Job title'}),
+
             'tags': forms.TextInput(attrs={'placeholder': 'Tags / Keywords'}),
 
             'job_type': forms.Select(),
@@ -26,4 +31,8 @@ class JobForm(forms.ModelForm):
 
             'description': forms.Textarea(attrs={'rows': 4}),
             'responsibilities': forms.Textarea(attrs={'rows': 4}),
+
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'form-control'
+            }),
         }
