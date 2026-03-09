@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import timedelta
+from django.utils import timezone
 
 
 class Job(models.Model):
@@ -32,16 +34,26 @@ class Job(models.Model):
     description = models.TextField()
     responsibilities = models.TextField()
 
-    # NEW FIELD: Job Image (Optional)
     image = models.ImageField(
         upload_to='job_images/',
         null=True,
         blank=True
     )
 
-    is_active = models.BooleanField(default=True)  # Soft delete support
+    is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # DEADLINE FIELD
+    deadline = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+
+        # If deadline not set, calculate it as 30 days from now
+        if not self.deadline:
+            self.deadline = timezone.now() + timedelta(days=30)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
 
 from .models import Job
 from .forms import JobForm
@@ -12,7 +14,12 @@ from accounts.models import Profile
 # PUBLIC JOB LIST (Applicants)
 # ============================
 def job_list(request):
-    jobs = Job.objects.filter(is_active=True).order_by('-created_at')
+
+    jobs = Job.objects.filter(
+        is_active=True,
+        deadline__gte=timezone.now()
+    ).order_by('-created_at')
+
     return render(request, 'Job_Post/job_list.html', {'jobs': jobs})
 
 
@@ -27,6 +34,7 @@ def recruiter_dashboard(request):
         return redirect("home")
 
     jobs = Job.objects.filter(recruiter=request.user, is_active=True)
+
     return render(request, 'Job_Post/recruiter_dashboard.html', {'jobs': jobs})
 
 
@@ -42,13 +50,24 @@ def job_create(request):
         return redirect("home")
 
     if request.method == 'POST':
-        form = JobForm(request.POST, request.FILES)  # UPDATED
+
+        form = JobForm(request.POST, request.FILES)
+
         if form.is_valid():
+
             job = form.save(commit=False)
+
             job.recruiter = request.user
+
+            # ✅ SET DEADLINE AUTOMATICALLY
+            job.deadline = timezone.now() + timedelta(days=30)
+
             job.save()
+
             messages.success(request, "Job posted successfully.")
+
             return redirect("recruiter_dashboard")
+
     else:
         form = JobForm()
 
@@ -59,7 +78,13 @@ def job_create(request):
 # JOB DETAIL (Public)
 # ============================
 def job_detail(request, pk):
-    job = get_object_or_404(Job, pk=pk, is_active=True)
+
+    job = get_object_or_404(
+        Job,
+        pk=pk,
+        is_active=True
+    )
+
     return render(request, 'Job_Post/job_detail.html', {'job': job})
 
 
@@ -82,12 +107,19 @@ def job_edit(request, pk):
         return redirect("home")
 
     if request.method == "POST":
-        form = JobForm(request.POST, request.FILES, instance=job)  # UPDATED
+
+        form = JobForm(request.POST, request.FILES, instance=job)
+
         if form.is_valid():
+
             form.save()
+
             messages.success(request, "Job updated successfully.")
+
             return redirect("recruiter_dashboard")
+
     else:
+
         form = JobForm(instance=job)
 
     return render(request, "Job_Post/job_form.html", {"form": form})
@@ -115,4 +147,5 @@ def job_delete(request, pk):
     job.save()
 
     messages.success(request, "Job deleted successfully.")
+
     return redirect("recruiter_dashboard")

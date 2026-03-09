@@ -181,3 +181,18 @@ body {
     background: #2563eb;
     color: white;
 }
+
+/* ================= DEADLINE ================= */
+
+.deadline {
+    font-size: 12px;
+    color: #e11d48;
+    margin-bottom: 4px;
+}
+
+/* ================= POSTED BY ================= */
+
+.posted-by {
+    font-size: 12px;
+    color: #555;
+}

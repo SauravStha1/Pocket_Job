@@ -111,8 +111,12 @@ Salary: <strong>NPR {{ job.min_salary }} – {{ job.max_salary }}</strong>
 
 </p>
 
-<p class="posted">
-Posted on {{ job.created_at|date:"M d, Y" }}
+<p class="deadline">
+Deadline: <strong>{{ job.deadline|date:"M d, Y" }}</strong>
+</p>
+
+<p class="posted-by">
+Posted by <strong>{{ job.recruiter.username }}</strong>
 </p>
 
 </div>
