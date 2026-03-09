@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pocket Job</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        <img src="{% static 'images/pocketJob_logo.png' %}" class="logo-img">
+        <strong>Pocket Job</strong>
+    </div>
+
+    <!-- NAVBAR LINKS -->
+    <nav>
+
+        {% if user.is_authenticated %}
+
+            {% if user.profile.role == "APPLICANT" %}
+
+                <a href="{% url 'home' %}">Home</a>
+                <a href="#">Applied Jobs</a>
+                <a href="#">Saved Jobs</a>
+                <a href="#">History</a>
+                <a href="#">About</a>
+
+            {% elif user.profile.role == "RECRUITER" %}
+
+                <a href="{% url 'home' %}">Home</a>
+
+                <!-- Shows only jobs posted by recruiter -->
+                <a href="{% url 'job_list' %}">Posted Jobs</a>
+
+                <!-- Recruiter dashboard -->
+                <a href="{% url 'recruiter_dashboard' %}">Dashboard</a>
+
+                <a href="#">About</a>
+
+                <!-- Job posting form -->
+                <a href="{% url 'job_create' %}" class="post-job-btn">Post a Job</a>
+
+            {% endif %}
+
+        {% else %}
+
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#">About</a>
+
+        {% endif %}
+
+    </nav>
+
+
+    <!-- RIGHT PROFILE AREA -->
+    <div class="profile">
+
+        {% if user.is_authenticated %}
+
+            <!-- Notification Bell -->
+            <span class="bell">🔔</span>
+
+            <!-- Profile Picture Placeholder -->
+            <img src="{% static 'images/default_profile.png' %}" class="profile-pic">
+
+            <span>{{ user.username }}</span>
+
+            <!-- Role Watermark -->
+            <span class="role-badge">
+                {% if user.profile.role == "APPLICANT" %}
+                    Applicant
+                {% elif user.profile.role == "RECRUITER" %}
+                    Recruiter
+                {% endif %}
+            </span>
+
+        {% else %}
+
+            <a href="{% url 'login' %}">Login</a>
+
+        {% endif %}
+
+    </div>
+
+</header>
+
+
+<!-- PAGE CONTENT -->
+{% block content %}
+{% endblock %}
+
+</body>
+</html>

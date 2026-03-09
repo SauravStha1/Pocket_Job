@@ -15,10 +15,21 @@ from accounts.models import Profile
 # ============================
 def job_list(request):
 
-    jobs = Job.objects.filter(
-        is_active=True,
-        deadline__gte=timezone.now()
-    ).order_by('-created_at')
+    # If recruiter visits, show ONLY their jobs
+    if request.user.is_authenticated and request.user.profile.role == "RECRUITER":
+
+        jobs = Job.objects.filter(
+            recruiter=request.user,
+            is_active=True
+        ).order_by('-created_at')
+
+    else:
+
+        # Applicants see all active jobs
+        jobs = Job.objects.filter(
+            is_active=True,
+            deadline__gte=timezone.now()
+        ).order_by('-created_at')
 
     return render(request, 'Job_Post/job_list.html', {'jobs': jobs})
 
@@ -59,7 +70,7 @@ def job_create(request):
 
             job.recruiter = request.user
 
-            # ✅ SET DEADLINE AUTOMATICALLY
+            # Set deadline automatically
             job.deadline = timezone.now() + timedelta(days=30)
 
             job.save()
