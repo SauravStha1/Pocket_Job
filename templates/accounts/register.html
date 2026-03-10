@@ -17,7 +17,7 @@
             <div class="alert">{{ message }}</div>
         {% endfor %}
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
             <label>Username</label>
@@ -29,7 +29,11 @@
             <label>Password</label>
             <input type="password" name="password" placeholder="Create password" required>
 
-            <!-- 🔥 ROLE SELECTION -->
+            <!-- PROFILE PICTURE -->
+            <label>Profile Picture (Optional)</label>
+            <input type="file" name="profile_pic">
+
+            <!-- ROLE -->
             <label>Select Role</label>
             <select name="role" required class="role-select">
                 <option value="">-- Select Role --</option>
@@ -38,6 +42,7 @@
             </select>
 
             <button type="submit" class="btn-primary">Send OTP</button>
+
         </form>
 
         <p class="bottom-text">

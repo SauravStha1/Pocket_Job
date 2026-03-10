@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
 from django.conf import settings
+from django.core.files.base import ContentFile
 from .models import Profile
 import random
 
@@ -21,12 +22,11 @@ def login_view(request):
         if user is not None:
             login(request, user)
 
-            # Redirect based on role
             try:
                 if user.profile.role == "APPLICANT":
-                    return redirect("home")  # change later to applicant dashboard
+                    return redirect("home")
                 elif user.profile.role == "RECRUITER":
-                    return redirect("home")  # change later to recruiter dashboard
+                    return redirect("home")
             except:
                 return redirect("home")
 
@@ -41,10 +41,13 @@ def login_view(request):
 # =========================
 def register(request):
     if request.method == "POST":
+
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
         role = request.POST.get("role")
+
+        profile_pic = request.FILES.get("profile_pic")
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
@@ -63,6 +66,12 @@ def register(request):
             "password": password,
             "role": role
         }
+
+        # Save image temporarily in session
+        if profile_pic:
+            request.session["profile_pic_name"] = profile_pic.name
+            request.session["profile_pic_file"] = profile_pic.read().decode("latin1")
+
         request.session["register_otp"] = str(otp)
 
         # Send OTP email
@@ -84,7 +93,9 @@ def register(request):
 # STEP 2: VERIFY OTP VIEW
 # =========================
 def verify_otp(request):
+
     if request.method == "POST":
+
         otp_entered = request.POST.get("otp")
         session_otp = request.session.get("register_otp")
         data = request.session.get("register_data")
@@ -104,22 +115,47 @@ def verify_otp(request):
             password=data["password"]
         )
 
-        # Create Profile with role
-        Profile.objects.create(
+        # Create Profile
+        profile = Profile.objects.create(
             user=user,
             role=data["role"]
         )
 
+        # Restore uploaded image from session
+        profile_pic_name = request.session.get("profile_pic_name")
+        profile_pic_file = request.session.get("profile_pic_file")
+
+        if profile_pic_name and profile_pic_file:
+            image_file = ContentFile(
+                profile_pic_file.encode("latin1"),
+                name=profile_pic_name
+            )
+            profile.profile_pic.save(profile_pic_name, image_file, save=True)
+
         # Clear session
-        del request.session["register_otp"]
-        del request.session["register_data"]
+        request.session.pop("register_otp", None)
+        request.session.pop("register_data", None)
+        request.session.pop("profile_pic_name", None)
+        request.session.pop("profile_pic_file", None)
 
         login(request, user)
 
-        # Redirect based on role
         if data["role"] == "APPLICANT":
-            return redirect("home")  # later change to applicant dashboard
+            return redirect("home")
         elif data["role"] == "RECRUITER":
-            return redirect("home")  # later change to recruiter dashboard
+            return redirect("home")
 
     return render(request, "accounts/verify_otp.html")
+
+
+# =========================
+# PROFILE PAGE
+# =========================
+def profile_view(request):
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    profile = request.user.profile
+
+    return render(request, "accounts/profile.html", {"profile": profile})

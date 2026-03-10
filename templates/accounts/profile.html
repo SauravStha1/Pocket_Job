@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div style="padding:40px; text-align:center;">
+
+    <h2>Profile</h2>
+
+    <img src="{{ profile.profile_pic.url }}" 
+         style="width:120px;height:120px;border-radius:50%;object-fit:cover;">
+
+    <h3>{{ profile.user.username }}</h3>
+
+    <p>Email: {{ profile.user.email }}</p>
+
+    <p>Role: {{ profile.role }}</p>
+
+</div>
+
+{% endblock %}

@@ -11,10 +11,12 @@
 
 <header class="navbar">
 
+    <!-- LOGO -->
     <div class="logo">
         <img src="{% static 'images/pocketJob_logo.png' %}" class="logo-img">
         <strong>Pocket Job</strong>
     </div>
+
 
     <!-- NAVBAR LINKS -->
     <nav>
@@ -33,7 +35,7 @@
 
                 <a href="{% url 'home' %}">Home</a>
 
-                <!-- Shows only jobs posted by recruiter -->
+                <!-- Jobs posted by recruiter -->
                 <a href="{% url 'job_list' %}">Posted Jobs</a>
 
                 <!-- Recruiter dashboard -->
@@ -41,7 +43,7 @@
 
                 <a href="#">About</a>
 
-                <!-- Job posting form -->
+                <!-- Post job button -->
                 <a href="{% url 'job_create' %}" class="post-job-btn">Post a Job</a>
 
             {% endif %}
@@ -64,18 +66,26 @@
             <!-- Notification Bell -->
             <span class="bell">🔔</span>
 
-            <!-- Profile Picture Placeholder -->
-            <img src="{% static 'images/default_profile.png' %}" class="profile-pic">
+            <!-- PROFILE LINK -->
+            <a href="{% url 'profile' %}" style="display:flex; align-items:center; gap:8px; text-decoration:none; color:inherit;">
 
-            <span>{{ user.username }}</span>
+                <!-- USER PROFILE PIC -->
+                <img src="{{ user.profile.profile_pic.url }}" class="profile-pic">
 
-            <!-- Role Watermark -->
+                <!-- USERNAME -->
+                <span>{{ user.username }}</span>
+
+            </a>
+
+            <!-- ROLE BADGE -->
             <span class="role-badge">
+
                 {% if user.profile.role == "APPLICANT" %}
                     Applicant
                 {% elif user.profile.role == "RECRUITER" %}
                     Recruiter
                 {% endif %}
+
             </span>
 
         {% else %}
