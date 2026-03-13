@@ -15,24 +15,24 @@ import hmac
 import hashlib
 import base64
 import uuid
+import json
+
+
 # ============================
 # PUBLIC JOB LIST (Applicants)
 # ============================
 
- 
 def generate_signature(total_amount, transaction_uuid, product_code='EPAYTEST'):
     """Generate HMAC SHA256 signature for eSewa"""
     secret_key = settings.ESEWA_SECRET_KEY
     message = f"total_amount={total_amount},transaction_uuid={transaction_uuid},product_code={product_code}"
 
-    # Create HMAC SHA256 signature
     signature = hmac.new(
         secret_key.encode('utf-8'),
         message.encode('utf-8'),
         hashlib.sha256
     ).digest()
 
-    # Encode to base64
     signature_base64 = base64.b64encode(signature).decode('utf-8')
     return signature_base64
 
@@ -59,6 +59,7 @@ def job_list(request):
 # ============================
 # RECRUITER DASHBOARD
 # ============================
+
 @login_required
 def recruiter_dashboard(request):
 
@@ -74,6 +75,7 @@ def recruiter_dashboard(request):
 # ============================
 # CREATE JOB (Recruiter Only)
 # ============================
+
 @login_required
 @transaction.atomic
 def job_create(request):
@@ -96,7 +98,6 @@ def job_create(request):
             job.is_active = False
             job.save()
 
-            # Create payment record
             payment = Payment.objects.create(
                 recruiter=request.user,
                 job=job,
@@ -116,6 +117,7 @@ def job_create(request):
 # ============================
 # PAY JOB (Redirect to eSewa)
 # ============================
+
 def test_esewa(request):
 
     transaction_uuid = str(uuid.uuid4())
@@ -127,21 +129,17 @@ def test_esewa(request):
         'product_code': settings.ESEWA_MERCHANT_CODE,
         'signature': generate_signature(amount, transaction_uuid),
         'esewa_url': settings.ESEWA_URL,
-        'success_url': request.build_absolute_uri('/payment/success/'),
-        'failure_url': request.build_absolute_uri('/payment/failure/'),
+        'success_url': request.build_absolute_uri('/jobs/payment/success/'),
+        'failure_url': request.build_absolute_uri('/jobs/payment/failure/'),
     }
 
     return render(request, "Job_Post/esewa_form.html", esewa_context)
-
 
 
 @login_required
 def pay_job(request, id):
 
     payment = get_object_or_404(Payment, id=id)
-    transaction_uuid = str(payment.transaction_uuid)
-    signature = generate_signature(payment.amount, transaction_uuid)
-  
 
     esewa_context = {
         'amount': payment.amount,
@@ -149,45 +147,78 @@ def pay_job(request, id):
         'product_code': settings.ESEWA_MERCHANT_CODE,
         'signature': generate_signature(payment.amount, str(payment.transaction_uuid)),
         'esewa_url': settings.ESEWA_URL,
-        'success_url': request.build_absolute_uri('/payment/success/'),
-        'failure_url': request.build_absolute_uri('/payment/failure/'),
+        'success_url': request.build_absolute_uri('/jobs/payment/success/'),
+        'failure_url': request.build_absolute_uri('/jobs/payment/failure/'),
         "payment": payment
     }
+
     return render(request, "Job_Post/esewa_form.html", esewa_context)
 
 
 # ============================
-# PAYMENT SUCCESS
+# PAYMENT SUCCESS (FIXED)
 # ============================
+
 @login_required
 def payment_success(request):
 
-    transaction_uuid = request.GET.get("transaction_uuid")
+    data = request.GET.get("data")
 
-    payment = get_object_or_404(Payment, transaction_uuid=transaction_uuid)
+    if not data:
+        return redirect("job_list")
 
-    payment.status = "COMPLETED"
-    payment.save()
+    try:
+        decoded_data = base64.b64decode(data).decode("utf-8")
+        payment_data = json.loads(decoded_data)
 
-    job = payment.job
-    job.is_active = True
-    job.save()
+        transaction_uuid = payment_data.get("transaction_uuid")
+        status = payment_data.get("status")
 
-    return render(request, "payments/success.html")
+        payment = get_object_or_404(Payment, transaction_uuid=transaction_uuid)
+
+        if status == "COMPLETE":
+            payment.status = "COMPLETED"
+            payment.save()
+
+            job = payment.job
+            job.is_active = True
+            job.save()
+
+            return render(request, "payments/success.html")
+
+        else:
+            payment.status = "FAILED"
+            payment.save()
+
+            return render(request, "payments/failure.html")
+
+    except Exception:
+        return render(request, "payments/failure.html")
 
 
 # ============================
-# PAYMENT FAILURE
+# PAYMENT FAILURE (FIXED)
 # ============================
+
 @login_required
 def payment_failure(request):
 
-    transaction_uuid = request.GET.get("transaction_uuid")
+    data = request.GET.get("data")
 
-    payment = get_object_or_404(Payment, transaction_uuid=transaction_uuid)
+    if data:
+        try:
+            decoded_data = base64.b64decode(data).decode("utf-8")
+            payment_data = json.loads(decoded_data)
 
-    payment.status = "FAILED"
-    payment.save()
+            transaction_uuid = payment_data.get("transaction_uuid")
+
+            payment = Payment.objects.filter(transaction_uuid=transaction_uuid).first()
+
+            if payment:
+                payment.status = "FAILED"
+                payment.save()
+        except:
+            pass
 
     return render(request, "payments/failure.html")
 
@@ -195,6 +226,7 @@ def payment_failure(request):
 # ============================
 # JOB DETAIL (Public)
 # ============================
+
 def job_detail(request, pk):
 
     job = get_object_or_404(
@@ -209,6 +241,7 @@ def job_detail(request, pk):
 # ============================
 # EDIT JOB
 # ============================
+
 @login_required
 @transaction.atomic
 def job_edit(request, pk):
@@ -237,6 +270,7 @@ def job_edit(request, pk):
 # ============================
 # DELETE JOB
 # ============================
+
 @login_required
 @transaction.atomic
 def job_delete(request, pk):
