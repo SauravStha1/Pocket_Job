@@ -142,3 +142,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# eSewa Configuration
+ESEWA_MERCHANT_CODE = 'EPAYTEST'  # Test merchant code
+ESEWA_SECRET_KEY = '8gBm/:&EnhH.1/q'  # Test secret key
+ESEWA_URL = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'  # Test URL
+ESEWA_VERIFY_URL = 'https://rc-epay.esewa.com.np/api/epay/transaction/status/'  # Status check URL

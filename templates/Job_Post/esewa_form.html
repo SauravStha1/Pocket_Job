@@ -1,0 +1,42 @@
+<div style="max-width: 600px; margin: 0 auto; text-align: center;">
+
+    <h2 style="margin-bottom: 30px; color: #333;">
+        Complete Payment to Publish Job
+    </h2>
+
+    <div style="text-align:left; margin-bottom:20px;">
+        <p><strong>Job ID:</strong> {{ payment.job.id }}</p>
+        <p><strong>Job Title:</strong> {{ payment.job.title }}</p>
+        <p><strong>Amount:</strong> Rs {{ amount }}</p>
+    </div>
+
+    <div style="margin: 20px 0; padding: 15px; background: #fff3cd; border-radius: 5px;">
+        <strong>Test Mode:</strong> This uses the eSewa sandbox.
+    </div>
+
+    <!-- eSewa Payment Form -->
+    <form action="{{ esewa_url }}" method="POST">
+
+        <input type="hidden" name="amount" value="{{ amount }}">
+        <input type="hidden" name="tax_amount" value="0">
+        <input type="hidden" name="total_amount" value="{{ amount }}">
+
+        <input type="hidden" name="transaction_uuid" value="{{ transaction_uuid }}">
+        <input type="hidden" name="product_code" value="{{ product_code }}">
+
+        <input type="hidden" name="product_service_charge" value="0">
+        <input type="hidden" name="product_delivery_charge" value="0">
+
+        <input type="hidden" name="success_url" value="{{ success_url }}">
+        <input type="hidden" name="failure_url" value="{{ failure_url }}">
+
+        <input type="hidden" name="signed_field_names" value="total_amount,transaction_uuid,product_code">
+        <input type="hidden" name="signature" value="{{ signature }}">
+
+        <button type="submit" style="padding:15px 40px; font-size:18px; background:#60d669; border:none; color:white; border-radius:5px;">
+            Pay Rs {{ amount }} with eSewa
+        </button>
+
+    </form>
+
+</div>

@@ -40,7 +40,8 @@ class Job(models.Model):
         blank=True
     )
 
-    is_active = models.BooleanField(default=True)
+    # IMPORTANT: Job is inactive until payment is completed
+    is_active = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
