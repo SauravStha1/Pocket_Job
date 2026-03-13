@@ -2,19 +2,63 @@
 
 {% block content %}
 
-<div style="padding:40px; text-align:center;">
+<h2>My Profile</h2>
 
-    <h2>Profile</h2>
+<img src="{{ profile.profile_pic.url }}" width="150">
 
-    <img src="{{ profile.profile_pic.url }}" 
-         style="width:120px;height:120px;border-radius:50%;object-fit:cover;">
+<hr>
 
-    <h3>{{ profile.user.username }}</h3>
+<p><strong>Username:</strong> {{ profile.user.username }}</p>
+<p><strong>Email:</strong> {{ profile.user.email }}</p>
+<p><strong>Role:</strong> {{ profile.role }}</p>
 
-    <p>Email: {{ profile.user.email }}</p>
+<hr>
 
-    <p>Role: {{ profile.role }}</p>
+{% if profile.role == "APPLICANT" %}
 
-</div>
+<h3>Applicant Information</h3>
+
+<p><strong>Full Name:</strong> {{ profile.full_name }}</p>
+<p><strong>Age:</strong> {{ profile.age }}</p>
+<p><strong>Location:</strong> {{ profile.location }}</p>
+<p><strong>Contact Email:</strong> {{ profile.contact_email }}</p>
+
+<p><strong>Skills:</strong></p>
+<p>{{ profile.skills }}</p>
+
+<p><strong>About:</strong></p>
+<p>{{ profile.description }}</p>
+
+<p><strong>CV:</strong>
+{% if profile.cv %}
+<a href="{{ profile.cv.url }}" target="_blank">View CV</a>
+{% else %}
+No CV uploaded
+{% endif %}
+</p>
+
+{% endif %}
+
+<hr>
+
+{% if profile.role == "RECRUITER" %}
+
+<h3>Company Information</h3>
+
+<p><strong>Company Name:</strong> {{ profile.company_name }}</p>
+<p><strong>Owner Name:</strong> {{ profile.owner_name }}</p>
+<p><strong>Location:</strong> {{ profile.company_location }}</p>
+<p><strong>Company Type:</strong> {{ profile.company_type }}</p>
+<p><strong>Phone:</strong> {{ profile.phone }}</p>
+<p><strong>Email:</strong> {{ profile.company_email }}</p>
+<p><strong>Founded Date:</strong> {{ profile.founded_date }}</p>
+
+{% endif %}
+
+<hr>
+
+<a href="{% url 'edit_profile' %}">
+    <button>Edit Profile</button>
+</a>
 
 {% endblock %}

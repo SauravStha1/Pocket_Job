@@ -1,15 +1,48 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Payment Successful</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h2>Payment Successful ✅</h2>
+{% block content %}
 
-<p>Your job has been published successfully.</p>
+<div style="display:flex; justify-content:center; align-items:center; min-height:70vh;">
 
-<a href="/jobs/">Go to Jobs</a>
+```
+<div style="
+    background:white;
+    padding:40px;
+    border-radius:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+    text-align:center;
+    max-width:500px;
+    width:100%;
+">
 
-</body>
-</html>
+    <div style="font-size:60px; color:#28a745;">✔</div>
+
+    <h2 style="margin-top:10px; color:#28a745;">
+        Payment Successful
+    </h2>
+
+    <p style="margin-top:15px; color:#555;">
+        Your payment has been completed successfully.
+        The job you posted is now <b>live</b> and visible to applicants.
+    </p>
+
+    <div style="margin-top:30px;">
+        <a href="{% url 'home' %}" 
+           style="
+            background:#007bff;
+            color:white;
+            padding:12px 25px;
+            border-radius:6px;
+            text-decoration:none;
+            font-weight:500;
+           ">
+           Go to Homepage
+        </a>
+    </div>
+
+</div>
+```
+
+</div>
+
+{% endblock %}

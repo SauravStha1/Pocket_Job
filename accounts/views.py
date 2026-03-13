@@ -159,3 +159,47 @@ def profile_view(request):
     profile = request.user.profile
 
     return render(request, "accounts/profile.html", {"profile": profile})
+
+# =========================
+# EDIT PROFILE
+# =========================
+
+def edit_profile(request):
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    profile = request.user.profile
+
+    if request.method == "POST":
+
+        # Applicant fields
+        profile.full_name = request.POST.get("full_name")
+        profile.age = request.POST.get("age")
+        profile.skills = request.POST.get("skills")
+        profile.location = request.POST.get("location")
+        profile.contact_email = request.POST.get("contact_email")
+        profile.description = request.POST.get("description")
+
+        if request.FILES.get("cv"):
+            profile.cv = request.FILES.get("cv")
+
+        # Recruiter fields
+        profile.company_name = request.POST.get("company_name")
+        profile.owner_name = request.POST.get("owner_name")
+        profile.company_location = request.POST.get("company_location")
+        profile.company_type = request.POST.get("company_type")
+        profile.phone = request.POST.get("phone")
+        profile.company_email = request.POST.get("company_email")
+        profile.founded_date = request.POST.get("founded_date")
+
+        if request.FILES.get("profile_pic"):
+            profile.profile_pic = request.FILES.get("profile_pic")
+
+        profile.save()
+
+        messages.success(request, "Profile updated successfully!")
+
+        return redirect("profile")
+
+    return render(request, "accounts/edit_profile.html", {"profile": profile})
