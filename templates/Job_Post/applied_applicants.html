@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Applied Applicants | Pocket Job</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f7fa;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .left {
+            display: flex;
+            align-items: center;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .btn {
+            padding: 6px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .accept {
+            background: green;
+            color: white;
+        }
+
+        .reject {
+            background: red;
+            color: white;
+        }
+
+        .cv {
+            background: #007bff;
+            color: white;
+        }
+
+        .status {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Applied Applicants</h2>
+
+    {% for app in applications %}
+        <div class="card">
+
+            <div class="left">
+                <img src="{{ app.applicant.profile_pic.url }}" alt="profile">
+
+                <div>
+                    <strong>{{ app.applicant.full_name }}</strong><br>
+                    Applied for: {{ app.job.title }}<br>
+                    Status: <span class="status">{{ app.status }}</span>
+                </div>
+
+            </div>
+
+
+            <div>
+                <a href="#" class="btn" style="background:#17a2b8; color:white;">
+                    Chat
+                </a>
+                {% if app.applicant.cv %}
+                    <a href="{{ app.applicant.cv.url }}" class="btn cv">View CV</a>
+                {% endif %}
+
+                {% if app.status == "PENDING" %}
+                    <a href="{% url 'accept_application' app.id %}" class="btn accept">Accept</a>
+                    <a href="{% url 'reject_application' app.id %}" class="btn reject">Reject</a>
+                {% endif %}
+            </div>
+
+        </div>
+    {% empty %}
+        <p>No applicants yet.</p>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

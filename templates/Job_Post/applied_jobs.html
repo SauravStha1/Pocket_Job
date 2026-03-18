@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Applications</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f7fa;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .pending { color: orange; }
+        .hired { color: green; }
+        .rejected { color: red; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>My Applied Jobs</h2>
+
+    {% for app in applications %}
+        <div class="card">
+            <strong>{{ app.job.title }}</strong><br>
+            Applied on: {{ app.applied_at|date:"M d, Y" }}<br>
+
+            Status:
+            <span class="status 
+                {% if app.status == 'PENDING' %}pending
+                {% elif app.status == 'HIRED' %}hired
+                {% else %}rejected
+                {% endif %}">
+                {{ app.status }}
+            </span>
+        </div>
+    {% empty %}
+        <p>You have not applied to any jobs yet.</p>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Applicants | {{ job.title }}</title>
+</head>
+<body>
+
+<h2>Applicants for "{{ job.title }}"</h2>
+
+{% if applications %}
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Skills</th>
+            <th>CV</th>
+        </tr>
+
+        {% for app in applications %}
+        <tr>
+            <td>{{ app.applicant.full_name }}</td>
+            <td>{{ app.applicant.contact_email }}</td>
+            <td>{{ app.applicant.skills }}</td>
+            <td>
+                {% if app.applicant.cv %}
+                    <a href="{{ app.applicant.cv.url }}" target="_blank">View CV</a>
+                {% else %}
+                    No CV
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No applicants yet.</p>
+{% endif %}
+
+<br>
+<a href="{% url 'recruiter_dashboard' %}">← Back</a>
+
+</body>
+</html>

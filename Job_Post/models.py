@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
 
-
 class Job(models.Model):
 
     JOB_TYPE_CHOICES = [
@@ -40,21 +39,41 @@ class Job(models.Model):
         blank=True
     )
 
-    # IMPORTANT: Job is inactive until payment is completed
     is_active = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # DEADLINE FIELD
     deadline = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-
-        # If deadline not set, calculate it as 30 days from now
         if not self.deadline:
             self.deadline = timezone.now() + timedelta(days=30)
-
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
+
+
+# =============================
+# Job Application Model
+# =============================
+class JobApplication(models.Model):
+
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('HIRED', 'Hired'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
+    applicant = models.ForeignKey('accounts.Profile', on_delete=models.CASCADE)
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='PENDING'
+    )
+
+    def __str__(self):
+        return f"{self.applicant.user.username} → {self.job.title}"

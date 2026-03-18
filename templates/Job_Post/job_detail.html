@@ -8,13 +8,13 @@
 <body>
 
 <header class="navbar">
-    <a href="{% url 'home' %}">← Back to Jobs</a>
+    <a href="{% url 'job_list' %}">← Back to Jobs</a>
 </header>
 
 <section class="job-detail">
     <h1>{{ job.title }}</h1>
 
-    <p class="role">{{ job.job_role }}</p>
+    <p class="role">{{ job.job_type }}</p>
     <p class="tags">{{ job.tags }}</p>
 
     <p class="salary">
@@ -30,10 +30,61 @@
     <h3>Job Description</h3>
     <p>{{ job.description }}</p>
 
+    <h3>Responsibilities</h3>
+    <p>{{ job.responsibilities }}</p>
+
     <p class="posted">
         Posted on {{ job.created_at|date:"M d, Y" }}
     </p>
+
+    <!-- APPLY BUTTON LOGIC -->
+    {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
+
+        {% if has_applied %}
+            <button class="applied-btn" disabled>Applied ✓</button>
+        {% else %}
+            <form action="{% url 'apply_job' job.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="apply-btn">Apply Now</button>
+            </form>
+        {% endif %}
+
+    {% elif not user.is_authenticated %}
+        <p><a href="{% url 'login' %}">Login</a> to apply for this job.</p>
+    {% endif %}
+
 </section>
+
+<style>
+.job-detail {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.apply-btn {
+    background-color: #1e90ff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.applied-btn {
+    background-color: gray;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: not-allowed;
+}
+</style>
 
 </body>
 </html>
