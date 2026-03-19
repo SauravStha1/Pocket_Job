@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Chats | Pocket Job</title>
+    <style>
+        body { font-family: Arial; background: #f5f7fa; }
+        .container { width: 90%; max-width: 800px; margin: 40px auto; }
+        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .left { display: flex; flex-direction: column; }
+        .status { font-weight: bold; color: #555; }
+        .btn { padding: 6px 10px; border-radius: 5px; text-decoration: none; font-size: 13px; background: #007bff; color: white; }
+        .no-message { color: red; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>My Chats</h2>
+    {% for room in chatrooms %}
+        <div class="card">
+            <div class="left">
+                <strong>Job: {{ room.job.title }}</strong>
+                <span class="status">Recruiter: {{ room.recruiter.username }}</span>
+                {% if room.messages.count == 0 %}
+                    <span class="no-message">Waiting for recruiter to start the chat...</span>
+                {% endif %}
+            </div>
+            <div>
+                <a href="{% url 'chat_room' room.id %}" class="btn">Open Chat</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No chats yet. Waiting for recruiter to start.</p>
+    {% endfor %}
+</div>
+</body>
+</html>

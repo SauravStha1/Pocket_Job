@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inbox | Pocket Job</title>
+    <style>
+        body { font-family: Arial; background: #f5f7fa; }
+        .container { width: 90%; max-width: 900px; margin: 40px auto; }
+        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .left { display: flex; flex-direction: column; }
+        .job-title { font-weight: bold; }
+        .person { color: #555; }
+        .latest-message { font-size: 13px; color: #333; margin-top: 5px; }
+        .btn { padding: 6px 10px; border-radius: 5px; text-decoration: none; font-size: 13px; background: #007bff; color: white; }
+        .no-message { color: red; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Inbox</h2>
+
+    <!-- ACTIVE CHATS -->
+    <h3>Active Chats</h3>
+    {% for room in chatrooms %}
+        <div class="card">
+            <div class="left">
+                <span class="job-title">{{ room.job.title }}</span>
+                {% if role == "RECRUITER" %}
+                    <span class="person">Applicant: {{ room.applicant.username }}</span>
+                {% else %}
+                    <span class="person">Recruiter: {{ room.recruiter.username }}</span>
+                {% endif %}
+                {% with last_message=room.messages.last %}
+                    {% if last_message %}
+                        <span class="latest-message">{{ last_message.content|truncatechars:50 }}</span>
+                    {% else %}
+                        <span class="no-message">No messages yet</span>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <div>
+                <a href="{% url 'chat_room' room.id %}" class="btn">Open Chat</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No active chats.</p>
+    {% endfor %}
+
+    <!-- WAITING -->
+    {% if role == "APPLICANT" %}
+        <h3>Waiting for Recruiter</h3>
+        {% for app in pending_apps %}
+            <div class="card">
+                <div>
+                    <strong>{{ app.job.title }}</strong><br>
+                    Status: {{ app.status }}
+                </div>
+                <span style="color:red;">Recruiter has not started chat yet</span>
+            </div>
+        {% empty %}
+            <p>No pending applications.</p>
+        {% endfor %}
+    {% endif %}
+</div>
+</body>
+</html>

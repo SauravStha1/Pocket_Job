@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat - Pocket Job</title>
+    <style>
+        body { font-family: Arial; background: #e5ddd5; }
+        .chat-container { width: 90%; max-width: 700px; margin: 30px auto; background: #efeae2; padding: 15px; border-radius: 10px; }
+        .message { padding: 10px; margin: 10px; border-radius: 10px; max-width: 60%; }
+        .sent { background: #dcf8c6; margin-left: auto; text-align: right; }
+        .received { background: white; margin-right: auto; }
+        .sender { font-size: 12px; font-weight: bold; }
+        .time { font-size: 10px; color: gray; margin-top: 5px; }
+        .input-box { display: flex; margin-top: 15px; }
+        input { flex: 1; padding: 10px; border-radius: 20px; border: none; }
+        button { padding: 10px 15px; border: none; background: #075e54; color: white; border-radius: 20px; margin-left: 10px; cursor: pointer; }
+        #chat-log { max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <h3>Chat - {{ chatroom.job.title }}</h3>
+
+    <!-- Chat Log -->
+    <div id="chat-log">
+        {% for message in messages %}
+            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                <div class="sender">
+                    {% if message.sender == request.user %}You
+                    {% elif message.sender == chatroom.recruiter %}{{ chatroom.recruiter.username }}
+                    {% else %}{{ chatroom.applicant.username }}{% endif %}
+                </div>
+                <div>{{ message.content }}</div>
+                <div class="time">{{ message.timestamp|date:"H:i" }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Input Form -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="input-box">
+            <input type="text" name="content" placeholder="Type a message..." 
+                   {% if request.user.profile.role == "APPLICANT" and chatroom.messages.count == 0 %}disabled{% endif %}>
+            <button type="submit" 
+                    {% if request.user.profile.role == "APPLICANT" and chatroom.messages.count == 0 %}disabled{% endif %}>
+                Send
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Scroll to bottom on page load
+    const chatLog = document.getElementById('chat-log');
+    chatLog.scrollTop = chatLog.scrollHeight;
+</script>
+
+</body>
+</html>

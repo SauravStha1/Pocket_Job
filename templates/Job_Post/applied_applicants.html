@@ -85,11 +85,12 @@
 
             </div>
 
-
             <div>
-                <a href="#" class="btn" style="background:#17a2b8; color:white;">
-                    Chat
+                <!-- 🔥 FIXED CHAT BUTTON -->
+                <a href="{% url 'start_chat' app.id app.job.id %}">
+                    💬 Chat
                 </a>
+
                 {% if app.applicant.cv %}
                     <a href="{{ app.applicant.cv.url }}" class="btn cv">View CV</a>
                 {% endif %}

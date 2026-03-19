@@ -33,6 +33,7 @@ urlpatterns = [
     path('', include('homepage.urls')),
     path('jobs/', include('Job_Post.urls')),
     path('', include('accounts.urls')),
+    path('chat/', include('chat.urls')),
 ]
 
 

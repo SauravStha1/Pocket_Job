@@ -45,8 +45,20 @@ INSTALLED_APPS = [
     'homepage',
     'Job_Post',
     'accounts',
+    'channels',
+    'chat',
     
 ]
+
+# Channels setup
+ASGI_APPLICATION = 'Pocket_Job.asgi.application' 
+
+# Redis backend (optional for dev you can skip or use in-memory)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
