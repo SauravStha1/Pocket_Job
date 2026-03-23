@@ -9,6 +9,7 @@ def home(request):
 
     jobs = Job.objects.filter(is_active=True)
 
+    # Apply search filters
     if query:
         jobs = jobs.filter(
             Q(title__icontains=query) | Q(tags__icontains=query)
@@ -17,7 +18,33 @@ def home(request):
     if job_type and job_type != "All":
         jobs = jobs.filter(job_type=job_type)
 
-    jobs = jobs.order_by('-created_at')
+    # ==============================
+    # 🎯 SKILL-BASED FILTER (SEARCH STYLE)
+    # ==============================
+    if request.user.is_authenticated:
+        profile = request.user.profile
+        skills = profile.skills
+
+        if skills:
+            skill_list = [s.strip().lower() for s in skills.split(",")]
+
+            # Step 1: Find matching jobs
+            matched_jobs = []
+            other_jobs = []
+
+            for job in jobs:
+                job_text = (job.title + " " + job.tags).lower()
+
+                if any(skill in job_text for skill in skill_list):
+                    matched_jobs.append(job)
+                else:
+                    other_jobs.append(job)
+
+            # Step 2: Combine (like search result priority)
+            jobs = matched_jobs + other_jobs
+
+    else:
+        jobs = list(jobs.order_by('-created_at'))
 
     return render(request, 'homepage/home.html', {
         'jobs': jobs,
