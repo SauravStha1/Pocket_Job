@@ -1,11 +1,23 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Count, Q, Case, When, IntegerField
 from Job_Post.models import Job, JobApplication
 from .models import ChatRoom, Message
 
+
+# 🔥 GLOBAL UNREAD COUNT FUNCTION
+def get_unread_count(user):
+    return Message.objects.filter(
+        chatroom__in=ChatRoom.objects.filter(
+            Q(recruiter=user) | Q(applicant=user)
+        ),
+        is_read=False
+    ).exclude(sender=user).count()
+
+
 # ----------------------------
-# Recruiter starts a chat with an applicant
+# Recruiter starts a chat
 # ----------------------------
 @login_required
 def start_chat(request, application_id, job_id):
@@ -22,6 +34,7 @@ def start_chat(request, application_id, job_id):
 
     return redirect('chat_room', chatroom_id=chatroom.id)
 
+
 # ----------------------------
 # Chat room view
 # ----------------------------
@@ -29,17 +42,20 @@ def start_chat(request, application_id, job_id):
 def chat_room(request, chatroom_id):
     chatroom = get_object_or_404(ChatRoom, id=chatroom_id)
 
-    # Security: only recruiter or applicant can access
     if request.user != chatroom.recruiter and request.user != chatroom.applicant:
         return redirect('home')
 
+    # 🔥 MARK AS READ WHEN OPENED
+    Message.objects.filter(
+        chatroom=chatroom,
+        is_read=False
+    ).exclude(sender=request.user).update(is_read=True)
+
     messages = chatroom.messages.all().order_by('timestamp')
 
-    # Only for non-WebSocket POST (optional)
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
         if content:
-            # Applicant cannot send first message
             if request.user.profile.role == "APPLICANT" and messages.count() == 0:
                 pass
             else:
@@ -52,12 +68,13 @@ def chat_room(request, chatroom_id):
 
     return render(request, 'chat/chat_room.html', {
         'chatroom': chatroom,
-        'messages': messages
+        'messages': messages,
+        'unread_count': get_unread_count(request.user)  # 🔥 for navbar
     })
 
 
 # ----------------------------
-# Applicant: view all active chats
+# Applicant chats
 # ----------------------------
 @login_required
 def my_chats(request):
@@ -65,11 +82,15 @@ def my_chats(request):
         return redirect('home')
 
     chatrooms = ChatRoom.objects.filter(applicant=request.user).order_by('-created_at')
-    return render(request, 'chat/my_chats.html', {'chatrooms': chatrooms})
+
+    return render(request, 'chat/my_chats.html', {
+        'chatrooms': chatrooms,
+        'unread_count': get_unread_count(request.user)
+    })
 
 
 # ----------------------------
-# Inbox: recruiter sees active chats + pending applicants
+# Inbox
 # ----------------------------
 @login_required
 def inbox(request):
@@ -77,20 +98,33 @@ def inbox(request):
     role = user.profile.role
 
     if role == "RECRUITER":
-        chatrooms = ChatRoom.objects.filter(recruiter=user).select_related('applicant', 'job').order_by('-created_at')
-        return render(request, 'chat/inbox.html', {
-            'chatrooms': chatrooms,
-            'role': role
-        })
+        chatrooms = ChatRoom.objects.filter(recruiter=user).select_related('applicant', 'job')
+    else:
+        chatrooms = ChatRoom.objects.filter(applicant=user).select_related('recruiter', 'job')
 
-    else:  # applicant inbox
-        chatrooms = ChatRoom.objects.filter(applicant=user).select_related('recruiter', 'job').order_by('-created_at')
-        # pending applications where recruiter has not started chat
+    # 🔥 ADD UNREAD PRIORITY
+    chatrooms = chatrooms.annotate(
+        unread_count=Count(
+            'messages',
+            filter=Q(messages__is_read=False) & ~Q(messages__sender=user)
+        )
+    ).annotate(
+        unread_priority=Case(
+            When(unread_count__gt=0, then=0),
+            default=1,
+            output_field=IntegerField()
+        )
+    ).order_by('unread_priority', '-created_at')
+
+    context = {
+        'chatrooms': chatrooms,
+        'role': role,
+        'unread_count': get_unread_count(user)
+    }
+
+    if role == "APPLICANT":
         applications = JobApplication.objects.filter(applicant=user.profile)
         pending_apps = [app for app in applications if not chatrooms.filter(job=app.job).exists()]
+        context['pending_apps'] = pending_apps
 
-        return render(request, 'chat/inbox.html', {
-            'chatrooms': chatrooms,
-            'pending_apps': pending_apps,
-            'role': role
-        })
+    return render(request, 'chat/inbox.html', context)

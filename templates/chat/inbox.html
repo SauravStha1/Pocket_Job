@@ -32,7 +32,15 @@
                 {% endif %}
                 {% with last_message=room.messages.last %}
                     {% if last_message %}
-                        <span class="latest-message">{{ last_message.content|truncatechars:50 }}</span>
+                        <span class="latest-message">
+                            {{ last_message.content|truncatechars:50 }}
+                        </span>
+
+                        {% if room.unread_count > 0 %}
+                            <span style="color:red; font-size:12px;">
+                                🔴 {{ room.unread_count }} new
+                            </span>
+                        {% endif %}
                     {% else %}
                         <span class="no-message">No messages yet</span>
                     {% endif %}
