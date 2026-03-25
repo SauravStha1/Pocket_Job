@@ -2,50 +2,80 @@
 <html>
 <head>
     <title>Inbox | Pocket Job</title>
+
     <style>
         body { font-family: Arial; background: #f5f7fa; }
         .container { width: 90%; max-width: 900px; margin: 40px auto; }
-        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .left { display: flex; flex-direction: column; }
         .job-title { font-weight: bold; }
         .person { color: #555; }
         .latest-message { font-size: 13px; color: #333; margin-top: 5px; }
-        .btn { padding: 6px 10px; border-radius: 5px; text-decoration: none; font-size: 13px; background: #007bff; color: white; }
+
+        .btn {
+            padding: 6px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 13px;
+            background: #007bff;
+            color: white;
+        }
+
         .no-message { color: red; font-size: 12px; }
+
+        .badge {
+            color: red;
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
 
 <div class="container">
     <h2>Inbox</h2>
 
-    <!-- ACTIVE CHATS -->
     <h3>Active Chats</h3>
+
     {% for room in chatrooms %}
-        <div class="card">
+        <div class="card" id="room-{{ room.id }}">
             <div class="left">
                 <span class="job-title">{{ room.job.title }}</span>
+
                 {% if role == "RECRUITER" %}
                     <span class="person">Applicant: {{ room.applicant.username }}</span>
                 {% else %}
                     <span class="person">Recruiter: {{ room.recruiter.username }}</span>
                 {% endif %}
+
                 {% with last_message=room.messages.last %}
                     {% if last_message %}
-                        <span class="latest-message">
+                        <span class="latest-message" id="last-msg-{{ room.id }}">
                             {{ last_message.content|truncatechars:50 }}
                         </span>
 
-                        {% if room.unread_count > 0 %}
-                            <span style="color:red; font-size:12px;">
+                        <span class="badge" id="badge-{{ room.id }}">
+                            {% if room.unread_count > 0 %}
                                 🔴 {{ room.unread_count }} new
-                            </span>
-                        {% endif %}
+                            {% endif %}
+                        </span>
                     {% else %}
                         <span class="no-message">No messages yet</span>
                     {% endif %}
                 {% endwith %}
             </div>
+
             <div>
                 <a href="{% url 'chat_room' room.id %}" class="btn">Open Chat</a>
             </div>
@@ -54,9 +84,9 @@
         <p>No active chats.</p>
     {% endfor %}
 
-    <!-- WAITING -->
     {% if role == "APPLICANT" %}
         <h3>Waiting for Recruiter</h3>
+
         {% for app in pending_apps %}
             <div class="card">
                 <div>
@@ -70,5 +100,31 @@
         {% endfor %}
     {% endif %}
 </div>
+
+<!-- 🔥 REAL-TIME INBOX WEBSOCKET -->
+<script>
+    const socket = new WebSocket(
+        (window.location.protocol === "https:" ? "wss://" : "ws://") +
+        window.location.host +
+        "/ws/notifications/"
+    );
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        if (data.type === "notification") {
+            const badge = document.getElementById(`badge-${data.room_id}`);
+
+            if (badge) {
+                if (data.unread_count > 0) {
+                    badge.innerText = `🔴 ${data.unread_count} new`;
+                } else {
+                    badge.innerText = "";
+                }
+            }
+        }
+    };
+</script>
+
 </body>
 </html>
