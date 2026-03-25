@@ -5,10 +5,12 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 
+
 from .models import Job, JobApplication  # Added JobApplication
 from .forms import JobForm
 from .payment_models import Payment
 from accounts.models import Profile
+from accounts.models import Notification
 
 from django.conf import settings
 import hmac
@@ -90,15 +92,22 @@ def apply_job(request, pk):
 
     profile = request.user.profile
 
-    # Prevent duplicate application
     if JobApplication.objects.filter(job=job, applicant=profile).exists():
         messages.warning(request, "You have already applied for this job.")
     else:
         JobApplication.objects.create(job=job, applicant=profile)
+
+        # 🔔 Notify recruiter
+        create_notification(
+            job.recruiter,
+            f"{request.user.username} applied for your job '{job.title}'",
+            "application",
+            link=f"/jobs/{job.id}/"
+        )
+
         messages.success(request, "You have successfully applied for this job.")
 
     return redirect('job_detail', pk=job.pk)
-
 
 # ============================
 # RECRUITER DASHBOARD
@@ -337,9 +346,15 @@ def accept_application(request, id):
     application.status = "ACCEPTED"
     application.save()
 
+    # 🔔 Notify applicant
+    create_notification(
+        application.applicant.user,
+        f"You got hired for '{application.job.title}' 🎉",
+        "hired",
+        link=f"/jobs/{application.job.id}/"
+    )
     messages.success(request, "Applicant accepted.")
     return redirect('applied_applicants')
-
 
 # ============================
 # REJECT APPLICATION
@@ -350,6 +365,14 @@ def reject_application(request, id):
     application = get_object_or_404(JobApplication, id=id, job__recruiter=request.user)
     application.status = "REJECTED"
     application.save()
+
+    # 🔔 Notify applicant
+    create_notification(
+        application.applicant.user,
+        f"Your application for '{application.job.title}' was rejected",
+        "rejected",
+        link=f"/jobs/{application.job.id}/"
+    )
 
     messages.warning(request, "Applicant rejected.")
     return redirect('applied_applicants')
@@ -367,3 +390,12 @@ def applied_jobs(request):
     return render(request, 'Job_Post/applied_jobs.html', {
         'applications': applications
     })
+
+
+def create_notification(user, message, notification_type, link=None):
+    Notification.objects.create(
+        user=user,
+        message=message,
+        notification_type=notification_type,
+        link=link
+    )

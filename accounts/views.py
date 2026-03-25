@@ -7,7 +7,11 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from .models import Profile
 import random
-
+from .models import Notification
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 # =========================
 # LOGIN VIEW
@@ -203,3 +207,53 @@ def edit_profile(request):
         return redirect("profile")
 
     return render(request, "accounts/edit_profile.html", {"profile": profile})
+
+@login_required
+def notifications_view(request):
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
+    # mark all as read
+    notifications.update(is_read=True)
+
+    return render(request, 'accounts/notifications.html', {
+        'notifications': notifications
+    })
+
+@login_required
+def notification_api(request):
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:10]
+
+    data = []
+
+    for n in notifications:
+        data.append({
+            "id": n.id,
+            "message": n.message,
+            "link": n.link,
+            "is_read": n.is_read
+        })
+
+    unread_count = Notification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).count()
+
+    return JsonResponse({
+        "notifications": data,
+        "unread_count": unread_count
+    })
+
+@login_required
+@csrf_exempt
+def mark_notification_read(request, id):
+    try:
+        notification = Notification.objects.get(id=id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({"status": "success"})
+    except:
+        return JsonResponse({"status": "error"})

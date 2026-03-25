@@ -55,3 +55,19 @@ class EmailOTP(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+# =========================
+# 🔔 NOTIFICATION MODEL (NEW)
+# =========================
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    message = models.TextField()
+    notification_type = models.CharField(max_length=50)
+    link = models.URLField(blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.message[:30]}"
