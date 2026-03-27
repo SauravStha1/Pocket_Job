@@ -1,117 +1,114 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Pocket Job</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pocket Job — Nepal's Job Portal</title>
 
-    <!-- GLOBAL STYLES -->
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
-    <link rel="stylesheet" href="{% static 'css/nav.css' %}">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'css/nav.css' %}">
 </head>
 
 <body>
 
 <header class="navbar">
 
-    <!-- LOGO -->
-    <div class="logo">
-        <img src="{% static 'images/pocketJob_logo.png' %}" class="logo-img">
-        <strong>Pocket Job</strong>
-    </div>
+  <!-- LOGO -->
+  <div class="logo">
+    <img src="{% static 'images/pocketJob_logo.png' %}" class="logo-img" alt="Pocket Job">
+    <strong class="logo-text">Pocket<span class="logo-accent">Job</span></strong>
+  </div>
 
-    <!-- NAVBAR LINKS -->
-    <nav>
+  <!-- NAV LINKS -->
+  <nav>
 
-        {% if user.is_authenticated %}
+    {% if user.is_authenticated %}
 
-            {% if user.profile.role == "APPLICANT" %}
+      {% if user.profile.role == "APPLICANT" %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'applied_jobs' %}">Applied Jobs</a>
+        <a href="{% url 'inbox' %}">
+          Inbox
+          {% if unread_count > 0 %}
+            <span class="badge">{{ unread_count }}</span>
+          {% endif %}
+        </a>
+        <a href="#">Saved Jobs</a>
+        <a href="#">About</a>
 
-                <a href="{% url 'home' %}">Home</a>
-                <a href="{% url 'applied_jobs' %}">Applied Jobs</a>
+      {% elif user.profile.role == "RECRUITER" %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'job_list' %}">Posted Jobs</a>
+        <a href="{% url 'recruiter_dashboard' %}">Dashboard</a>
+        <a href="{% url 'inbox' %}">
+          Inbox
+          {% if unread_count > 0 %}
+            <span class="badge">{{ unread_count }}</span>
+          {% endif %}
+        </a>
+        <a href="#">About</a>
+        <a href="{% url 'job_create' %}" class="post-job-btn">+ Post a Job</a>
+      {% endif %}
 
-                <a href="{% url 'inbox' %}">
-                    Inbox
-                    {% if unread_count > 0 %}
-                        <span class="badge">{{ unread_count }}</span>
-                    {% endif %}
-                </a>
+    {% else %}
+      <a href="{% url 'home' %}">Home</a>
+      <a href="#">About</a>
+    {% endif %}
 
-                <a href="#">Saved Jobs</a>
-                <a href="#">History</a>
-                <a href="#">About</a>
+  </nav>
 
-            {% elif user.profile.role == "RECRUITER" %}
+  <!-- RIGHT PROFILE AREA -->
+  <div class="profile">
 
-                <a href="{% url 'home' %}">Home</a>
-                <a href="{% url 'job_list' %}">Posted Jobs</a>
-                <a href="{% url 'recruiter_dashboard' %}">Dashboard</a>
+    {% if user.is_authenticated %}
 
-                <a href="{% url 'inbox' %}">
-                    Inbox
-                    {% if unread_count > 0 %}
-                        <span class="badge">{{ unread_count }}</span>
-                    {% endif %}
-                </a>
+      <!-- NOTIFICATION BELL -->
+      <div class="notification-wrapper">
+        <span class="bell" onclick="toggleDropdown()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          {% if unread_count > 0 %}
+            <span class="bell-dot"></span>
+          {% endif %}
+        </span>
 
-                <a href="#">About</a>
+        <div id="notificationDropdown" class="dropdown">
+          <div class="dropdown-header">Notifications</div>
+          <div id="notificationList">
+            <p class="notif-placeholder">Loading...</p>
+          </div>
+        </div>
+      </div>
 
-                <a href="{% url 'job_create' %}" class="post-job-btn">Post a Job</a>
+      <!-- PROFILE -->
+      <a href="{% url 'profile' %}" class="profile-link">
+        <img src="{{ user.profile.profile_pic.url }}" class="profile-pic" alt="{{ user.username }}">
+        <span>{{ user.username }}</span>
+      </a>
 
-            {% endif %}
-
-        {% else %}
-
-            <a href="{% url 'home' %}">Home</a>
-            <a href="#">About</a>
-
+      <!-- ROLE BADGE -->
+      <span class="role-badge">
+        {% if user.profile.role == "APPLICANT" %}Applicant
+        {% elif user.profile.role == "RECRUITER" %}Recruiter
         {% endif %}
+      </span>
 
-    </nav>
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-login-btn">Log In</a>
+    {% endif %}
 
-    <!-- RIGHT PROFILE AREA -->
-    <div class="profile">
-
-        {% if user.is_authenticated %}
-
-            <!-- NOTIFICATION BELL -->
-            <div class="notification-wrapper">
-
-                <span class="bell" onclick="toggleDropdown()">🔔</span>
-
-                <div id="notificationDropdown" class="dropdown">
-                    <div id="notificationList">
-                        <p>Loading...</p>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- PROFILE -->
-            <a href="{% url 'profile' %}" class="profile-link">
-
-                <img src="{{ user.profile.profile_pic.url }}" class="profile-pic">
-
-                <span>{{ user.username }}</span>
-
-            </a>
-
-            <!-- ROLE -->
-            <span class="role-badge">
-                {% if user.profile.role == "APPLICANT" %}
-                    Applicant
-                {% elif user.profile.role == "RECRUITER" %}
-                    Recruiter
-                {% endif %}
-            </span>
-
-        {% else %}
-
-            <a href="{% url 'login' %}">Login</a>
-
-        {% endif %}
-
-    </div>
+  </div>
 
 </header>
 
@@ -119,43 +116,52 @@
 {% block content %}
 {% endblock %}
 
-</body>
-</html>
-
 <script>
 function toggleDropdown() {
-    const dropdown = document.getElementById("notificationDropdown");
-
-    dropdown.classList.toggle("show");
-
-    if (dropdown.classList.contains("show")) {
-        loadNotifications();
-    }
+  const dropdown = document.getElementById("notificationDropdown");
+  dropdown.classList.toggle("show");
+  if (dropdown.classList.contains("show")) {
+    loadNotifications();
+  }
 }
 
 function loadNotifications() {
-    fetch("/api/notifications/")
-        .then(response => response.json())
-        .then(data => {
-            let html = "";
-
-            data.notifications.forEach(n => {
-
-                html += `
-                    <a href="${n.link}" class="notification-item ${n.is_read ? '' : 'unread'}">
-                        ${n.message}
-                    </a>
-                `;
-            });
-
-            document.getElementById("notificationList").innerHTML = html;
+  fetch("/api/notifications/")
+    .then(response => response.json())
+    .then(data => {
+      let html = "";
+      if (!data.notifications || data.notifications.length === 0) {
+        html = '<p class="notif-placeholder">No notifications yet.</p>';
+      } else {
+        data.notifications.forEach(n => {
+          html += `<a href="${n.link}" class="notification-item ${n.is_read ? '' : 'unread'}">${n.message}</a>`;
         });
+      }
+      document.getElementById("notificationList").innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById("notificationList").innerHTML = '<p class="notif-placeholder">Could not load.</p>';
+    });
 }
 
-// AUTO REFRESH
+document.addEventListener("click", function(e) {
+  const wrapper = document.querySelector(".notification-wrapper");
+  if (wrapper && !wrapper.contains(e.target)) {
+    const dd = document.getElementById("notificationDropdown");
+    if (dd) dd.classList.remove("show");
+  }
+});
+
 setInterval(() => {
-    if (document.getElementById("notificationDropdown").classList.contains("show")) {
-        loadNotifications();
-    }
+  const dd = document.getElementById("notificationDropdown");
+  if (dd && dd.classList.contains("show")) loadNotifications();
 }, 5000);
+
+window.addEventListener("scroll", function() {
+  const nb = document.querySelector(".navbar");
+  if (nb) nb.classList.toggle("navbar-scrolled", window.scrollY > 10);
+});
 </script>
+
+</body>
+</html>
