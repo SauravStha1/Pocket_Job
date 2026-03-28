@@ -41,8 +41,8 @@
             <span class="badge">{{ unread_count }}</span>
           {% endif %}
         </a>
-        <a href="#">Saved Jobs</a>
-        <a href="#">About</a>
+        <a href="{% url 'saved_jobs' %}">Saved Jobs</a>
+        <a href="{% url 'about' %}">About</a>
 
       {% elif user.profile.role == "RECRUITER" %}
         <a href="{% url 'home' %}">Home</a>
@@ -54,13 +54,13 @@
             <span class="badge">{{ unread_count }}</span>
           {% endif %}
         </a>
-        <a href="#">About</a>
+        <a href="{% url 'about' %}">About</a>
         <a href="{% url 'job_create' %}" class="post-job-btn">+ Post a Job</a>
       {% endif %}
 
     {% else %}
       <a href="{% url 'home' %}">Home</a>
-      <a href="#">About</a>
+      <a href="{% url 'about' %}">About</a>
     {% endif %}
 
   </nav>

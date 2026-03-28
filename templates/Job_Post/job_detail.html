@@ -1,22 +1,39 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ job.title }} | Pocket Job</title>
-    <link rel="stylesheet" href="{% static 'css/job_detail.css' %}">
-</head>
-<body>
 
-<header class="navbar">
-    <a href="{% url 'job_list' %}">← Back to Jobs</a>
-</header>
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/job_detail.css' %}">
 
 <section class="job-detail">
-    <h1>{{ job.title }}</h1>
 
-    <p class="role">{{ job.job_type }}</p>
-    <p class="tags">{{ job.tags }}</p>
+    <!-- BACK -->
+    <a href="{% url 'job_list' %}" class="back-link">← Back to Jobs</a>
 
+    <!-- HEADER -->
+    <div class="job-header">
+        <div>
+            <h1>{{ job.title }}</h1>
+            <p class="role">{{ job.job_type }}</p>
+            <p class="tags">{{ job.tags }}</p>
+        </div>
+
+        <!-- SAVE BUTTON -->
+        {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
+        <form action="{% url 'toggle_save_job' job.pk %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="save-btn">
+                {% if is_saved %}
+                    Saved ✓
+                {% else %}
+                    Save Job
+                {% endif %}
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- SALARY -->
     <p class="salary">
         {% if job.negotiable %}
             Salary: Negotiable
@@ -29,9 +46,11 @@
 
     <hr>
 
+    <!-- DESCRIPTION -->
     <h3>Job Description</h3>
     <p>{{ job.description }}</p>
 
+    <!-- RESPONSIBILITIES -->
     <h3>Responsibilities</h3>
     <p>{{ job.responsibilities }}</p>
 
@@ -39,7 +58,7 @@
         Posted on {{ job.created_at|date:"M d, Y" }}
     </p>
 
-    <!-- APPLY BUTTON LOGIC -->
+    <!-- APPLY BUTTON -->
     {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
 
         {% if has_applied %}
@@ -58,15 +77,50 @@
 </section>
 
 <style>
+
+/* CONTAINER */
 .job-detail {
-    max-width: 800px;
+    max-width: 900px;
     margin: 40px auto;
-    padding: 20px;
+    padding: 25px;
     border: 1px solid #eee;
-    border-radius: 10px;
+    border-radius: 12px;
     background: #fff;
 }
 
+/* HEADER FLEX */
+.job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* BACK LINK */
+.back-link {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: #555;
+    text-decoration: none;
+}
+
+/* SAVE BUTTON (PRO STYLE) */
+.save-btn {
+    border: 1px solid #1e90ff;
+    background: white;
+    color: #1e90ff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.save-btn:hover {
+    background: #1e90ff;
+    color: white;
+}
+
+/* APPLY BUTTON */
 .apply-btn {
     background-color: #1e90ff;
     color: white;
@@ -77,6 +131,7 @@
     cursor: pointer;
 }
 
+/* APPLIED */
 .applied-btn {
     background-color: gray;
     color: white;
@@ -86,7 +141,7 @@
     border-radius: 6px;
     cursor: not-allowed;
 }
+
 </style>
 
-</body>
-</html>
+{% endblock %}

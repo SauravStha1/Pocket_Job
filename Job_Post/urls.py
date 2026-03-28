@@ -22,4 +22,7 @@ urlpatterns = [
     path('application/<int:id>/accept/', views.accept_application, name='accept_application'),
     path('application/<int:id>/reject/', views.reject_application, name='reject_application'),
     path('my-applications/', views.applied_jobs, name='applied_jobs'),
+
+    path('save/<int:pk>/', views.toggle_save_job, name='toggle_save_job'),
+    path('saved/', views.saved_jobs, name='saved_jobs'),
 ]

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="saved-container">
+    <h2>Saved Jobs</h2>
+
+    {% if saved_jobs %}
+        {% for item in saved_jobs %}
+            <div class="job-card">
+                <h3>{{ item.job.title }}</h3>
+                <p>{{ item.job.location }}</p>
+
+                <a href="{% url 'job_detail' item.job.pk %}" class="view-btn">View Job</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>You haven't saved any jobs yet.</p>
+    {% endif %}
+</div>
+
+<style>
+.saved-container {
+    max-width: 900px;
+    margin: 40px auto;
+}
+
+.job-card {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    background: white;
+}
+
+.view-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: #1e90ff;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+}
+</style>
+
+{% endblock %}

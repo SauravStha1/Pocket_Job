@@ -24,6 +24,7 @@ from django.urls import path, include
 # NEW IMPORTS
 from django.conf import settings
 from django.conf.urls.static import static
+from Job_Post.views import about
 
 
 urlpatterns = [
@@ -34,6 +35,7 @@ urlpatterns = [
     path('jobs/', include('Job_Post.urls')),
     path('', include('accounts.urls')),
     path('chat/', include('chat.urls')),
+    path('about/', about, name='about'),
 ]
 
 

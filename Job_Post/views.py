@@ -6,7 +6,8 @@ from django.utils import timezone
 from datetime import timedelta
 
 
-from .models import Job, JobApplication  # Added JobApplication
+from .models import Job, JobApplication
+from .models import SavedJob  
 from .forms import JobForm
 from .payment_models import Payment
 from accounts.models import Profile
@@ -72,11 +73,17 @@ def job_detail(request, pk):
             applicant=request.user.profile
         ).exists()
 
+    is_saved = False
+
+    if request.user.is_authenticated:
+        from .models import SavedJob
+        is_saved = SavedJob.objects.filter(user=request.user, job=job).exists()
+
     return render(request, 'Job_Post/job_detail.html', {
         'job': job,
-        'has_applied': has_applied
+        'has_applied': has_applied,
+        'is_saved': is_saved
     })
-
 
 # ============================
 # APPLY JOB (One-Click)
@@ -399,3 +406,37 @@ def create_notification(user, message, notification_type, link=None):
         notification_type=notification_type,
         link=link
     )
+
+@login_required
+def toggle_save_job(request, pk):
+    job = get_object_or_404(Job, pk=pk)
+
+    if request.user.profile.role != "APPLICANT":
+        messages.error(request, "Only applicants can save jobs.")
+        return redirect('job_detail', pk=pk)
+
+    saved_job = SavedJob.objects.filter(user=request.user, job=job)
+
+    if saved_job.exists():
+        saved_job.delete()
+        messages.info(request, "Job removed from saved.")
+    else:
+        SavedJob.objects.create(user=request.user, job=job)
+        messages.success(request, "Job saved successfully.")
+
+    return redirect('job_detail', pk=pk)
+
+@login_required
+def saved_jobs(request):
+    if request.user.profile.role != "APPLICANT":
+        messages.error(request, "Access denied.")
+        return redirect("home")
+
+    saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-saved_at')
+
+    return render(request, 'Job_Post/saved_jobs.html', {
+        'saved_jobs': saved_jobs
+    })
+
+def about(request):
+    return render(request, "about.html")
