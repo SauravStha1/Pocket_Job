@@ -1,6 +1,5 @@
 /* ================================================================
    home.css — Pocket Job
-   FIXED: No background shapes, no overflow, clean layout
    ================================================================ */
 
 /* ── Variables ── */
@@ -54,7 +53,6 @@ body {
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  /* Prevent horizontal overflow */
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -78,14 +76,13 @@ a {
 }
 
 /* ================================================================
-   HERO — clean, no decorative shapes
+   HERO
    ================================================================ */
 .hero {
   background: linear-gradient(160deg, #eef3fe 0%, #dbeafe 50%, #e0f2fe 100%);
   padding: 72px 0 64px;
   text-align: center;
   width: 100%;
-  /* No overflow, no position:relative needed since no shapes */
 }
 
 .hero-pill {
@@ -285,7 +282,7 @@ a {
   background: #fff;
   border-top: 1px solid var(--border-lt);
   border-bottom: 1px solid var(--border-lt);
-  padding: 26px 0;
+  padding: 28px 0;
   overflow: hidden;
   width: 100%;
 }
@@ -297,10 +294,10 @@ a {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-3);
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
-/* Marquee wrapper with fade edges */
+/* Marquee outer with fade edges */
 .marquee-outer {
   position: relative;
   overflow: hidden;
@@ -333,7 +330,7 @@ a {
   display: flex;
   align-items: center;
   width: max-content;
-  animation: scroll-marquee 24s linear infinite;
+  animation: scroll-marquee 22s linear infinite;
 }
 
 .marquee-track:hover {
@@ -345,21 +342,31 @@ a {
   to   { transform: translateX(-50%); }
 }
 
-/* Individual logo item */
+/* Logo wrapper */
 .mlogo {
   display: inline-flex;
   align-items: center;
-  padding: 4px 28px;
-  opacity: 0.5;
-  filter: grayscale(1);
+  justify-content: center;
+  padding: 6px 36px;
   flex-shrink: 0;
-  transition: opacity var(--ease), filter var(--ease);
-  cursor: default;
+  opacity: 0.45;
+  filter: grayscale(1);
+  transition: opacity var(--ease), filter var(--ease), transform var(--ease);
 }
 
 .mlogo:hover {
   opacity: 1;
   filter: grayscale(0);
+  transform: translateY(-2px);
+}
+
+/* ── Logo image inside marquee ── */
+.mlogo-img {
+  height: 50px;       /* fixed height — all logos same height */
+  width: auto;        /* width scales naturally */
+  max-width: 120px;   /* prevent very wide logos from taking too much space */
+  object-fit: contain;
+  display: block;
 }
 
 /* ================================================================
@@ -406,10 +413,10 @@ a {
   white-space: nowrap;
 }
 
-/* ── Job grid ── */
+/* ── Job grid: always 3 columns on desktop → fills 10×3 = 30 ── */
 .jobs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   width: 100%;
 }
@@ -438,7 +445,7 @@ a {
   transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease);
 }
 
-/* Top accent line — uses ::before safely, contained inside card */
+/* Top accent line on hover — safely contained inside card */
 .job-card::before {
   content: '';
   position: absolute;
@@ -518,7 +525,7 @@ a {
   text-overflow: ellipsis;
 }
 
-/* Job type badge — keep .role class for backward compat */
+/* Job type badge */
 .job-type,
 .role {
   display: inline-block;
@@ -532,7 +539,7 @@ a {
   line-height: 1.6;
 }
 
-/* Tags — keep .tags class for backward compat */
+/* Tags */
 .job-tags,
 .tags {
   font-size: 11.5px;
@@ -561,7 +568,6 @@ a {
   color: var(--ink-3);
 }
 
-/* Keep .salary and .deadline classes for backward compat */
 .salary strong {
   color: var(--ink);
   font-weight: 600;
@@ -582,7 +588,6 @@ a {
   margin-top: auto;
 }
 
-/* Keep .posted-by class for backward compat */
 .posted-by {
   display: flex;
   align-items: center;
@@ -676,6 +681,24 @@ a {
   color: #fff !important;
   border-color: var(--blue) !important;
   font-weight: 700;
+  pointer-events: none;
+}
+
+/* Greyed-out Prev/Next when not available */
+.page-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Ellipsis dots */
+.page-ellipsis {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-3);
+  pointer-events: none;
+  min-width: 24px;
+  padding: 0;
 }
 
 /* ================================================================
@@ -791,6 +814,8 @@ a {
 /* ================================================================
    RESPONSIVE
    ================================================================ */
+
+/* Tablet */
 @media (max-width: 960px) {
   .container {
     padding: 0 24px;
@@ -816,8 +841,7 @@ a {
   }
 
   .sf-divider { display: none; }
-
-  .sf-right { flex: 1; }
+  .sf-right   { flex: 1; }
 
   .sf-btn {
     margin-left: 0;
@@ -834,6 +858,11 @@ a {
 
   .stat-box { padding: 0 16px; }
 
+  /* 2 columns on tablet */
+  .jobs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .footer-grid {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
@@ -848,6 +877,7 @@ a {
   }
 }
 
+/* Mobile */
 @media (max-width: 600px) {
   .container {
     padding: 0 16px;
@@ -861,25 +891,18 @@ a {
     font-size: 2rem;
   }
 
-  .stat-box {
-    padding: 0 12px;
-  }
+  .stat-box         { padding: 0 12px; }
+  .stat-box strong  { font-size: 1.3rem; }
+  .stat-sep         { height: 26px; }
 
-  .stat-box strong {
-    font-size: 1.3rem;
-  }
-
-  .stat-sep {
-    height: 26px;
+  /* 1 column on mobile */
+  .jobs-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .jobs-section {
     padding: 36px 0 44px;
-  }
-
-  .jobs-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
   }
 
   .jobs-header {
@@ -909,5 +932,15 @@ a {
     min-width: 36px;
     height: 36px;
     font-size: 0.82rem;
+  }
+
+  /* Smaller logos on mobile */
+  .mlogo-img {
+    height: 26px;
+    max-width: 90px;
+  }
+
+  .mlogo {
+    padding: 4px 22px;
   }
 }
