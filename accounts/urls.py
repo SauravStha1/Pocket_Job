@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import profile_view, register, login_view, verify_otp, notifications_view, notification_api, mark_notification_read
+from django.contrib.auth import views as auth_views
 from accounts import views
 
 urlpatterns = [
@@ -11,4 +12,5 @@ urlpatterns = [
     path('notifications/', notifications_view, name='notifications'),
     path('api/notifications/', notification_api, name='notification_api'),
     path('api/notification/read/<int:id>/', mark_notification_read, name='mark_notification_read'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
 ]

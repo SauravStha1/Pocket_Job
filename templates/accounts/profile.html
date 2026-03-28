@@ -60,5 +60,13 @@ No CV uploaded
 <a href="{% url 'edit_profile' %}">
     <button>Edit Profile</button>
 </a>
+<hr>
+
+<form method="POST" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit" style="background-color:red; color:white; padding:10px 15px; border:none; border-radius:5px;">
+        Logout
+    </button>
+</form>
 
 {% endblock %}
