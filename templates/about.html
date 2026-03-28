@@ -1,75 +1,568 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<div class="about-container">
-
-    <h1>About Pocket Job</h1>
-
-    <p class="intro">
-        Pocket Job is a modern job portal designed to connect job seekers and recruiters across Nepal in a simple and efficient way.
-    </p>
-
-    <hr>
-
-    <h2>Our Mission</h2>
-    <p>
-        Our goal is to make job searching easy, fast, and accessible for everyone — from students looking for part-time work to professionals seeking full-time opportunities.
-    </p>
-
-    <h2>What We Offer</h2>
-    <ul>
-        <li>✔ Easy job application system</li>
-        <li>✔ Real-time recruiter communication</li>
-        <li>✔ Secure job posting with payment integration</li>
-        <li>✔ Personalized dashboard for applicants and recruiters</li>
-    </ul>
-
-    <h2>Why Pocket Job?</h2>
-    <p>
-        Unlike traditional job portals, Pocket Job focuses on simplicity, speed, and real user experience. Whether you're hiring or job hunting, everything is designed to be straightforward and effective.
-    </p>
-
-</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <style>
-.about-container {
-    max-width: 900px;
-    margin: 50px auto;
-    padding: 20px;
+  /* ── Tokens ── */
+  :root {
+    --brand:        #2C9BE8;
+    --brand-dark:   #1a7cc2;
+    --brand-deeper: #0f5a96;
+    --brand-light:  #EBF5FF;
+    --slate:        #3D4F5C;
+    --bg:           #F4F6F9;
+    --surface:      #FFFFFF;
+    --border:       #E2E8F0;
+    --text:         #1E2D3D;
+    --muted:        #64748B;
+    --radius:       14px;
+    --font:         'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  /* ── Keyframes ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+
+  /* ── Page Shell ── */
+  .ab-page {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 80px;
+  }
+
+  /* ── HERO ── */
+  .ab-hero {
+    background: linear-gradient(140deg, #1565c0 0%, #2196f3 45%, #4fc3f7 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 80px 24px 90px;
+    text-align: center;
+  }
+
+  /* Decorative blobs */
+  .ab-hero::before,
+  .ab-hero::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    opacity: .15;
+    pointer-events: none;
+  }
+
+  .ab-hero::before {
+    width: 420px; height: 420px;
     background: #fff;
-    border-radius: 10px;
-    border: 1px solid #eee;
-}
+    top: -120px; right: -100px;
+  }
 
-.about-container h1 {
-    font-size: 32px;
-    margin-bottom: 10px;
-}
+  .ab-hero::after {
+    width: 280px; height: 280px;
+    background: #fff;
+    bottom: -90px; left: -60px;
+  }
 
-.about-container h2 {
-    margin-top: 25px;
-    color: #1e90ff;
-}
+  .ab-hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    animation: fadeUp .7s ease both;
+  }
 
-.about-container p {
-    color: #555;
+  .ab-logo {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    border-radius: 24px;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(8px);
+    padding: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    animation: scaleIn .6s ease both;
+    margin-bottom: 24px;
+  }
+
+  .ab-hero-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 12px;
+    letter-spacing: -.04em;
+    line-height: 1.1;
+  }
+
+  .ab-hero-title span {
+    color: #ffd54f;
+  }
+
+  .ab-hero-sub {
+    color: rgba(255,255,255,.88);
+    font-size: 1.1rem;
     line-height: 1.6;
-}
+    max-width: 520px;
+    margin: 0 auto 28px;
+    font-weight: 400;
+  }
 
-.about-container ul {
-    margin-top: 10px;
-    padding-left: 20px;
-}
+  .ab-hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,.18);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.3);
+  }
 
-.about-container li {
-    margin-bottom: 8px;
-}
+  /* ── Wave Divider ── */
+  .ab-wave {
+    display: block;
+    width: 100%;
+    line-height: 0;
+    margin-top: -2px;
+  }
 
-.intro {
-    font-size: 18px;
-    font-weight: 500;
-}
+  /* ── Section Wrapper ── */
+  .ab-wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ── Stats Bar ── */
+  .ab-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: -44px auto 48px;
+    max-width: 860px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .ab-stat-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 24px rgba(0,0,0,.09);
+    padding: 24px 20px;
+    text-align: center;
+    border: 1px solid var(--border);
+    animation: fadeUp .6s ease both;
+  }
+
+  .ab-stat-card:nth-child(2) { animation-delay: .1s; }
+  .ab-stat-card:nth-child(3) { animation-delay: .2s; }
+
+  .ab-stat-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--brand);
+    line-height: 1;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .ab-stat-label {
+    font-size: .82rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  /* ── Generic Section ── */
+  .ab-section {
+    margin-bottom: 56px;
+    animation: fadeUp .6s ease both;
+  }
+
+  .ab-section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--brand);
+    margin-bottom: 10px;
+  }
+
+  .ab-section-label::before {
+    content: '';
+    width: 3px;
+    height: 16px;
+    background: var(--brand);
+    border-radius: 2px;
+    display: block;
+  }
+
+  .ab-section-title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin: 0 0 14px;
+    color: var(--text);
+  }
+
+  .ab-section-body {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.75;
+    max-width: 700px;
+  }
+
+  /* ── Mission / Vision Split ── */
+  .ab-mv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 56px;
+  }
+
+  .ab-mv-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    transition: transform .2s, box-shadow .2s;
+    animation: fadeUp .6s ease both;
+  }
+
+  .ab-mv-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(44,155,232,.15);
+  }
+
+  .ab-mv-card:nth-child(2) { animation-delay: .12s; }
+
+  .ab-mv-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--brand-light);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand);
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+
+  .ab-mv-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+
+  .ab-mv-body {
+    font-size: .93rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* ── Feature Grid ── */
+  .ab-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+
+  .ab-feat {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+    transition: transform .18s, box-shadow .18s, border-color .18s;
+    animation: fadeUp .55s ease both;
+  }
+
+  .ab-feat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 22px rgba(44,155,232,.13);
+    border-color: #b3d9f7;
+  }
+
+  .ab-feat:nth-child(2) { animation-delay: .08s; }
+  .ab-feat:nth-child(3) { animation-delay: .16s; }
+  .ab-feat:nth-child(4) { animation-delay: .24s; }
+
+  .ab-feat-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--brand-light);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand);
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .ab-feat-title {
+    font-size: .98rem;
+    font-weight: 700;
+    margin: 0 0 5px;
+  }
+
+  .ab-feat-desc {
+    font-size: .86rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* ── Why Card (full-width highlight) ── */
+  .ab-why {
+    background: linear-gradient(130deg, #1565c0 0%, #2196f3 100%);
+    border-radius: 18px;
+    padding: 48px 40px;
+    color: #fff;
+    margin-bottom: 56px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp .6s ease both;
+  }
+
+  .ab-why::after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+    pointer-events: none;
+  }
+
+  .ab-why-label {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #ffd54f;
+    margin-bottom: 12px;
+  }
+
+  .ab-why-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin: 0 0 16px;
+  }
+
+  .ab-why-body {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: rgba(255,255,255,.88);
+    max-width: 620px;
+    margin: 0;
+  }
+
+  /* ── CTA ── */
+  .ab-cta {
+    text-align: center;
+    padding: 48px 20px;
+    background: var(--surface);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 16px rgba(0,0,0,.06);
+    margin-bottom: 20px;
+    animation: fadeUp .6s ease both;
+  }
+
+  .ab-cta-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin: 0 0 10px;
+  }
+
+  .ab-cta-sub {
+    color: var(--muted);
+    font-size: .98rem;
+    margin: 0 0 24px;
+  }
+
+  .ab-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--brand);
+    color: #fff;
+    font-family: var(--font);
+    font-size: .95rem;
+    font-weight: 700;
+    padding: 13px 30px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background .15s, transform .12s, box-shadow .15s;
+    margin: 0 6px;
+  }
+
+  .ab-cta-btn:hover {
+    background: var(--brand-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44,155,232,.35);
+    color: #fff;
+  }
+
+  .ab-cta-btn.outline {
+    background: transparent;
+    border: 2px solid var(--brand);
+    color: var(--brand);
+  }
+
+  .ab-cta-btn.outline:hover {
+    background: var(--brand-light);
+    box-shadow: none;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 640px) {
+    .ab-stats        { grid-template-columns: 1fr; }
+    .ab-mv-grid      { grid-template-columns: 1fr; }
+    .ab-features     { grid-template-columns: 1fr; }
+    .ab-why          { padding: 32px 22px; }
+    .ab-hero         { padding: 60px 20px 70px; }
+  }
 </style>
+
+<div class="ab-page">
+
+  <!-- ── HERO ── -->
+  <section class="ab-hero">
+    <div class="ab-hero-inner">
+      <img class="ab-logo" src="{% static 'images/pocketJob_logo.png' %}" alt="Pocket Job Logo">
+      <h1 class="ab-hero-title">Nepal's Smartest<br><span>Job Portal</span></h1>
+      <p class="ab-hero-sub">
+        Pocket Job connects ambitious job seekers with the right opportunities — from part-time gigs to full-time careers, all in one place.
+      </p>
+      <span class="ab-hero-tag">🇳🇵 Built for Nepal</span>
+    </div>
+  </section>
+
+  <!-- Wave -->
+  <svg class="ab-wave" viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,40 C360,80 1080,0 1440,40 L1440,0 L0,0 Z" fill="#2196f3"/>
+    <path d="M0,60 C400,20 1040,70 1440,30 L1440,60 Z" fill="#F4F6F9"/>
+  </svg>
+
+  <div class="ab-wrap">
+
+    <!-- ── Stats ── -->
+    <div class="ab-stats">
+      <div class="ab-stat-card">
+        <span class="ab-stat-num">500+</span>
+        <span class="ab-stat-label">Jobs Posted</span>
+      </div>
+      <div class="ab-stat-card">
+        <span class="ab-stat-num">1,200+</span>
+        <span class="ab-stat-label">Registered Users</span>
+      </div>
+      <div class="ab-stat-card">
+        <span class="ab-stat-num">50+</span>
+        <span class="ab-stat-label">Companies Hiring</span>
+      </div>
+    </div>
+
+    <!-- ── Mission / Vision ── -->
+    <div class="ab-mv-grid">
+      <div class="ab-mv-card">
+        <div class="ab-mv-icon"><i class="fa-solid fa-bullseye"></i></div>
+        <h3 class="ab-mv-title">Our Mission</h3>
+        <p class="ab-mv-body">To make job searching easy, fast, and accessible for everyone across Nepal — from students hunting for part-time work to professionals chasing their next career leap.</p>
+      </div>
+      <div class="ab-mv-card">
+        <div class="ab-mv-icon"><i class="fa-solid fa-binoculars"></i></div>
+        <h3 class="ab-mv-title">Our Vision</h3>
+        <p class="ab-mv-body">A Nepal where talent and opportunity meet seamlessly — where geography is no barrier to finding the perfect job or the perfect hire.</p>
+      </div>
+    </div>
+
+    <!-- ── What We Offer ── -->
+    <div class="ab-section">
+      <span class="ab-section-label">Features</span>
+      <h2 class="ab-section-title">What We Offer</h2>
+    </div>
+
+    <div class="ab-features">
+      <div class="ab-feat">
+        <div class="ab-feat-icon"><i class="fa-solid fa-file-signature"></i></div>
+        <div>
+          <p class="ab-feat-title">Easy Job Application</p>
+          <p class="ab-feat-desc">Apply to any job in seconds. No complicated forms, no unnecessary steps.</p>
+        </div>
+      </div>
+      <div class="ab-feat">
+        <div class="ab-feat-icon"><i class="fa-solid fa-comments"></i></div>
+        <div>
+          <p class="ab-feat-title">Real-Time Messaging</p>
+          <p class="ab-feat-desc">Chat directly with recruiters. Get updates and feedback instantly in your inbox.</p>
+        </div>
+      </div>
+      <div class="ab-feat">
+        <div class="ab-feat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div>
+          <p class="ab-feat-title">Secure Job Posting</p>
+          <p class="ab-feat-desc">Verified listings with payment integration keep the platform safe for everyone.</p>
+        </div>
+      </div>
+      <div class="ab-feat">
+        <div class="ab-feat-icon"><i class="fa-solid fa-gauge-high"></i></div>
+        <div>
+          <p class="ab-feat-title">Personalized Dashboard</p>
+          <p class="ab-feat-desc">Track your applications, saved jobs, and recruiter activity all in one place.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Why Pocket Job ── -->
+    <div class="ab-why">
+      <p class="ab-why-label">Why Choose Us</p>
+      <h2 class="ab-why-title">Designed Around Real People</h2>
+      <p class="ab-why-body">Unlike bloated traditional portals, Pocket Job focuses on simplicity and speed. Every feature was built with the Nepali job market in mind — local jobs, local recruiters, real opportunities. Whether you're hiring or job hunting, everything just works.</p>
+    </div>
+
+    <!-- ── CTA ── -->
+    <div class="ab-cta">
+      <h2 class="ab-cta-title">Ready to get started?</h2>
+      <p class="ab-cta-sub">Join thousands of job seekers and recruiters already on Pocket Job.</p>
+      <a href="{% url 'home' %}" class="ab-cta-btn"><i class="fa-solid fa-magnifying-glass"></i> Browse Jobs</a>
+      <a href="{% url 'about' %}" class="ab-cta-btn outline"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+    </div>
+
+  </div>
+</div>
 
 {% endblock %}

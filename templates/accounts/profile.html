@@ -1,72 +1,448 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<h2>My Profile</h2>
+<style>
+  /* ── Tokens ── */
+  :root {
+    --brand:       #0A66C2;
+    --brand-dark:  #004182;
+    --brand-light: #EBF4FF;
+    --surface:     #FFFFFF;
+    --bg:          #F3F2EF;
+    --border:      #E0DDD8;
+    --text-primary:#191919;
+    --text-secondary:#5E5E5E;
+    --danger:      #CC1016;
+    --danger-dark: #A3000A;
+    --radius-card: 12px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    --font-main:   'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }
 
-<img src="{{ profile.profile_pic.url }}" width="150">
+  /* ── Page Shell ── */
+  .pj-page {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 32px 16px 64px;
+    font-family: var(--font-main);
+    color: var(--text-primary);
+  }
 
-<hr>
+  .pj-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-<p><strong>Username:</strong> {{ profile.user.username }}</p>
-<p><strong>Email:</strong> {{ profile.user.email }}</p>
-<p><strong>Role:</strong> {{ profile.role }}</p>
+  /* ── Card ── */
+  .pj-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
 
-<hr>
+  /* ── Hero / Cover ── */
+  .pj-cover {
+    height: 120px;
+    background: linear-gradient(135deg, var(--brand) 0%, #1a8fe3 60%, #56b4ff 100%);
+    position: relative;
+  }
 
-{% if profile.role == "APPLICANT" %}
+  .pj-avatar-wrap {
+    position: absolute;
+    bottom: -48px;
+    left: 28px;
+  }
 
-<h3>Applicant Information</h3>
+  .pj-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 4px solid var(--surface);
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    display: block;
+  }
 
-<p><strong>Full Name:</strong> {{ profile.full_name }}</p>
-<p><strong>Age:</strong> {{ profile.age }}</p>
-<p><strong>Location:</strong> {{ profile.location }}</p>
-<p><strong>Contact Email:</strong> {{ profile.contact_email }}</p>
+  /* ── Identity Section (inside card below cover) ── */
+  .pj-identity {
+    padding: 60px 28px 24px;
+    border-bottom: 1px solid var(--border);
+  }
 
-<p><strong>Skills:</strong></p>
-<p>{{ profile.skills }}</p>
+  .pj-identity-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
 
-<p><strong>About:</strong></p>
-<p>{{ profile.description }}</p>
+  .pj-name {
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -.3px;
+  }
 
-<p><strong>CV:</strong>
-{% if profile.cv %}
-<a href="{{ profile.cv.url }}" target="_blank">View CV</a>
-{% else %}
-No CV uploaded
-{% endif %}
-</p>
+  .pj-username {
+    color: var(--text-secondary);
+    font-size: .92rem;
+    margin: 0;
+  }
 
-{% endif %}
+  .pj-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid #b3d4f0;
+    white-space: nowrap;
+    margin-top: 4px;
+  }
 
-<hr>
+  /* ── Info Sections ── */
+  .pj-section {
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+  }
 
-{% if profile.role == "RECRUITER" %}
+  .pj-section:last-child {
+    border-bottom: none;
+  }
 
-<h3>Company Information</h3>
+  .pj-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-secondary);
+    margin: 0 0 18px;
+  }
 
-<p><strong>Company Name:</strong> {{ profile.company_name }}</p>
-<p><strong>Owner Name:</strong> {{ profile.owner_name }}</p>
-<p><strong>Location:</strong> {{ profile.company_location }}</p>
-<p><strong>Company Type:</strong> {{ profile.company_type }}</p>
-<p><strong>Phone:</strong> {{ profile.phone }}</p>
-<p><strong>Email:</strong> {{ profile.company_email }}</p>
-<p><strong>Founded Date:</strong> {{ profile.founded_date }}</p>
+  .pj-section-title i {
+    color: var(--brand);
+    font-size: .95rem;
+  }
 
-{% endif %}
+  /* ── Info Grid ── */
+  .pj-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+  }
 
-<hr>
+  .pj-field label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 3px;
+  }
 
-<a href="{% url 'edit_profile' %}">
-    <button>Edit Profile</button>
-</a>
-<hr>
+  .pj-field p {
+    margin: 0;
+    font-size: .95rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
 
-<form method="POST" action="{% url 'logout' %}">
-    {% csrf_token %}
-    <button type="submit" style="background-color:red; color:white; padding:10px 15px; border:none; border-radius:5px;">
-        Logout
-    </button>
-</form>
+  .pj-field.full-width {
+    grid-column: 1 / -1;
+  }
+
+  /* ── Skills Chips ── */
+  .pj-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .pj-skill-chip {
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid #b3d4f0;
+  }
+
+  /* ── Description / About ── */
+  .pj-about {
+    font-size: .95rem;
+    color: var(--text-primary);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  /* ── CV Link ── */
+  .pj-cv-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: .88rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid #b3d4f0;
+    transition: background .15s, color .15s;
+  }
+
+  .pj-cv-link:hover {
+    background: var(--brand);
+    color: #fff;
+  }
+
+  .pj-no-cv {
+    color: var(--text-secondary);
+    font-size: .9rem;
+  }
+
+  /* ── Action Buttons ── */
+  .pj-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 20px 28px 24px;
+  }
+
+  .pj-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-main);
+    font-size: .9rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform .12s, box-shadow .12s, background .15s;
+  }
+
+  .pj-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+
+  .pj-btn-primary {
+    background: var(--brand);
+    color: #fff;
+  }
+
+  .pj-btn-primary:hover {
+    background: var(--brand-dark);
+    color: #fff;
+  }
+
+  .pj-btn-danger {
+    background: #fff;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+  }
+
+  .pj-btn-danger:hover {
+    background: var(--danger);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(204,16,22,.25);
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 560px) {
+    .pj-grid { grid-template-columns: 1fr; }
+    .pj-identity-top { flex-direction: column; }
+    .pj-actions { flex-direction: column; }
+    .pj-btn { width: 100%; justify-content: center; }
+  }
+</style>
+
+<!-- FontAwesome CDN (icons) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkWQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<div class="pj-page">
+  <div class="pj-wrap">
+
+    <!-- ── Profile Card ── -->
+    <div class="pj-card">
+
+      <!-- Cover + Avatar -->
+      <div class="pj-cover">
+        <div class="pj-avatar-wrap">
+          <img class="pj-avatar" src="{{ profile.profile_pic.url }}" alt="{{ profile.user.username }}">
+        </div>
+      </div>
+
+      <!-- Identity -->
+      <div class="pj-identity">
+        <div class="pj-identity-top">
+          <div>
+            <h1 class="pj-name">
+              {% if profile.role == "APPLICANT" and profile.full_name %}
+                {{ profile.full_name }}
+              {% elif profile.role == "RECRUITER" and profile.company_name %}
+                {{ profile.company_name }}
+              {% else %}
+                {{ profile.user.username }}
+              {% endif %}
+            </h1>
+            <p class="pj-username">@{{ profile.user.username }} &middot; {{ profile.user.email }}</p>
+          </div>
+          <div>
+            <span class="pj-role-badge">
+              {% if profile.role == "APPLICANT" %}
+                <i class="fa-solid fa-user-tie"></i> Applicant
+              {% elif profile.role == "RECRUITER" %}
+                <i class="fa-solid fa-building"></i> Recruiter
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── APPLICANT SECTIONS ── -->
+      {% if profile.role == "APPLICANT" %}
+
+        <!-- Basic Info -->
+        <div class="pj-section">
+          <p class="pj-section-title"><i class="fa-solid fa-circle-info"></i> Basic Information</p>
+          <div class="pj-grid">
+            <div class="pj-field">
+              <label>Full Name</label>
+              <p>{{ profile.full_name|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Age</label>
+              <p>{{ profile.age|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Location</label>
+              <p>{{ profile.location|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Contact Email</label>
+              <p>{{ profile.contact_email|default:"—" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="pj-section">
+          <p class="pj-section-title"><i class="fa-solid fa-star"></i> Skills</p>
+          {% if profile.skills %}
+            <div class="pj-skills">
+              {% for skill in profile.skills.split %}
+                <span class="pj-skill-chip">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="pj-no-cv">No skills listed yet.</p>
+          {% endif %}
+        </div>
+
+        <!-- About -->
+        <div class="pj-section">
+          <p class="pj-section-title"><i class="fa-solid fa-book-open"></i> About</p>
+          <p class="pj-about">{{ profile.description|default:"No description provided." }}</p>
+        </div>
+
+        <!-- CV -->
+        <div class="pj-section">
+          <p class="pj-section-title"><i class="fa-solid fa-file-lines"></i> Curriculum Vitae</p>
+          {% if profile.cv %}
+            <a class="pj-cv-link" href="{{ profile.cv.url }}" target="_blank">
+              <i class="fa-solid fa-arrow-down-to-bracket"></i> View / Download CV
+            </a>
+          {% else %}
+            <p class="pj-no-cv"><i class="fa-regular fa-circle-xmark"></i> No CV uploaded</p>
+          {% endif %}
+        </div>
+
+      {% endif %}
+
+      <!-- ── RECRUITER SECTIONS ── -->
+      {% if profile.role == "RECRUITER" %}
+
+        <!-- Company Info -->
+        <div class="pj-section">
+          <p class="pj-section-title"><i class="fa-solid fa-building"></i> Company Information</p>
+          <div class="pj-grid">
+            <div class="pj-field">
+              <label>Company Name</label>
+              <p>{{ profile.company_name|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Owner / Contact</label>
+              <p>{{ profile.owner_name|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Location</label>
+              <p>{{ profile.company_location|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Company Type</label>
+              <p>{{ profile.company_type|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Phone</label>
+              <p>{{ profile.phone|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Email</label>
+              <p>{{ profile.company_email|default:"—" }}</p>
+            </div>
+            <div class="pj-field">
+              <label>Founded</label>
+              <p>{{ profile.founded_date|default:"—" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="pj-section">
+          <p class="pj-section-title"><i class="fa-solid fa-book-open"></i> About the Company</p>
+          <p class="pj-about">{{ profile.description|default:"No description provided." }}</p>
+        </div>
+
+      {% endif %}
+
+      <!-- ── Actions ── -->
+      <div class="pj-actions">
+        <a href="{% url 'edit_profile' %}" class="pj-btn pj-btn-primary">
+          <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+        </a>
+        <form method="POST" action="{% url 'logout' %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="pj-btn pj-btn-danger">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </form>
+      </div>
+
+    </div><!-- /.pj-card -->
+
+  </div><!-- /.pj-wrap -->
+</div><!-- /.pj-page -->
 
 {% endblock %}

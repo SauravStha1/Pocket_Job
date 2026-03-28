@@ -2,118 +2,475 @@
 {% load static %}
 
 {% block content %}
-<div class="container" style="max-width: 800px; margin: auto; padding: 20px;">
 
-    <h2 style="margin-bottom: 20px;">Edit Profile</h2>
+<style>
+  /* ── Tokens ── */
+  :root {
+    --brand:        #0A66C2;
+    --brand-dark:   #004182;
+    --brand-light:  #EBF4FF;
+    --surface:      #FFFFFF;
+    --bg:           #F3F2EF;
+    --border:       #D6D3CE;
+    --border-focus: #0A66C2;
+    --text-primary: #191919;
+    --text-secondary:#5E5E5E;
+    --input-bg:     #FAFAFA;
+    --radius-card:  12px;
+    --radius-input: 8px;
+    --shadow-card:  0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    --font-main:    'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }
 
+  /* ── Page Shell ── */
+  .ep-page {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 40px 16px 80px;
+    font-family: var(--font-main);
+    color: var(--text-primary);
+  }
+
+  .ep-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Page Header ── */
+  .ep-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .ep-header-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--brand);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .ep-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -.4px;
+  }
+
+  .ep-subtitle {
+    color: var(--text-secondary);
+    font-size: .88rem;
+    margin: 2px 0 0;
+  }
+
+  /* ── Card ── */
+  .ep-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  /* ── Card Section ── */
+  .ep-section {
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ep-section:last-child {
+    border-bottom: none;
+  }
+
+  .ep-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-secondary);
+    margin: 0 0 20px;
+  }
+
+  .ep-section-title i {
+    color: var(--brand);
+    font-size: .9rem;
+  }
+
+  /* ── Form Grid ── */
+  .ep-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .ep-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ep-field.full {
+    grid-column: 1 / -1;
+  }
+
+  .ep-label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: .03em;
+  }
+
+  /* ── Inputs ── */
+  .ep-input,
+  .ep-textarea {
+    font-family: var(--font-main);
+    font-size: .93rem;
+    color: var(--text-primary);
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-input);
+    padding: 10px 14px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+
+  .ep-input:focus,
+  .ep-textarea:focus {
+    border-color: var(--border-focus);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(10,102,194,.12);
+  }
+
+  .ep-textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.55;
+  }
+
+  /* ── Avatar Upload ── */
+  .ep-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .ep-avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border-focus);
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+
+  .ep-upload-box {
+    flex: 1;
+  }
+
+  .ep-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: .85rem;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: var(--radius-input);
+    border: 1.5px dashed #7dbeed;
+    cursor: pointer;
+    transition: background .15s;
+  }
+
+  .ep-upload-label:hover {
+    background: #d6eaf8;
+  }
+
+  .ep-upload-hint {
+    display: block;
+    color: var(--text-secondary);
+    font-size: .78rem;
+    margin-top: 6px;
+  }
+
+  /* Hide the raw file input but keep it functional */
+  .ep-file-hidden {
+    display: none;
+  }
+
+  /* ── CV Upload ── */
+  .ep-cv-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ep-cv-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .85rem;
+    color: var(--brand);
+    font-weight: 500;
+    text-decoration: none;
+    background: var(--brand-light);
+    padding: 7px 14px;
+    border-radius: 8px;
+    width: fit-content;
+  }
+
+  .ep-cv-current:hover {
+    background: #d6eaf8;
+  }
+
+  /* ── Submit Area ── */
+  .ep-submit-area {
+    padding: 24px 28px;
+    display: flex;
+    justify-content: center;
+    background: #fafaf9;
+    border-top: 1px solid var(--border);
+  }
+
+  .ep-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--brand);
+    color: #fff;
+    font-family: var(--font-main);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 13px 40px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    max-width: 360px;
+    transition: background .15s, transform .12s, box-shadow .12s;
+    letter-spacing: .01em;
+  }
+
+  .ep-submit-btn:hover {
+    background: var(--brand-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(10,102,194,.3);
+  }
+
+  .ep-submit-btn:active {
+    transform: translateY(0);
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 520px) {
+    .ep-grid { grid-template-columns: 1fr; }
+    .ep-field.full { grid-column: 1; }
+    .ep-avatar-row { flex-direction: column; align-items: flex-start; }
+    .ep-section { padding: 20px 18px; }
+    .ep-submit-area { padding: 20px 18px; }
+  }
+</style>
+
+<!-- FontAwesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkWQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<div class="ep-page">
+  <div class="ep-wrap">
+
+    <!-- Page Header -->
+    <div class="ep-header">
+      <div class="ep-header-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+      <div>
+        <h2 class="ep-title">Edit Profile</h2>
+        <p class="ep-subtitle">Keep your information up to date</p>
+      </div>
+    </div>
+
+    <!-- Form Card -->
     <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
+      {% csrf_token %}
 
-        <!-- PROFILE PICTURE -->
-        <div style="margin-bottom: 20px;">
-            <label><strong>Profile Picture</strong></label><br>
+      <div class="ep-card">
+
+        <!-- ── Profile Picture ── -->
+        <div class="ep-section">
+          <p class="ep-section-title"><i class="fa-solid fa-camera"></i> Profile Picture</p>
+          <div class="ep-avatar-row">
             {% if profile.profile_pic %}
-                <img src="{{ profile.profile_pic.url }}" width="100" style="display:block; margin-bottom:10px; border-radius: 8px;">
+              <img class="ep-avatar-preview" src="{{ profile.profile_pic.url }}" alt="Current photo" id="avatarPreview">
             {% endif %}
-            <input type="file" name="profile_pic" class="form-control-file">
+            <div class="ep-upload-box">
+              <label class="ep-upload-label" for="profilePicInput">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i> Choose Photo
+              </label>
+              <input type="file" name="profile_pic" id="profilePicInput" class="ep-file-hidden" accept="image/*">
+              <span class="ep-upload-hint">JPG, PNG or GIF — max 5 MB</span>
+            </div>
+          </div>
         </div>
 
-        <!-- APPLICANT FIELDS -->
+        <!-- ── APPLICANT FIELDS ── -->
         {% if profile.role == "APPLICANT" %}
-        <h3>Applicant Information</h3>
 
-        <div class="form-group">
-            <label>Full Name</label>
-            <input class="form-control" type="text" name="full_name" value="{{ profile.full_name }}">
-        </div>
+          <!-- Basic Info -->
+          <div class="ep-section">
+            <p class="ep-section-title"><i class="fa-solid fa-circle-info"></i> Applicant Information</p>
+            <div class="ep-grid">
 
-        <div class="form-group">
-            <label>Age</label>
-            <input class="form-control" type="number" name="age" value="{{ profile.age }}">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="full_name">Full Name</label>
+                <input class="ep-input" type="text" id="full_name" name="full_name" value="{{ profile.full_name }}" placeholder="e.g. Sita Sharma">
+              </div>
 
-        <div class="form-group">
-            <label>Location</label>
-            <input class="form-control" type="text" name="location" value="{{ profile.location }}">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="age">Age</label>
+                <input class="ep-input" type="number" id="age" name="age" value="{{ profile.age }}" placeholder="e.g. 24" min="16" max="100">
+              </div>
 
-        <div class="form-group">
-            <label>Contact Email</label>
-            <input class="form-control" type="email" name="contact_email" 
-            value="{{ profile.contact_email }}" pattern=".*@.*" 
-            title="Enter a valid email or leave empty">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="location">Location</label>
+                <input class="ep-input" type="text" id="location" name="location" value="{{ profile.location }}" placeholder="e.g. Pokhara, Nepal">
+              </div>
 
-        <div class="form-group">
-            <label>Skills</label>
-            <textarea class="form-control" name="skills" rows="3">{{ profile.skills }}</textarea>
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="contact_email">Contact Email</label>
+                <input class="ep-input" type="email" id="contact_email" name="contact_email"
+                  value="{{ profile.contact_email }}" pattern=".*@.*"
+                  title="Enter a valid email or leave empty"
+                  placeholder="you@example.com">
+              </div>
 
-        <div class="form-group">
-            <label>About Yourself</label>
-            <textarea class="form-control" name="description" rows="4">{{ profile.description }}</textarea>
-        </div>
+              <div class="ep-field full">
+                <label class="ep-label" for="skills">Skills</label>
+                <textarea class="ep-textarea" id="skills" name="skills" rows="3" placeholder="e.g. Python, Communication, Design">{{ profile.skills }}</textarea>
+              </div>
 
-        <div class="form-group">
-            <label>Upload CV</label>
-            <input type="file" name="cv" class="form-control-file">
-            {% if profile.cv %}
-                <p>Current CV: <a href="{{ profile.cv.url }}" target="_blank">View</a></p>
-            {% endif %}
-        </div>
+              <div class="ep-field full">
+                <label class="ep-label" for="description">About Yourself</label>
+                <textarea class="ep-textarea" id="description" name="description" rows="4" placeholder="Tell recruiters about yourself...">{{ profile.description }}</textarea>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CV Upload -->
+          <div class="ep-section">
+            <p class="ep-section-title"><i class="fa-solid fa-file-lines"></i> Curriculum Vitae</p>
+            <div class="ep-cv-wrap">
+              {% if profile.cv %}
+                <a class="ep-cv-current" href="{{ profile.cv.url }}" target="_blank">
+                  <i class="fa-solid fa-file-lines"></i> View Current CV
+                </a>
+              {% endif %}
+              <div>
+                <label class="ep-upload-label" for="cvInput">
+                  <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                  {% if profile.cv %}Replace CV{% else %}Upload CV{% endif %}
+                </label>
+                <input type="file" name="cv" id="cvInput" class="ep-file-hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp">
+                <span class="ep-upload-hint">PDF, Word, or Image (JPG, PNG) — max 10 MB</span>
+              </div>
+            </div>
+          </div>
+
         {% endif %}
 
-        <!-- RECRUITER FIELDS -->
+        <!-- ── RECRUITER FIELDS ── -->
         {% if profile.role == "RECRUITER" %}
-        <h3>Company Information</h3>
 
-        <div class="form-group">
-            <label>Company Name</label>
-            <input class="form-control" type="text" name="company_name" value="{{ profile.company_name }}">
-        </div>
+          <div class="ep-section">
+            <p class="ep-section-title"><i class="fa-solid fa-building"></i> Company Information</p>
+            <div class="ep-grid">
 
-        <div class="form-group">
-            <label>Owner Name</label>
-            <input class="form-control" type="text" name="owner_name" value="{{ profile.owner_name }}">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="company_name">Company Name</label>
+                <input class="ep-input" type="text" id="company_name" name="company_name" value="{{ profile.company_name }}" placeholder="e.g. Himalayan Ventures">
+              </div>
 
-        <div class="form-group">
-            <label>Location</label>
-            <input class="form-control" type="text" name="company_location" value="{{ profile.company_location }}">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="owner_name">Owner Name</label>
+                <input class="ep-input" type="text" id="owner_name" name="owner_name" value="{{ profile.owner_name }}" placeholder="e.g. Ram Prasad">
+              </div>
 
-        <div class="form-group">
-            <label>Company Type</label>
-            <input class="form-control" type="text" name="company_type" value="{{ profile.company_type }}">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="company_location">Location</label>
+                <input class="ep-input" type="text" id="company_location" name="company_location" value="{{ profile.company_location }}" placeholder="e.g. Kathmandu, Nepal">
+              </div>
 
-        <div class="form-group">
-            <label>Phone</label>
-            <input class="form-control" type="text" name="phone" value="{{ profile.phone }}">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="company_type">Company Type</label>
+                <input class="ep-input" type="text" id="company_type" name="company_type" value="{{ profile.company_type }}" placeholder="e.g. IT, NGO, Retail">
+              </div>
 
-        <div class="form-group">
-            <label>Email</label>
-            <input class="form-control" type="email" name="company_email" 
-            value="{{ profile.company_email }}" pattern=".*@.*" 
-            title="Enter a valid email or leave empty">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="phone">Phone</label>
+                <input class="ep-input" type="text" id="phone" name="phone" value="{{ profile.phone }}" placeholder="e.g. 9800000000">
+              </div>
 
-        <div class="form-group">
-            <label>Founded Date</label>
-            <input class="form-control" type="date" name="founded_date" value="{{ profile.founded_date|date:'Y-m-d' }}">
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="company_email">Company Email</label>
+                <input class="ep-input" type="email" id="company_email" name="company_email"
+                  value="{{ profile.company_email }}" pattern=".*@.*"
+                  title="Enter a valid email or leave empty"
+                  placeholder="company@example.com">
+              </div>
 
-        <div class="form-group">
-            <label>Company Description</label>
-            <textarea class="form-control" name="description" rows="4">{{ profile.description }}</textarea>
-        </div>
+              <div class="ep-field">
+                <label class="ep-label" for="founded_date">Founded Date</label>
+                <input class="ep-input" type="date" id="founded_date" name="founded_date" value="{{ profile.founded_date|date:'Y-m-d' }}">
+              </div>
+
+              <div class="ep-field full">
+                <label class="ep-label" for="description">Company Description</label>
+                <textarea class="ep-textarea" id="description" name="description" rows="4" placeholder="Describe your company, its mission and culture...">{{ profile.description }}</textarea>
+              </div>
+
+            </div>
+          </div>
+
         {% endif %}
 
-        <div style="text-align:center; margin-top:20px;">
-            <button class="btn btn-primary btn-lg" type="submit">Update Profile</button>
+        <!-- Submit -->
+        <div class="ep-submit-area">
+          <button class="ep-submit-btn" type="submit">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+          </button>
         </div>
 
+      </div><!-- /.ep-card -->
     </form>
-</div>
+
+  </div><!-- /.ep-wrap -->
+</div><!-- /.ep-page -->
+
+<script>
+  // Live avatar preview on file pick
+  const picInput = document.getElementById('profilePicInput');
+  const preview  = document.getElementById('avatarPreview');
+  if (picInput && preview) {
+    picInput.addEventListener('change', function () {
+      if (this.files && this.files[0]) {
+        preview.src = URL.createObjectURL(this.files[0]);
+      }
+    });
+  }
+</script>
+
 {% endblock %}

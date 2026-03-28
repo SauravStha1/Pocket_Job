@@ -1,62 +1,402 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Applications</title>
+{% extends "base.html" %}
+{% load static %}
 
-    <style>
-        body {
-            font-family: Arial;
-            background: #f5f7fa;
-        }
+{% block content %}
 
-        .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 40px auto;
-        }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-        .card {
-            background: white;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-        }
+<style>
+  :root {
+    --brand:        #2C9BE8;
+    --brand-dark:   #1a7cc2;
+    --brand-light:  #EBF5FF;
+    --surface:      #FFFFFF;
+    --bg:           #F4F6F9;
+    --border:       #E2E8F0;
+    --text:         #1E2D3D;
+    --muted:        #64748B;
+    --pending-bg:   #FFF8E7;
+    --pending-text: #B45309;
+    --pending-bdr:  #FDE68A;
+    --hired-bg:     #ECFDF5;
+    --hired-text:   #065F46;
+    --hired-bdr:    #A7F3D0;
+    --rejected-bg:  #FEF2F2;
+    --rejected-text:#991B1B;
+    --rejected-bdr: #FECACA;
+    --radius:       12px;
+    --font:         'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }
 
-        .status {
-            font-weight: bold;
-        }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
-        .pending { color: orange; }
-        .hired { color: green; }
-        .rejected { color: red; }
+  .aj-page {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 40px 16px 80px;
+    font-family: var(--font);
+    color: var(--text);
+  }
 
-    </style>
-</head>
-<body>
+  .aj-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+  }
 
-<div class="container">
+  /* ── Page Header ── */
+  .aj-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    animation: fadeUp .5s ease both;
+  }
 
-    <h2>My Applied Jobs</h2>
+  .aj-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-    {% for app in applications %}
-        <div class="card">
-            <strong>{{ app.job.title }}</strong><br>
-            Applied on: {{ app.applied_at|date:"M d, Y" }}<br>
+  .aj-header-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--brand);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
 
-            Status:
-            <span class="status 
-                {% if app.status == 'PENDING' %}pending
-                {% elif app.status == 'HIRED' %}hired
-                {% else %}rejected
-                {% endif %}">
-                {{ app.status }}
-            </span>
+  .aj-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin: 0;
+  }
+
+  .aj-count {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: .8rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid #b3d9f7;
+  }
+
+  /* ── Application Card ── */
+  .aj-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    transition: transform .18s, box-shadow .18s, border-color .18s;
+    animation: fadeUp .5s ease both;
+  }
+
+  .aj-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(44,155,232,.12);
+    border-color: #93c9f0;
+  }
+
+  .aj-card:nth-child(1) { animation-delay: .05s; }
+  .aj-card:nth-child(2) { animation-delay: .10s; }
+  .aj-card:nth-child(3) { animation-delay: .15s; }
+  .aj-card:nth-child(4) { animation-delay: .20s; }
+  .aj-card:nth-child(5) { animation-delay: .25s; }
+
+  /* Status-colored left accent */
+  .aj-card.status-PENDING  { border-left: 4px solid #F59E0B; }
+  .aj-card.status-HIRED    { border-left: 4px solid #10B981; }
+  .aj-card.status-REJECTED { border-left: 4px solid #EF4444; }
+
+  .aj-card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--brand-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand);
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .aj-card.status-HIRED    .aj-card-icon { background: var(--hired-bg);    color: var(--hired-text); }
+  .aj-card.status-REJECTED .aj-card-icon { background: var(--rejected-bg); color: var(--rejected-text); }
+
+  .aj-card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .aj-job-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 7px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .aj-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .aj-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .83rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .aj-meta-item i {
+    font-size: .78rem;
+    color: var(--brand);
+  }
+
+  /* ── Status Badge ── */
+  .aj-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .aj-badge.pending {
+    background: var(--pending-bg);
+    color: var(--pending-text);
+    border: 1px solid var(--pending-bdr);
+  }
+
+  .aj-badge.hired {
+    background: var(--hired-bg);
+    color: var(--hired-text);
+    border: 1px solid var(--hired-bdr);
+  }
+
+  .aj-badge.rejected {
+    background: var(--rejected-bg);
+    color: var(--rejected-text);
+    border: 1px solid var(--rejected-bdr);
+  }
+
+  /* ── Summary Strip ── */
+  .aj-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    animation: fadeUp .45s ease both;
+  }
+
+  .aj-sum-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  }
+
+  .aj-sum-num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .aj-sum-num.pending  { color: #F59E0B; }
+  .aj-sum-num.hired    { color: #10B981; }
+  .aj-sum-num.rejected { color: #EF4444; }
+
+  .aj-sum-label {
+    font-size: .78rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  /* ── Empty State ── */
+  .aj-empty {
+    text-align: center;
+    padding: 64px 20px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+    animation: fadeUp .5s ease both;
+  }
+
+  .aj-empty-icon {
+    font-size: 3rem;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
+
+  .aj-empty h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+
+  .aj-empty p {
+    color: var(--muted);
+    font-size: .93rem;
+    margin: 0 0 22px;
+  }
+
+  .aj-empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--brand);
+    color: #fff;
+    font-family: var(--font);
+    font-size: .9rem;
+    font-weight: 700;
+    padding: 11px 24px;
+    border-radius: 9px;
+    text-decoration: none;
+    transition: background .15s, transform .12s;
+  }
+
+  .aj-empty-btn:hover {
+    background: var(--brand-dark);
+    transform: translateY(-2px);
+    color: #fff;
+  }
+
+  @media (max-width: 580px) {
+    .aj-card    { flex-wrap: wrap; }
+    .aj-badge   { width: 100%; justify-content: center; }
+    .aj-summary { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="aj-page">
+  <div class="aj-wrap">
+
+    <!-- Page Header -->
+    <div class="aj-header">
+      <div class="aj-header-left">
+        <div class="aj-header-icon"><i class="fa-solid fa-paper-plane"></i></div>
+        <div>
+          <h1 class="aj-title">My Applications</h1>
         </div>
-    {% empty %}
-        <p>You have not applied to any jobs yet.</p>
-    {% endfor %}
+      </div>
+      {% if applications %}
+        <span class="aj-count">{{ applications|length }} applied</span>
+      {% endif %}
+    </div>
 
+    {% if applications %}
+
+      <!-- Summary Strip -->
+      <div class="aj-summary">
+        <div class="aj-sum-card">
+          <span class="aj-sum-num pending">
+            {% with applications|length as total %}{{ total }}{% endwith %}
+          </span>
+          <span class="aj-sum-label">Total Applied</span>
+        </div>
+        <div class="aj-sum-card">
+          <span class="aj-sum-num hired">—</span>
+          <span class="aj-sum-label">Hired</span>
+        </div>
+        <div class="aj-sum-card">
+          <span class="aj-sum-num pending">—</span>
+          <span class="aj-sum-label">Pending</span>
+        </div>
+      </div>
+
+      <!-- Application Cards -->
+      {% for app in applications %}
+        <div class="aj-card status-{{ app.status }}">
+
+          <div class="aj-card-icon">
+            {% if app.status == 'HIRED' %}
+              <i class="fa-solid fa-circle-check"></i>
+            {% elif app.status == 'REJECTED' %}
+              <i class="fa-solid fa-circle-xmark"></i>
+            {% else %}
+              <i class="fa-solid fa-hourglass-half"></i>
+            {% endif %}
+          </div>
+
+          <div class="aj-card-body">
+            <p class="aj-job-title">{{ app.job.title }}</p>
+            <div class="aj-meta">
+              <span class="aj-meta-item">
+                <i class="fa-regular fa-calendar"></i>
+                Applied {{ app.applied_at|date:"M d, Y" }}
+              </span>
+              {% if app.job.location %}
+                <span class="aj-meta-item">
+                  <i class="fa-solid fa-location-dot"></i>
+                  {{ app.job.location }}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Status Badge -->
+          <span class="aj-badge
+            {% if app.status == 'PENDING' %}pending
+            {% elif app.status == 'HIRED' %}hired
+            {% else %}rejected
+            {% endif %}">
+            {% if app.status == 'PENDING' %}
+              <i class="fa-solid fa-clock"></i> Pending
+            {% elif app.status == 'HIRED' %}
+              <i class="fa-solid fa-check"></i> Hired
+            {% else %}
+              <i class="fa-solid fa-xmark"></i> Rejected
+            {% endif %}
+          </span>
+
+        </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="aj-empty">
+        <div class="aj-empty-icon"><i class="fa-solid fa-paper-plane"></i></div>
+        <h3>No applications yet</h3>
+        <p>Start applying to jobs and track all your applications here.</p>
+        <a href="{% url 'home' %}" class="aj-empty-btn">
+          <i class="fa-solid fa-magnifying-glass"></i> Find Jobs
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
 </div>
 
-</body>
-</html>
+{% endblock %}
