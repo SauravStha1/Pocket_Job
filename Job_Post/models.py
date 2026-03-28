@@ -20,6 +20,8 @@ class Job(models.Model):
     title = models.CharField(max_length=200)
     tags = models.CharField(max_length=200)
 
+    location = models.CharField(max_length=255, default="Unknown")
+
     job_type = models.CharField(
         max_length=50,
         choices=JOB_TYPE_CHOICES,

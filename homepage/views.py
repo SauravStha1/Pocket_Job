@@ -14,7 +14,7 @@ def home(request):
     # ── Search filters ──
     if query:
         jobs = jobs.filter(
-            Q(title__icontains=query) | Q(tags__icontains=query)
+            Q(title__icontains=query) | Q(tags__icontains=query) | Q(location__icontains=query)
         )
 
     if job_type and job_type != "All":

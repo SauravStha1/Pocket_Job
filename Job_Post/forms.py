@@ -10,19 +10,24 @@ class JobForm(forms.ModelForm):
         fields = [
             'title',
             'tags',
+            'location',   
             'job_type',
             'min_salary',
             'max_salary',
             'negotiable',
             'description',
             'responsibilities',
-            'image',   # NEW FIELD
+            'image',
         ]
 
         widgets = {
             'title': forms.TextInput(attrs={'placeholder': 'Job title'}),
 
             'tags': forms.TextInput(attrs={'placeholder': 'Tags / Keywords'}),
+
+            'location': forms.TextInput(attrs={   
+                'placeholder': 'Enter location (e.g. Pokhara)'
+            }),
 
             'job_type': forms.Select(),
 

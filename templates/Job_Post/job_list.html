@@ -1,11 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Jobs</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .job-container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .job-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .job-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .job-title {
+            margin: 0;
+        }
+
+        .job-meta {
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .job-location {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
 <h2>Available Jobs</h2>
 
+<div class="job-container">
+
 {% for job in jobs %}
-<div style="border:1px solid #ccc; padding:15px; margin-bottom:10px; cursor:pointer;"
+<div class="job-card"
      onclick="window.location.href='{% url 'job_detail' job.id %}'">
 
-    <h3>{{ job.title }}</h3>
-    <p>{{ job.job_type }} | {{ job.tags }}</p>
+    <h3 class="job-title">{{ job.title }}</h3>
+
+    <p class="job-meta">{{ job.job_type }} | {{ job.tags }}</p>
 
     {% if job.negotiable %}
         <p><strong>Salary:</strong> Negotiable</p>
@@ -13,7 +70,14 @@
         <p><strong>Salary:</strong> Nrs {{ job.min_salary }} - {{ job.max_salary }}</p>
     {% endif %}
 
+    <p class="job-location">📍 {{ job.location }}</p>
+
 </div>
 {% empty %}
 <p>No jobs posted yet.</p>
 {% endfor %}
+
+</div>
+
+</body>
+</html>
