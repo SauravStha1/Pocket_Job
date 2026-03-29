@@ -3,178 +3,293 @@
 
 {% block content %}
 
-<!-- ============================================================
-     INLINE STYLES — animations + hero override
-     ============================================================ -->
 <style>
-
-  /* ── Keyframes — identical to about.html ── */
+  /* ── Keyframes ── */
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(26px); }
+    from { opacity: 0; transform: translateY(22px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.88); }
-    to   { opacity: 1; transform: scale(1); }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
-  /* ── Animation classes — staggered just like about.html ── */
-  .hero-anim-1 { animation: fadeUp 0.7s ease both 0.10s; }
-  .hero-anim-2 { animation: fadeUp 0.7s ease both 0.25s; }
-  .hero-anim-3 { animation: fadeUp 0.7s ease both 0.40s; }
-  .hero-anim-4 { animation: fadeUp 0.7s ease both 0.55s; }
-  .hero-anim-5 { animation: fadeUp 0.7s ease both 0.70s; }
-  .hero-logo-anim { animation: scaleIn 0.6s ease both 0.05s; }
+  .ha-1 { animation: fadeUp 0.65s ease both 0.05s; }
+  .ha-2 { animation: fadeUp 0.65s ease both 0.18s; }
+  .ha-3 { animation: fadeUp 0.65s ease both 0.30s; }
+  .ha-4 { animation: fadeUp 0.65s ease both 0.42s; }
+  .ha-5 { animation: fadeUp 0.65s ease both 0.54s; }
 
   /* ================================================================
-     HERO — override home.css with about.html deep-blue gradient
+     HERO — dark navy, minimal, professional
      ================================================================ */
   .hero {
-    background: linear-gradient(140deg, #1565c0 0%, #2196f3 45%, #4fc3f7 100%) !important;
-    padding: 72px 0 0 !important;       /* bottom-0 so wave sits flush */
+    background: linear-gradient(155deg, #0d2550 0%, #163d7a 38%, #1a5fba 72%, #2176cc 100%);
+    padding: 0;
     position: relative;
     overflow: hidden;
+    text-align: center;
   }
 
-  /* Decorative blobs — exact match to about.html */
-  .hero::before,
-  .hero::after {
-    content: '';
+  /* Geometric outline rings */
+  .hero-ring-1, .hero-ring-2, .hero-ring-3 {
     position: absolute;
     border-radius: 50%;
-    opacity: 0.13;
+    border: 1px solid rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .hero-ring-1 { width: 600px; height: 600px; top: -200px; right: -160px; }
+  .hero-ring-2 { width: 400px; height: 400px; bottom: -120px; left: -100px; }
+  .hero-ring-3 { width: 220px; height: 220px; top: 60px; left: 100px; border-color: rgba(125,211,252,0.08); }
+
+  /* Dot grid */
+  .hero-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px);
+    background-size: 30px 30px;
     pointer-events: none;
   }
 
-  .hero::before {
-    width: 460px; height: 460px;
-    background: #fff;
-    top: -140px; right: -110px;
+  /* Soft glow bottom-centre */
+  .hero-glow {
+    position: absolute;
+    width: 700px; height: 300px;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse, rgba(33,118,204,0.35) 0%, transparent 70%);
+    pointer-events: none;
   }
 
-  .hero::after {
-    width: 300px; height: 300px;
-    background: #fff;
-    bottom: 30px; left: -80px;
+  /* ── Hero logo (repositioned down-right per reference) ── */
+  .hero-logo-wrap {
+    position: absolute;
+    top: 110px;
+    left: 150px;
+    z-index: 10;
   }
 
-  /* Content sits above blobs */
-  .hero .container { position: relative; z-index: 1; }
-
-  /* ── Logo — fixed size (was 96px, now 80px, white glass card) ── */
-  .hero-logo-img {
-    width: 80px  !important;
-    height: 80px !important;
-    border-radius: 20px !important;
-    background: rgba(255, 255, 255, 0.18) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    padding: 10px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
-    margin: 0 auto 22px !important;
+  .hero-logo-icon {
+    width: 110px;
+    height: 110px;
+    border-radius: 18px;
+    object-fit: contain;
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.18);
+    padding: 10px;
+    display: block;
   }
 
-  /* ── Pill — light glass version on dark bg ── */
-  .hero-pill {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.30) !important;
-    color: #fff !important;
-    backdrop-filter: blur(6px);
+  /* ── Hero centre content ── */
+  .hero-main {
+    position: relative;
+    z-index: 2;
+    padding: 72px 24px 0;
+    max-width: 800px;
+    margin: 0 auto;
   }
 
-  /* ── Title & sub — white on dark hero ── */
-  .hero-title {
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7dd3fc;
+    margin-bottom: 16px;
+    opacity: 0.9;
+  }
+
+  /* Override any external .hero-title styles */
+  .hero .hero-title {
+    font-size: clamp(2.1rem, 5vw, 3.3rem) !important;
+    font-weight: 800 !important;
+    line-height: 1.12 !important;
     color: #ffffff !important;
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
+    margin-bottom: 16px !important;
+    letter-spacing: -0.03em !important;
+    text-shadow: none !important;
   }
 
-  .hero-em {
-    color: #ffd54f !important;           /* warm yellow accent — same as about.html */
-    font-style: italic;
+  .hero .hero-em {
+    color: #7dd3fc !important;
+    font-style: normal !important;
+    font-weight: 800 !important;
   }
 
-  .hero-sub {
-    color: rgba(255, 255, 255, 0.88) !important;
+  .hero .hero-sub {
+    font-size: 1.02rem !important;
+    color: rgba(255,255,255,0.68) !important;
+    max-width: 480px !important;
+    margin: 0 auto 38px !important;
+    line-height: 1.75 !important;
+    font-weight: 400 !important;
   }
 
-  /* ── Search form — stay white ── */
-  .search-form {
-    background: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.7) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
+  /* ── Search bar ── */
+  .hero .search-form {
+    display: flex !important;
+    align-items: center !important;
+    background: rgba(255,255,255,0.97) !important;
+    border: 1.5px solid rgba(255,255,255,0.9) !important;
+    border-radius: 13px !important;
+    padding: 5px 5px 5px 16px !important;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.24), 0 2px 8px rgba(0,0,0,0.12) !important;
+    max-width: 610px !important;
+    margin: 0 auto 44px !important;
+    width: 100% !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
   }
 
-  .search-form:focus-within {
-    border-color: #ffd54f !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 0 0 4px rgba(255,213,79,0.22) !important;
+  .hero .search-form:focus-within {
+    box-shadow: 0 16px 48px rgba(0,0,0,0.26), 0 0 0 3px rgba(125,211,252,0.30) !important;
+    border-color: #7dd3fc !important;
   }
 
-  /* ── Stats bar — frosted glass on dark bg ── */
-  .hero-stats {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15) !important;
-    margin-bottom: 0;
+  .hero .sf-btn {
+    background: #0d2550 !important;
+    color: #ffffff !important;
+    border-radius: 9px !important;
+    padding: 11px 24px !important;
+    font-weight: 700 !important;
+    font-size: 0.88rem !important;
+    letter-spacing: 0.01em !important;
+    box-shadow: 0 2px 12px rgba(13,37,80,0.45) !important;
+    border: none !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
 
-  .stat-box strong { color: #ffd54f !important; }   /* yellow numbers on dark bg */
-  .stat-box span   { color: rgba(255,255,255,0.82) !important; }
-  .stat-sep        { background: rgba(255,255,255,0.20) !important; }
-
-  /* Wrap stats + wave so they connect cleanly */
-  .hero-bottom {
-    padding-bottom: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
+  .hero .sf-btn:hover {
+    background: #163d7a !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(13,37,80,0.55) !important;
   }
 
+  /* ── Stats — clean white numbers on glass card ── */
   .hero-stats-wrap {
-    padding: 32px 0 44px;           /* space between search bar and wave */
+    padding: 0 0 0 !important;
+    display: flex !important;
+    justify-content: center !important;
   }
 
-  /* ── Wave divider — same SVG technique as about.html ── */
+  .hero-stats {
+    display: inline-flex !important;
+    align-items: stretch !important;
+    background: rgba(255,255,255,0.07) !important;
+    border: 1px solid rgba(255,255,255,0.13) !important;
+    border-radius: 14px !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.10) !important;
+    overflow: hidden !important;
+  }
+
+  /* Hide original stat-sep divs */
+  .stat-sep { display: none !important; }
+
+  .stat-box {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 22px 40px !important;
+    position: relative !important;
+  }
+
+  /* CSS divider between boxes (replaces .stat-sep) */
+  .stat-box + .stat-box::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 22%; bottom: 22%;
+    width: 1px;
+    background: rgba(255,255,255,0.12);
+  }
+
+  .stat-box strong {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    line-height: 1 !important;
+    letter-spacing: -0.04em !important;
+    display: block !important;
+  }
+
+  .stat-box span {
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    color: rgba(255,255,255,0.48) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  /* ── Wave ── */
   .hero-wave {
     display: block;
     width: 100%;
     line-height: 0;
-    margin-bottom: -2px;            /* kill any sub-pixel gap */
+    position: relative;
+    z-index: 1;
+    margin-top: 48px;
+    margin-bottom: -2px;
   }
 
+  /* ================================================================
+     RESPONSIVE
+     ================================================================ */
+  @media (max-width: 768px) {
+    .hero-logo-wrap { top: 20px; left: 20px; }
+    .hero-logo-icon { width: 80px; height: 80px; border-radius: 14px; }
+    .hero-live-pill { display: none; }
+    .hero-main { padding: 40px 16px 0; }
+    .stat-box { padding: 18px 24px; }
+    .stat-box strong { font-size: 1.6rem !important; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-stats { flex-direction: column !important; border-radius: 12px !important; }
+    .stat-box + .stat-box::before {
+      left: 20%; right: 20%; top: 0; bottom: auto;
+      width: auto; height: 1px;
+    }
+    .stat-box { padding: 16px 32px !important; }
+  }
 </style>
 
-<!-- ===================== HERO SECTION ===================== -->
+<!-- ===================== HERO ===================== -->
 <section class="hero">
-  <div class="container">
 
-    <!-- Logo -->
-    <img
-      src="{% static 'images/pocketJob_logo.png' %}"
-      alt="Pocket Job"
-      class="hero-logo-img hero-logo-anim"
-    >
+  <!-- Decorative layers -->
+  <div class="hero-dots"></div>
+  <div class="hero-ring-1"></div>
+  <div class="hero-ring-2"></div>
+  <div class="hero-ring-3"></div>
+  <div class="hero-glow"></div>
 
-    <span class="hero-pill hero-anim-1">
-      Nepal's Job Portal for Growing Businesses
-    </span>
+  <!-- Logo top-left (like about page) -->
+  <div class="hero-logo-wrap">
+    <img src="{% static 'images/pocketJob_logo.png' %}" alt="Pocket Job" class="hero-logo-icon">
+  </div>
 
-    <h1 class="hero-title hero-anim-2">
+  <!-- Centre content -->
+  <div class="hero-main">
+
+    <span class="hero-eyebrow ha-1">Part-time &amp; Local Jobs Across Nepal</span>
+
+    <h1 class="hero-title ha-2">
       Find Your <em class="hero-em">Dream Job</em><br>Start Today.
     </h1>
 
-    <p class="hero-sub hero-anim-3">
+    <p class="hero-sub ha-3">
       Connecting talented people with small &amp; medium businesses —
       simple, fast, and direct.
     </p>
 
     <!-- SEARCH FORM — Django logic untouched -->
-    <form method="GET" action="{% url 'home' %}" class="search-form hero-anim-4">
-
+    <form method="GET" action="{% url 'home' %}" class="search-form ha-4">
       <div class="sf-left">
         <svg class="sf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
@@ -188,9 +303,7 @@
           autocomplete="off"
         >
       </div>
-
       <div class="sf-divider"></div>
-
       <div class="sf-right">
         <svg class="sf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M4 6h16M7 12h10M10 18h4"/>
@@ -202,13 +315,11 @@
           <option value="Flexible"   {% if selected_job_type == "Flexible"   %}selected{% endif %}>Flexible</option>
         </select>
       </div>
-
       <button type="submit" class="sf-btn">Search Jobs</button>
-
     </form>
 
     <!-- STATS -->
-    <div class="hero-stats-wrap hero-anim-5">
+    <div class="hero-stats-wrap ha-5">
       <div class="hero-stats">
         <div class="stat-box">
           <strong class="count-up" data-target="{{ total_jobs }}">0</strong>
@@ -227,12 +338,12 @@
       </div>
     </div>
 
-  </div><!-- /.container -->
+  </div><!-- /.hero-main -->
 
-  <!-- Wave divider — same technique as about.html -->
-  <svg class="hero-wave" viewBox="0 0 1440 64" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0,40 C360,80 1080,0 1440,40 L1440,0 L0,0 Z" fill="#4fc3f7" opacity="0.4"/>
-    <path d="M0,64 C400,24 1040,72 1440,32 L1440,64 Z" fill="#f4f7fb"/>
+  <!-- Wave divider into page bg -->
+  <svg class="hero-wave" viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,28 C240,54 480,2 720,28 C960,54 1200,2 1440,28 L1440,56 L0,56 Z" fill="#f4f7fb" opacity="0.55"/>
+    <path d="M0,42 C320,10 700,56 1040,30 C1200,18 1340,46 1440,38 L1440,56 L0,56 Z" fill="#f4f7fb"/>
   </svg>
 
 </section>
@@ -240,25 +351,20 @@
 <!-- ===================== TRUSTED COMPANIES — MARQUEE ===================== -->
 <section class="trusted">
   <p class="trusted-label">Trusted by companies across Nepal</p>
-
   <div class="marquee-outer">
     <div class="marquee-track">
-
       <span class="mlogo"><img src="{% static 'images/logos/esewa.png' %}"        alt="eSewa"        class="mlogo-img"></span>
       <span class="mlogo"><img src="{% static 'images/logos/khalti.png' %}"       alt="Khalti"       class="mlogo-img"></span>
       <span class="mlogo"><img src="{% static 'images/logos/daraz.png' %}"        alt="Daraz"        class="mlogo-img"></span>
       <span class="mlogo"><img src="{% static 'images/logos/informatics.png' %}"  alt="Informatics"  class="mlogo-img"></span>
       <span class="mlogo"><img src="{% static 'images/logos/cloudfactory.png' %}" alt="CloudFactory" class="mlogo-img"></span>
       <span class="mlogo"><img src="{% static 'images/logos/leapfrog.png' %}"     alt="Leapfrog"     class="mlogo-img"></span>
-
-      <!-- duplicate set for seamless loop -->
       <span class="mlogo" aria-hidden="true"><img src="{% static 'images/logos/esewa.png' %}"        alt="" class="mlogo-img"></span>
       <span class="mlogo" aria-hidden="true"><img src="{% static 'images/logos/khalti.png' %}"       alt="" class="mlogo-img"></span>
       <span class="mlogo" aria-hidden="true"><img src="{% static 'images/logos/daraz.png' %}"        alt="" class="mlogo-img"></span>
       <span class="mlogo" aria-hidden="true"><img src="{% static 'images/logos/informatics.png' %}"  alt="" class="mlogo-img"></span>
       <span class="mlogo" aria-hidden="true"><img src="{% static 'images/logos/cloudfactory.png' %}" alt="" class="mlogo-img"></span>
       <span class="mlogo" aria-hidden="true"><img src="{% static 'images/logos/leapfrog.png' %}"     alt="" class="mlogo-img"></span>
-
     </div>
   </div>
 </section>
@@ -280,11 +386,9 @@
     </div>
 
     <div class="jobs-grid">
-
       {% for job in jobs %}
       <a href="{% url 'job_detail' job.id %}" class="job-link">
         <div class="job-card">
-
           {% if job.id in recommended_ids %}
           <div class="badge-rec">
             <svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor">
@@ -341,7 +445,6 @@
             </span>
             <span class="view-cta">View →</span>
           </div>
-
         </div>
       </a>
       {% empty %}
@@ -354,13 +457,11 @@
         <span>Try adjusting your filters or search keywords.</span>
       </div>
       {% endfor %}
-
     </div>
 
     <!-- PAGINATION -->
     {% if jobs.has_other_pages %}
     <nav class="pagination">
-
       {% if jobs.has_previous %}
         <a href="?page={{ jobs.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_job_type %}&job_type={{ selected_job_type }}{% endif %}" class="page-btn">← Prev</a>
       {% else %}
@@ -384,7 +485,6 @@
       {% else %}
         <span class="page-btn page-disabled">Next →</span>
       {% endif %}
-
     </nav>
     {% endif %}
 
@@ -462,13 +562,9 @@
   </div>
 </footer>
 
-<!-- ============================================================
-     COUNT-UP JS — vanilla, no libraries
-     ============================================================ -->
 <script>
 (function () {
   function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
-
   function animateCount(el, target, duration) {
     var start = null;
     function tick(ts) {
@@ -480,13 +576,12 @@
     }
     requestAnimationFrame(tick);
   }
-
   document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () {
       document.querySelectorAll('.count-up').forEach(function (el) {
-        animateCount(el, parseInt(el.getAttribute('data-target'), 10) || 0, 1000);
+        animateCount(el, parseInt(el.getAttribute('data-target'), 10) || 0, 1100);
       });
-    }, 800);
+    }, 650);
   });
 })();
 </script>
