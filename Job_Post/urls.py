@@ -25,4 +25,5 @@ urlpatterns = [
 
     path('save/<int:pk>/', views.toggle_save_job, name='toggle_save_job'),
     path('saved/', views.saved_jobs, name='saved_jobs'),
+    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
 ]

@@ -1,0 +1,115 @@
+<!-- Job_Post/templates/Job_Post/admin_dashboard.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Admin Dashboard</h2>
+
+    <!-- Stats Cards -->
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Jobs</h5>
+                    <p class="card-text display-6">{{ total_jobs }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Active Jobs</h5>
+                    <p class="card-text display-6">{{ active_jobs }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Applicants</h5>
+                    <p class="card-text display-6">{{ total_applicants }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Recruiters</h5>
+                    <p class="card-text display-6">{{ total_recruiters }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Jobs Table -->
+    <div class="mt-5">
+        <h4>Latest Jobs</h4>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Recruiter</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in latest_jobs %}
+                <tr>
+                    <td>{{ job.title }}</td>
+                    <td>{{ job.recruiter.username }}</td>
+                    <td>{% if job.is_active %}Active{% else %}Inactive{% endif %}</td>
+                    <td>{{ job.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <a href="{% url 'job_edit' job.pk %}" class="btn btn-sm btn-info">Edit</a>
+                        <a href="{% url 'job_delete' job.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                        <a href="{% url 'job_detail' job.pk %}" class="btn btn-sm btn-secondary">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No jobs found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Latest Applications Table -->
+    <div class="mt-5">
+        <h4>Latest Applications</h4>
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Job</th>
+                    <th>Applicant</th>
+                    <th>Status</th>
+                    <th>Applied At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in latest_applications %}
+                <tr>
+                    <td>{{ app.job.title }}</td>
+                    <td>{{ app.applicant.user.username }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>{{ app.applied_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        {% if app.status != "HIRED" %}
+                        <a href="{% url 'accept_application' app.id %}" class="btn btn-sm btn-success">Accept</a>
+                        <a href="{% url 'reject_application' app.id %}" class="btn btn-sm btn-danger">Reject</a>
+                        {% else %}
+                        <span class="badge bg-success">Hired</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No applications found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

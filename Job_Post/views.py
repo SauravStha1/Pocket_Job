@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import recruiter_required, applicant_required
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
@@ -88,15 +91,10 @@ def job_detail(request, pk):
 # ============================
 # APPLY JOB (One-Click)
 # ============================
-
 @login_required
+@applicant_required
 def apply_job(request, pk):
     job = get_object_or_404(Job, pk=pk, is_active=True)
-
-    if request.user.profile.role != "APPLICANT":
-        messages.error(request, "Only applicants can apply for jobs.")
-        return redirect('job_list')
-
     profile = request.user.profile
 
     if JobApplication.objects.filter(job=job, applicant=profile).exists():
@@ -121,11 +119,8 @@ def apply_job(request, pk):
 # ============================
 
 @login_required
+@recruiter_required
 def recruiter_dashboard(request):
-    if request.user.profile.role != "RECRUITER":
-        messages.error(request, "Access denied.")
-        return redirect("home")
-
     jobs = Job.objects.filter(recruiter=request.user, is_active=True)
     return render(request, 'Job_Post/recruiter_dashboard.html', {'jobs': jobs})
 
@@ -135,6 +130,7 @@ def recruiter_dashboard(request):
 # ============================
 
 @login_required
+@recruiter_required
 def job_applicants(request, pk):
     job = get_object_or_404(Job, pk=pk, recruiter=request.user)
     applications = job.applications.all()  # thanks to related_name
@@ -146,11 +142,9 @@ def job_applicants(request, pk):
 # ============================
 
 @login_required
+@recruiter_required
 @transaction.atomic
 def job_create(request):
-    if request.user.profile.role != "RECRUITER":
-        messages.error(request, "Only recruiters can post jobs.")
-        return redirect("home")
 
     if request.method == 'POST':
         form = JobForm(request.POST, request.FILES)
@@ -295,6 +289,7 @@ def payment_failure(request):
 # ============================
 
 @login_required
+@recruiter_required
 @transaction.atomic
 def job_edit(request, pk):
     job = get_object_or_404(Job, pk=pk, recruiter=request.user)
@@ -316,6 +311,7 @@ def job_edit(request, pk):
 # ============================
 
 @login_required
+@recruiter_required
 @transaction.atomic
 def job_delete(request, pk):
     job = get_object_or_404(Job, pk=pk, recruiter=request.user)
@@ -329,10 +325,8 @@ def job_delete(request, pk):
 # ============================
 
 @login_required
+@recruiter_required
 def applied_applicants(request):
-    if request.user.profile.role != "RECRUITER":
-        messages.error(request, "Access denied.")
-        return redirect("home")
 
     applications = JobApplication.objects.filter(
         job__recruiter=request.user
@@ -348,9 +342,10 @@ def applied_applicants(request):
 # ============================
 
 @login_required
+@recruiter_required
 def accept_application(request, id):
     application = get_object_or_404(JobApplication, id=id, job__recruiter=request.user)
-    application.status = "ACCEPTED"
+    application.status = "HIRED"
     application.save()
 
     # 🔔 Notify applicant
@@ -368,6 +363,7 @@ def accept_application(request, id):
 # ============================
 
 @login_required
+@recruiter_required
 def reject_application(request, id):
     application = get_object_or_404(JobApplication, id=id, job__recruiter=request.user)
     application.status = "REJECTED"
@@ -385,11 +381,8 @@ def reject_application(request, id):
     return redirect('applied_applicants')
 
 @login_required
+@applicant_required
 def applied_jobs(request):
-    if request.user.profile.role != "APPLICANT":
-        messages.error(request, "Access denied.")
-        return redirect("home")
-
     applications = JobApplication.objects.filter(
         applicant=request.user.profile
     ).select_related('job').order_by('-applied_at')
@@ -408,13 +401,9 @@ def create_notification(user, message, notification_type, link=None):
     )
 
 @login_required
+@applicant_required
 def toggle_save_job(request, pk):
-    job = get_object_or_404(Job, pk=pk)
-
-    if request.user.profile.role != "APPLICANT":
-        messages.error(request, "Only applicants can save jobs.")
-        return redirect('job_detail', pk=pk)
-
+    job = get_object_or_404(Job, pk=pk) 
     saved_job = SavedJob.objects.filter(user=request.user, job=job)
 
     if saved_job.exists():
@@ -427,10 +416,8 @@ def toggle_save_job(request, pk):
     return redirect('job_detail', pk=pk)
 
 @login_required
+@applicant_required
 def saved_jobs(request):
-    if request.user.profile.role != "APPLICANT":
-        messages.error(request, "Access denied.")
-        return redirect("home")
 
     saved_jobs = SavedJob.objects.filter(user=request.user).select_related('job').order_by('-saved_at')
 
@@ -440,3 +427,38 @@ def saved_jobs(request):
 
 def about(request):
     return render(request, "about.html")
+
+# ============================
+# ADMIN DASHBOARD
+# ============================
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_superuser:
+        messages.error(request, "Access denied.")
+        return redirect('home')
+
+    # Stats
+    total_jobs = Job.objects.count()
+    active_jobs = Job.objects.filter(is_active=True).count()
+    total_applicants = Profile.objects.filter(role="APPLICANT").count()
+    total_recruiters = Profile.objects.filter(role="RECRUITER").count()
+    total_applications = JobApplication.objects.count()
+
+    # Latest jobs (last 5)
+    latest_jobs = Job.objects.order_by('-created_at')[:5]
+
+    # Latest applications (last 5)
+    latest_applications = JobApplication.objects.select_related('job', 'applicant').order_by('-applied_at')[:5]
+
+    context = {
+        'total_jobs': total_jobs,
+        'active_jobs': active_jobs,
+        'total_applicants': total_applicants,
+        'total_recruiters': total_recruiters,
+        'total_applications': total_applications,
+        'latest_jobs': latest_jobs,
+        'latest_applications': latest_applications,
+    }
+
+    return render(request, 'Job_Post/admin_dashboard.html', context)
