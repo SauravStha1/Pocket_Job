@@ -50,6 +50,13 @@
     <h3>Job Description</h3>
     <p>{{ job.description }}</p>
 
+    <form method="POST" action="{% url 'report_job' job.id %}">
+        {% csrf_token %}
+
+        <textarea name="reason" class="form-control" placeholder="Report this job..." required></textarea>
+
+        <button class="btn btn-danger mt-2">🚨 Report Job</button>
+    </form>
     <!-- RESPONSIBILITIES -->
     <h3>Responsibilities</h3>
     <p>{{ job.responsibilities }}</p>

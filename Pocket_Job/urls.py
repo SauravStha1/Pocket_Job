@@ -36,7 +36,7 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('chat/', include('chat.urls')),
     path('about/', about, name='about'),
-    path('dashboard/', include('Job_Post.urls'))
+    path('', include('reports.urls')),
 ]
 
 

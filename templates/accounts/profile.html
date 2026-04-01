@@ -424,6 +424,13 @@
           <p class="pj-section-title"><i class="fa-solid fa-book-open"></i> About the Company</p>
           <p class="pj-about">{{ profile.description|default:"No description provided." }}</p>
         </div>
+        <form method="POST" action="{% url 'report_user' user.id %}">
+            {% csrf_token %}
+
+            <textarea name="reason" class="form-control" placeholder="Report this user..." required></textarea>
+
+            <button class="btn btn-danger mt-2">🚨 Report User</button>
+        </form>
 
       {% endif %}
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.db.models import Q
 from django.core.paginator import Paginator
 from Job_Post.models import Job
@@ -22,7 +22,7 @@ def home(request):
     if job_type and job_type != "All":
         jobs = jobs.filter(job_type=job_type)
 
-    # ── Skill-based prioritisation (SAFE VERSION) ──
+    # ── Skill-based prioritisation ──
     recommended_ids = []
 
     if request.user.is_authenticated:
@@ -54,7 +54,7 @@ def home(request):
     page_number = request.GET.get('page')
     jobs_page = paginator.get_page(page_number)
 
-    # ── Dashboard stats ──
+    # ── Stats ──
     total_jobs = Job.objects.filter(is_active=True).count()
 
     total_companies = (
@@ -64,7 +64,7 @@ def home(request):
         .count()
     )
 
-    # ── Safe applicant count ──
+    # Safe applicant count
     try:
         from accounts.models import Profile
         total_applicants = Profile.objects.filter(role='APPLICANT').count()

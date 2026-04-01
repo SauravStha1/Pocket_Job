@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'Job_Post',
     'accounts',
     'chat',
+    'reports',
     
 ]
 

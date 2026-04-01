@@ -432,33 +432,49 @@ def about(request):
 # ADMIN DASHBOARD
 # ============================
 
-@login_required
+@staff_member_required
 def admin_dashboard(request):
-    if not request.user.is_superuser:
-        messages.error(request, "Access denied.")
-        return redirect('home')
+    # ── User Stats ──
+    total_users = User.objects.count()
+    total_applicants = Profile.objects.filter(role='APPLICANT').count()
+    total_recruiters = Profile.objects.filter(role='RECRUITER').count()
 
-    # Stats
+    # ── Job Stats ──
     total_jobs = Job.objects.count()
     active_jobs = Job.objects.filter(is_active=True).count()
-    total_applicants = Profile.objects.filter(role="APPLICANT").count()
-    total_recruiters = Profile.objects.filter(role="RECRUITER").count()
+
+    # ── Applications (if exists) ──
     total_applications = JobApplication.objects.count()
 
-    # Latest jobs (last 5)
-    latest_jobs = Job.objects.order_by('-created_at')[:5]
+    # ── Revenue (if exists) ──
+    total_revenue = 0
+    if Payment:
+        total_revenue = sum(p.amount for p in Payment.objects.all())
 
-    # Latest applications (last 5)
-    latest_applications = JobApplication.objects.select_related('job', 'applicant').order_by('-applied_at')[:5]
+    # ── Latest Jobs & Applications ──
+    latest_jobs = Job.objects.order_by('-created_at')[:10]
+    latest_applications = JobApplication.objects.order_by('-applied_at')[:10]
 
     context = {
-        'total_jobs': total_jobs,
-        'active_jobs': active_jobs,
+        'total_users': total_users,
         'total_applicants': total_applicants,
         'total_recruiters': total_recruiters,
+        'total_jobs': total_jobs,
+        'active_jobs': active_jobs,
         'total_applications': total_applications,
+        'total_revenue': total_revenue,
         'latest_jobs': latest_jobs,
         'latest_applications': latest_applications,
     }
 
     return render(request, 'Job_Post/admin_dashboard.html', context)
+
+def view_applicants(request):
+    return render(request, 'Job_Post/view_applicants.html')
+
+def view_recruiters(request):
+    return render(request, 'Job_Post/view_recruiters.html')
+
+def admin_reports(request):
+    return render(request, 'Job_Post/admin_reports.html')
+

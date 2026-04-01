@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">🚨 Reports</h2>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Reporter</th>
+                <th>Type</th>
+                <th>Reported Object</th>
+                <th>Reason</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.reporter.username }}</td>
+                <td>{{ report.report_type }}</td>
+
+                <td>
+                    {% if report.report_type == 'job' %}
+                        Job ID: {{ report.job.id }}
+                    {% else %}
+                        {{ report.reported_user.username }}
+                    {% endif %}
+                </td>
+
+                <td>{{ report.reason }}</td>
+
+                <td>
+                    {% if report.report_type == 'job' %}
+                        <a href="{% url 'delete_reported_job' report.job.id %}" class="btn btn-danger btn-sm">
+                            Delete Job
+                        </a>
+                    {% else %}
+                        <a href="{% url 'ban_user' report.reported_user.id %}" class="btn btn-warning btn-sm">
+                            Ban User
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}
+
+<a href="{% url 'delete_reported_job' report.job.id %}" 
+   class="btn btn-danger btn-sm"
+   onclick="return confirm('Are you sure you want to delete this job?');">
+   Delete Job
+</a>
+
+<a href="{% url 'ban_user' report.reported_user.id %}" 
+   class="btn btn-warning btn-sm"
+   onclick="return confirm('Are you sure you want to ban this user?');">
+   Ban User
+</a>
