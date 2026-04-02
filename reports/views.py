@@ -90,3 +90,11 @@ def ban_user(request, user_id):
     user.is_active = False
     user.save()
     return redirect('admin_reports')
+
+@staff_member_required
+def report_detail(request, report_id):
+    report = get_object_or_404(Report, id=report_id)
+
+    return render(request, 'reports/report_detail.html', {
+        'report': report
+    })

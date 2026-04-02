@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow-sm">
+        <div class="card-body text-center">
+
+            <h3>{{ profile_user.username }}</h3>
+            <p><strong>Email:</strong> {{ profile_user.email }}</p>
+
+            {% if profile_user.profile %}
+                <p><strong>Role:</strong> {{ profile_user.profile.role }}</p>
+            {% endif %}
+
+        </div>
+    </div>
+    {% if request.user.is_staff %}
+        <form method="POST" action="{% url 'ban_user' profile_user.id %}">
+            {% csrf_token %}
+            <button class="btn btn-danger mt-3">
+                🚫 Ban User
+            </button>
+        </form>
+    {% endif %}
+
+</div>
+
+{% endblock %}

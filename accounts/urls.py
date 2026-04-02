@@ -13,4 +13,6 @@ urlpatterns = [
     path('api/notifications/', notification_api, name='notification_api'),
     path('api/notification/read/<int:id>/', mark_notification_read, name='mark_notification_read'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('profile/<int:user_id>/', views.view_profile, name='view_profile'),
+    path('ban/<int:user_id>/', views.ban_user, name='ban_user'),
 ]

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
@@ -257,3 +258,22 @@ def mark_notification_read(request, id):
         return JsonResponse({"status": "success"})
     except:
         return JsonResponse({"status": "error"})
+
+def view_profile(request, user_id):
+    user_obj = get_object_or_404(User, id=user_id)
+
+    return render(request, 'accounts/view_profile.html', {
+        'profile_user': user_obj
+    })
+
+def ban_user(request, user_id):
+    if not request.user.is_staff:
+        return redirect('home')
+
+    user = get_object_or_404(User, id=user_id)
+    user.is_active = False
+    user.save()
+
+    messages.success(request, "User has been banned successfully.")
+
+    return redirect('view_profile', user_id=user.id)

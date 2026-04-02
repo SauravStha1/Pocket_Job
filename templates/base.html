@@ -35,6 +35,7 @@
 
       <!-- ================= ADMIN ================= -->
       {% if user.is_staff %}
+        <a href="{% url 'home' %}">Home</a>
         <a href="{% url 'admin_dashboard' %}">Dashboard</a>
         <a href="{% url 'view_applicants' %}">Applicants</a>
         <a href="{% url 'view_recruiters' %}">Recruiters</a>

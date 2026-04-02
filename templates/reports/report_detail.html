@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2 class="mb-4">🚨 Report Details</h2>
+
+    <!-- Report Info Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+
+            <h5>
+                <strong>Reporter:</strong> 
+                {% if report.reporter and report.reporter.user %}
+                    <a href="{% url 'view_profile' report.reporter.user.id %}">
+                        {{ report.reporter.user.username }}
+                    </a>
+                {% else %}
+                    Unknown
+                {% endif %}
+            </h5>
+
+            <p><strong>Type:</strong> {{ report.report_type|title }}</p>
+            <p><strong>Reason:</strong> {{ report.reason }}</p>
+
+            <p>
+                <strong>Status:</strong> 
+                {% if report.status == 'PENDING' %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                {% else %}
+                    <span class="badge bg-success">Resolved</span>
+                {% endif %}
+            </p>
+
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- JOB REPORT -->
+    <!-- ===================== -->
+    {% if report.report_type == 'job' and report.job %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <h4 class="mb-3">📄 Reported Job</h4>
+
+            <p><strong>Title:</strong> {{ report.job.title }}</p>
+
+            <!-- ✅ FIXED: recruiter instead of posted_by -->
+            <p>
+                <strong>Posted By:</strong> 
+                {% if report.job.recruiter %}
+                    <a href="{% url 'view_profile' report.job.recruiter.id %}" style="text-decoration:none;">
+                        {{ report.job.recruiter.username }}
+                    </a>
+                {% else %}
+                    Unknown
+                {% endif %}
+            </p>
+
+            <p><strong>Description:</strong> {{ report.job.description }}</p>
+            <p><strong>Location:</strong> {{ report.job.location }}</p>
+
+            <div class="mt-3">
+                <a href="{% url 'job_detail' report.job.id %}" class="btn btn-primary">
+                    View Job Page
+                </a>
+
+                {% if request.user.is_staff %}
+                <a href="{% url 'delete_reported_job' report.job.id %}" 
+                   class="btn btn-danger"
+                   onclick="return confirm('Delete this job?');">
+                   Delete Job
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===================== -->
+    <!-- USER REPORT -->
+    <!-- ===================== -->
+    {% if report.report_type == 'user' and report.reported_user %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <h4 class="mb-3">👤 Reported User</h4>
+
+            <p>
+                <strong>Username:</strong> 
+                <a href="{% url 'view_profile' report.reported_user.id %}" style="text-decoration:none;">
+                    {{ report.reported_user.username }}
+                </a>
+            </p>
+
+            <p><strong>Email:</strong> {{ report.reported_user.email }}</p>
+
+            {% if request.user.is_staff %}
+            <div class="mt-3">
+                <a href="{% url 'ban_user' report.reported_user.id %}" 
+                   class="btn btn-warning"
+                   onclick="return confirm('Ban this user?');">
+                   🚫 Ban User
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
