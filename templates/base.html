@@ -57,8 +57,9 @@
       <!-- ================= RECRUITER ================= -->
       {% elif user.profile.role == "RECRUITER" %}
         <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'job_list' %}">Posted Jobs</a>
         <a href="{% url 'recruiter_dashboard' %}">Dashboard</a>
+        <a href="{% url 'recruiter_jobs' %}">Posted Jobs</a>
+        <a href="{% url 'applied_applicants' %}">Applied Applicants</a>
         <a href="{% url 'inbox' %}">
           Inbox
           {% if unread_count > 0 %}

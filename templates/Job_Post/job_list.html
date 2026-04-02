@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Available Jobs</title>
+    <title>My Posted Jobs | Pocket Job</title>
 
     <style>
         body {
@@ -17,7 +17,7 @@
         }
 
         .job-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: auto;
         }
 
@@ -27,50 +27,53 @@
             margin-bottom: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: 0.2s;
         }
 
-        .job-card:hover {
-            transform: translateY(-3px);
+        .actions {
+            margin-top: 10px;
         }
 
-        .job-title {
-            margin: 0;
+        .btn {
+            padding: 6px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-right: 6px;
+            font-size: 14px;
         }
 
-        .job-meta {
-            color: #555;
-            margin: 5px 0;
-        }
-
-        .job-location {
-            font-weight: bold;
-            color: #007bff;
-        }
+        .btn-view { background: #28a745; color: white; }
+        .btn-edit { background: #ffc107; color: black; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-app { background: #6f42c1; color: white; }
     </style>
 </head>
 <body>
 
-<h2>Available Jobs</h2>
+<h2>My Posted Jobs</h2>
 
 <div class="job-container">
 
 {% for job in jobs %}
-<div class="job-card"
-     onclick="window.location.href='{% url 'job_detail' job.id %}'">
+<div class="job-card">
 
-    <h3 class="job-title">{{ job.title }}</h3>
+    <h3>{{ job.title }}</h3>
+    <p>{{ job.job_type }} | {{ job.location }}</p>
 
-    <p class="job-meta">{{ job.job_type }} | {{ job.tags }}</p>
+    <div class="actions">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-view">View</a>
 
-    {% if job.negotiable %}
-        <p><strong>Salary:</strong> Negotiable</p>
-    {% else %}
-        <p><strong>Salary:</strong> Nrs {{ job.min_salary }} - {{ job.max_salary }}</p>
-    {% endif %}
+        <a href="{% url 'job_edit' job.id %}" class="btn btn-edit">Edit</a>
 
-    <p class="job-location">📍 {{ job.location }}</p>
+        <a href="{% url 'job_delete' job.id %}"
+           class="btn btn-delete"
+           onclick="return confirm('Delete this job?');">
+           Delete
+        </a>
+
+        <a href="{% url 'job_applicants' job.id %}" class="btn btn-app">
+            Applicants
+        </a>
+    </div>
 
 </div>
 {% empty %}

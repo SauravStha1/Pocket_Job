@@ -121,9 +121,24 @@ def apply_job(request, pk):
 @login_required
 @recruiter_required
 def recruiter_dashboard(request):
-    jobs = Job.objects.filter(recruiter=request.user, is_active=True)
-    return render(request, 'Job_Post/recruiter_dashboard.html', {'jobs': jobs})
+    jobs = Job.objects.filter(
+        recruiter=request.user,
+        is_active=True
+    )
 
+    # ✅ TOTAL APPLICANTS COUNT
+    total_applicants = JobApplication.objects.filter(
+        job__recruiter=request.user
+    ).count()
+
+    # ✅ OPTIONAL (extra stats - good for future charts)
+    total_jobs = jobs.count()
+
+    return render(request, 'Job_Post/recruiter_dashboard.html', {
+        'jobs': jobs,
+        'total_applicants': total_applicants,
+        'total_jobs': total_jobs
+    })
 
 # ============================
 # LIST APPLICANTS (Recruiter)
@@ -299,7 +314,7 @@ def job_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Job updated successfully.")
-            return redirect("recruiter_dashboard")
+            return redirect("recruiter_jobs")
     else:
         form = JobForm(instance=job)
 
@@ -318,7 +333,7 @@ def job_delete(request, pk):
     job.is_active = False
     job.save()
     messages.success(request, "Job deleted successfully.")
-    return redirect("recruiter_dashboard")
+    return redirect("recruiter_jobs")
 
 # ============================
 # ALL APPLIED APPLICANTS (Recruiter)
@@ -478,3 +493,18 @@ def view_recruiters(request):
 def admin_reports(request):
     return render(request, 'Job_Post/admin_reports.html')
 
+# ============================
+# RECRUITER JOB LIST (Posted Jobs Page)
+# ============================
+
+@login_required
+@recruiter_required
+def recruiter_jobs(request):
+    jobs = Job.objects.filter(
+        recruiter=request.user,
+        is_active=True
+    ).order_by('-created_at')
+
+    return render(request, 'Job_Post/job_list.html', {
+        'jobs': jobs
+    })
