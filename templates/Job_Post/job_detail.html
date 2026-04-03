@@ -5,150 +5,247 @@
 
 <link rel="stylesheet" href="{% static 'css/job_detail.css' %}">
 
-<section class="job-detail">
+<div class="jd-wrapper">
 
-    <!-- BACK -->
-    <a href="{% url 'job_list' %}" class="back-link">← Back to Jobs</a>
+  <!-- BACK -->
+  <a href="{% url 'job_list' %}" class="jd-back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back to Jobs
+  </a>
 
-    <!-- HEADER -->
-    <div class="job-header">
-        <div>
-            <h1>{{ job.title }}</h1>
-            <p class="role">{{ job.job_type }}</p>
-            <p class="tags">{{ job.tags }}</p>
+  <div class="jd-layout">
+
+    <!-- ===================== LEFT MAIN ===================== -->
+    <main class="jd-main">
+
+      <!-- JOB HEADER CARD -->
+      <div class="jd-card jd-header-card">
+
+        {% if job.image %}
+          <img src="{{ job.image.url }}" alt="{{ job.title }}" class="jd-company-logo">
+        {% else %}
+          <div class="jd-logo-placeholder">
+            <span>{{ job.title|first|upper }}</span>
+          </div>
+        {% endif %}
+
+        <div class="jd-header-info">
+          <div class="jd-badges">
+            <span class="jd-badge jd-badge--type">{{ job.job_type }}</span>
+            {% if job.tags %}
+              {% for tag in job.tags.split %}
+                <span class="jd-badge jd-badge--tag">{{ tag }}</span>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+          <h1 class="jd-title">{{ job.title }}</h1>
+
+          <div class="jd-meta-row">
+            <span class="jd-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {{ job.location }}
+            </span>
+            <span class="jd-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Posted {{ job.created_at|date:"M d, Y" }}
+            </span>
+            {% if job.deadline %}
+            <span class="jd-meta-item jd-meta-item--deadline">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Deadline: {{ job.deadline|date:"M d, Y" }}
+            </span>
+            {% endif %}
+          </div>
         </div>
 
         <!-- SAVE BUTTON -->
         {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
-        <form action="{% url 'toggle_save_job' job.pk %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="save-btn">
-                {% if is_saved %}
-                    Saved ✓
-                {% else %}
-                    Save Job
-                {% endif %}
-            </button>
+        <form action="{% url 'toggle_save_job' job.pk %}" method="post" class="jd-save-form">
+          {% csrf_token %}
+          <button type="submit" class="jd-save-btn {% if is_saved %}jd-save-btn--saved{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="{% if is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            {% if is_saved %}Saved{% else %}Save Job{% endif %}
+          </button>
         </form>
         {% endif %}
-    </div>
 
-    <!-- SALARY -->
-    <p class="salary">
-        {% if job.negotiable %}
-            Salary: Negotiable
-        {% else %}
-            Salary: NPR {{ job.min_salary }} – {{ job.max_salary }}
-        {% endif %}
-    </p>
+      </div>
 
-    <p class="location">{{ job.location }}</p>
+      <!-- SALARY BANNER -->
+      <div class="jd-salary-banner">
+        <div class="jd-salary-label">Compensation</div>
+        <div class="jd-salary-value">
+          {% if job.negotiable %}
+            Negotiable
+          {% else %}
+            NPR {{ job.min_salary|floatformat:0 }} – {{ job.max_salary|floatformat:0 }}
+          {% endif %}
+        </div>
+      </div>
 
-    <hr>
+      <!-- DESCRIPTION -->
+      <div class="jd-card jd-section-card">
+        <h2 class="jd-section-title">
+          <span class="jd-section-dot"></span>
+          Job Description
+        </h2>
+        <div class="jd-prose">{{ job.description|linebreaks }}</div>
+      </div>
 
-    <!-- DESCRIPTION -->
-    <h3>Job Description</h3>
-    <p>{{ job.description }}</p>
+      <!-- RESPONSIBILITIES -->
+      <div class="jd-card jd-section-card">
+        <h2 class="jd-section-title">
+          <span class="jd-section-dot"></span>
+          Responsibilities
+        </h2>
+        <div class="jd-prose jd-responsibilities">{{ job.responsibilities|linebreaks }}</div>
+      </div>
 
-    <form method="POST" action="{% url 'report_job' job.id %}">
-        {% csrf_token %}
-
-        <textarea name="reason" class="form-control" placeholder="Report this job..." required></textarea>
-
-        <button class="btn btn-danger mt-2">🚨 Report Job</button>
-    </form>
-    <!-- RESPONSIBILITIES -->
-    <h3>Responsibilities</h3>
-    <p>{{ job.responsibilities }}</p>
-
-    <p class="posted">
-        Posted on {{ job.created_at|date:"M d, Y" }}
-    </p>
-
-    <!-- APPLY BUTTON -->
-    {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
-
-        {% if has_applied %}
-            <button class="applied-btn" disabled>Applied ✓</button>
-        {% else %}
+      <!-- APPLY BUTTON (MOBILE + BOTTOM) -->
+      <div class="jd-apply-bottom">
+        {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
+          {% if has_applied %}
+            <button class="jd-applied-btn" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Already Applied
+            </button>
+          {% else %}
             <form action="{% url 'apply_job' job.pk %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="apply-btn">Apply Now</button>
+              {% csrf_token %}
+              <button type="submit" class="jd-apply-btn">Apply Now</button>
             </form>
+          {% endif %}
+        {% elif not user.is_authenticated %}
+          <p class="jd-login-cta">
+            <a href="{% url 'login' %}">Log in</a> to apply for this position.
+          </p>
         {% endif %}
+      </div>
 
-    {% elif not user.is_authenticated %}
-        <p><a href="{% url 'login' %}">Login</a> to apply for this job.</p>
-    {% endif %}
+      <!-- REPORT JOB -->
+      <details class="jd-report-section">
+        <summary class="jd-report-toggle">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Report this job
+        </summary>
+        <form method="POST" action="{% url 'report_job' job.id %}" class="jd-report-form">
+          {% csrf_token %}
+          <textarea name="reason" class="jd-report-textarea" placeholder="Describe the issue with this listing..." required rows="3"></textarea>
+          <button type="submit" class="jd-report-btn">Submit Report</button>
+        </form>
+      </details>
 
-</section>
+    </main>
 
-<style>
+    <!-- ===================== RIGHT SIDEBAR ===================== -->
+    <aside class="jd-sidebar">
 
-/* CONTAINER */
-.job-detail {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 25px;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    background: #fff;
-}
+      <!-- APPLY CTA CARD (Desktop) -->
+      <div class="jd-card jd-cta-card">
+        {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
+          {% if has_applied %}
+            <button class="jd-applied-btn" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Already Applied
+            </button>
+          {% else %}
+            <form action="{% url 'apply_job' job.pk %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="jd-apply-btn">Apply Now</button>
+            </form>
+          {% endif %}
+        {% elif not user.is_authenticated %}
+          <a href="{% url 'login' %}" class="jd-apply-btn" style="display:block; text-align:center; text-decoration:none;">Log In to Apply</a>
+        {% else %}
+          <p class="jd-recruiter-note">You are viewing this as a recruiter.</p>
+        {% endif %}
+        <p class="jd-deadline-note">
+          {% if job.deadline %}
+            Closes {{ job.deadline|date:"M d, Y" }}
+          {% endif %}
+        </p>
+      </div>
 
-/* HEADER FLEX */
-.job-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+      <!-- JOB OVERVIEW CARD -->
+      <div class="jd-card jd-overview-card">
+        <h3 class="jd-card-title">Job Overview</h3>
+        <ul class="jd-overview-list">
+          <li>
+            <span class="jd-ov-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </span>
+            <div>
+              <span class="jd-ov-label">Job Type</span>
+              <span class="jd-ov-value">{{ job.job_type }}</span>
+            </div>
+          </li>
+          <li>
+            <span class="jd-ov-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <div>
+              <span class="jd-ov-label">Salary</span>
+              <span class="jd-ov-value">
+                {% if job.negotiable %}Negotiable{% else %}NPR {{ job.min_salary }} – {{ job.max_salary }}{% endif %}
+              </span>
+            </div>
+          </li>
+          <li>
+            <span class="jd-ov-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </span>
+            <div>
+              <span class="jd-ov-label">Location</span>
+              <span class="jd-ov-value">{{ job.location }}</span>
+            </div>
+          </li>
+          <li>
+            <span class="jd-ov-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </span>
+            <div>
+              <span class="jd-ov-label">Date Posted</span>
+              <span class="jd-ov-value">{{ job.created_at|date:"M d, Y" }}</span>
+            </div>
+          </li>
+          {% if job.deadline %}
+          <li>
+            <span class="jd-ov-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+            <div>
+              <span class="jd-ov-label">Deadline</span>
+              <span class="jd-ov-value">{{ job.deadline|date:"M d, Y" }}</span>
+            </div>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
 
-/* BACK LINK */
-.back-link {
-    display: inline-block;
-    margin-bottom: 15px;
-    color: #555;
-    text-decoration: none;
-}
+      <!-- RECRUITER CARD -->
+      <div class="jd-card jd-recruiter-card">
+        <h3 class="jd-card-title">Posted By</h3>
+        <div class="jd-recruiter-info">
+          <div class="jd-recruiter-avatar">
+            {{ job.recruiter.username|first|upper }}
+          </div>
+          <div>
+            <p class="jd-recruiter-name">{{ job.recruiter.username }}</p>
+            <p class="jd-recruiter-role">Recruiter</p>
+          </div>
+        </div>
+        {% if job.recruiter.email %}
+          <div class="jd-recruiter-contact">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            {{ job.recruiter.email }}
+          </div>
+        {% endif %}
+      </div>
 
-/* SAVE BUTTON (PRO STYLE) */
-.save-btn {
-    border: 1px solid #1e90ff;
-    background: white;
-    color: #1e90ff;
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: 0.2s;
-}
+    </aside>
 
-.save-btn:hover {
-    background: #1e90ff;
-    color: white;
-}
-
-/* APPLY BUTTON */
-.apply-btn {
-    background-color: #1e90ff;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-/* APPLIED */
-.applied-btn {
-    background-color: gray;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: not-allowed;
-}
-
-</style>
+  </div>
+</div>
 
 {% endblock %}

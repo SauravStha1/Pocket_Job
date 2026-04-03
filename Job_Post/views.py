@@ -504,7 +504,10 @@ def recruiter_jobs(request):
         recruiter=request.user,
         is_active=True
     ).order_by('-created_at')
+    total_applicants = JobApplication.objects.filter(job__recruiter=request.user).count()
+
 
     return render(request, 'Job_Post/job_list.html', {
-        'jobs': jobs
+        'jobs': jobs,
+        'total_applicants': total_applicants,
     })
