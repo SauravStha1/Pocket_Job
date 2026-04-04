@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.files.base import ContentFile
+
 from .models import Profile
 import random
 from .models import Notification
@@ -13,6 +14,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.contrib.auth.hashers import make_password
+from django.utils import timezone
+from datetime import timedelta
+from .models import EmailOTP
 
 # =========================
 # LOGIN VIEW
@@ -26,15 +31,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-
-            try:
-                if user.profile.role == "APPLICANT":
-                    return redirect("home")
-                elif user.profile.role == "RECRUITER":
-                    return redirect("home")
-            except:
-                return redirect("home")
-
+            return redirect("home")  # no need role check here
         else:
             messages.error(request, "Invalid username or password")
 
@@ -98,7 +95,6 @@ def register(request):
 # STEP 2: VERIFY OTP VIEW
 # =========================
 def verify_otp(request):
-
     if request.method == "POST":
 
         otp_entered = request.POST.get("otp")
@@ -113,20 +109,20 @@ def verify_otp(request):
             messages.error(request, "Invalid OTP.")
             return redirect("verify_otp")
 
-        # Create user
+        # ❌ REMOVE duplicate logic
+        # ✅ ALWAYS create user once
         user = User.objects.create_user(
             username=data["username"],
             email=data["email"],
             password=data["password"]
         )
 
-        # Create Profile
-        profile = Profile.objects.create(
-            user=user,
-            role=data["role"]
-        )
+        # ✅ USE SIGNAL PROFILE (important)
+        profile = user.profile
+        profile.role = data["role"]
+        profile.save()
 
-        # Restore uploaded image from session
+        # Restore image
         profile_pic_name = request.session.get("profile_pic_name")
         profile_pic_file = request.session.get("profile_pic_file")
 
@@ -137,21 +133,13 @@ def verify_otp(request):
             )
             profile.profile_pic.save(profile_pic_name, image_file, save=True)
 
-        # Clear session
-        request.session.pop("register_otp", None)
-        request.session.pop("register_data", None)
-        request.session.pop("profile_pic_name", None)
-        request.session.pop("profile_pic_file", None)
+        # ✅ CLEAR FULL SESSION (important fix)
+        request.session.flush()
 
         login(request, user)
-
-        if data["role"] == "APPLICANT":
-            return redirect("home")
-        elif data["role"] == "RECRUITER":
-            return redirect("home")
+        return redirect("home")
 
     return render(request, "accounts/verify_otp.html")
-
 
 # =========================
 # PROFILE PAGE
@@ -277,3 +265,170 @@ def ban_user(request, user_id):
     messages.success(request, "User has been banned successfully.")
 
     return redirect('view_profile', user_id=user.id)
+
+def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        users = User.objects.filter(email=email)
+
+        if not users.exists():
+            messages.error(request, "Email not registered.")
+            return redirect("forgot_password")
+
+        # Save email in session
+        request.session["reset_email"] = email
+
+        # If only ONE user → skip selection
+        if users.count() == 1:
+            user = users.first()
+            request.session["reset_user"] = user.id
+            return redirect("send_reset_otp")
+
+        # If multiple users → show selection page
+        request.session["reset_email"] = email
+        return redirect("select_account_page")
+    return render(request, "accounts/forgot_password.html")
+
+def select_account(request):
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
+
+        if not user_id:
+            messages.error(request, "Please select an account.")
+            return redirect("select_account_page")
+
+        request.session["reset_user"] = int(user_id)
+        request.session.modified = True
+
+        return redirect("send_reset_otp")
+
+    return redirect("select_account_page")
+    
+def verify_reset_otp(request):
+    if request.method == "POST":
+        otp_entered = request.POST.get("otp")
+        user_id = request.session.get("reset_user")
+
+        if not user_id:
+            messages.error(request, "Session expired.")
+            return redirect("forgot_password")
+
+        user = User.objects.get(id=user_id)
+
+        try:
+            otp_obj = EmailOTP.objects.get(user=user)
+        except EmailOTP.DoesNotExist:
+            messages.error(request, "No OTP found.")
+            return redirect("forgot_password")
+
+        # ✅ EXPIRY CHECK
+        if timezone.now() > otp_obj.created_at + timedelta(minutes=5):
+            messages.error(request, "OTP expired.")
+            return redirect("forgot_password")
+
+        if otp_obj.otp != otp_entered:
+            messages.error(request, "Invalid OTP.")
+            return redirect("verify_reset_otp")
+
+        request.session["otp_verified"] = True
+        return redirect("reset_password")
+
+    return render(request, "accounts/verify_reset_otp.html")
+
+def reset_password(request):
+    if request.method == "POST":
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect("reset_password")
+
+        user_id = request.session.get("reset_user")
+        otp_verified = request.session.get("otp_verified")
+
+        if not user_id or not otp_verified:
+            messages.error(request, "Unauthorized access.")
+            return redirect("forgot_password")
+
+        user = User.objects.get(id=user_id)
+
+        # ✅ CORRECT METHOD
+        user.set_password(password)
+        user.save()
+
+        # ✅ CLEAN SESSION
+        request.session.flush()
+
+        messages.success(request, "Password reset successful. Please login.")
+        return redirect("login")
+
+    return render(request, "accounts/reset_password.html")
+
+@login_required
+def change_password(request):
+    if request.method == "POST":
+        old_password = request.POST.get("old_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        user = request.user
+
+        if not user.check_password(old_password):
+            messages.error(request, "Old password is incorrect.")
+            return redirect("change_password")
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect("change_password")
+
+        user.set_password(new_password)
+        user.save()
+
+        messages.success(request, "Password changed successfully. Please login again.")
+        return redirect("login")
+
+    return render(request, "accounts/change_password.html")
+
+def send_reset_otp(request):
+    user_id = request.session.get("reset_user")
+
+    if not user_id:
+        messages.error(request, "Session expired.")
+        return redirect("forgot_password")
+
+    user = User.objects.get(id=user_id)
+
+    otp = str(random.randint(100000, 999999))
+
+    EmailOTP.objects.update_or_create(
+        user=user,
+        defaults={
+            "otp": otp,
+            "created_at": timezone.now()  # ✅ FORCE UPDATE TIME
+        }
+    )
+
+    send_mail(
+        subject="Pocket Job - Password Reset OTP",
+        message=f"Your OTP is {otp}",
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+
+    messages.success(request, f"OTP sent to {user.email}")
+    return redirect("verify_reset_otp")
+
+def select_account_page(request):
+    email = request.session.get("reset_email")
+
+    if not email:
+        return redirect("forgot_password")
+
+    users = User.objects.filter(email=email)
+
+    return render(request, "accounts/select_account.html", {
+        "users": users
+    })

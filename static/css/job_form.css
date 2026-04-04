@@ -1,0 +1,509 @@
+/* =========================================
+   JOB POST FORM — POCKET JOB
+   Premium multi-section form UI
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:wght@600;700&display=swap');
+
+:root {
+  --jf-blue: #1a5cff;
+  --jf-blue-soft: #e8effe;
+  --jf-blue-dark: #1348d4;
+
+  --jf-green: #0e9f6e;
+  --jf-green-soft: #e3f9f0;
+
+  --jf-purple: #7c3aed;
+  --jf-purple-soft: #ede9fe;
+
+  --jf-amber: #d97706;
+  --jf-amber-soft: #fef3c7;
+
+  --jf-coral: #e05a2b;
+  --jf-coral-soft: #fef0eb;
+
+  --jf-esewa: #6abf4b;
+  --jf-esewa-dark: #50a332;
+  --jf-esewa-soft: #edf8e9;
+
+  --jf-khalti: #5c2d91;
+  --jf-khalti-dark: #4a1f7a;
+  --jf-khalti-soft: #f0ebfa;
+
+  --jf-bg: #f4f5f8;
+  --jf-white: #ffffff;
+  --jf-border: #e4e6ec;
+  --jf-border-focus: #1a5cff;
+  --jf-text: #1a1d2e;
+  --jf-muted: #6b7280;
+  --jf-subtle: #9ca3af;
+
+  --jf-radius: 14px;
+  --jf-radius-sm: 8px;
+  --jf-radius-input: 8px;
+
+  --jf-shadow: 0 2px 12px rgba(0, 0, 0, 0.055);
+  --jf-shadow-focus: 0 0 0 3px rgba(26, 92, 255, 0.15);
+
+  --jf-font: 'DM Sans', system-ui, sans-serif;
+  --jf-display: 'Fraunces', Georgia, serif;
+}
+
+/* ---- WRAPPER ---- */
+.jf-wrapper {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 36px 24px 72px;
+  font-family: var(--jf-font);
+  background: var(--jf-bg);
+  min-height: 100vh;
+}
+
+/* ---- PAGE HEADER ---- */
+.jf-page-header {
+  margin-bottom: 28px;
+}
+
+.jf-page-title {
+  font-family: var(--jf-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--jf-text);
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.jf-page-sub {
+  font-size: 14px;
+  color: var(--jf-muted);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ---- FORM ---- */
+.jf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---- CARD ---- */
+.jf-card {
+  background: var(--jf-white);
+  border: 1px solid var(--jf-border);
+  border-radius: var(--jf-radius);
+  padding: 30px 32px;
+  box-shadow: var(--jf-shadow);
+}
+
+/* ---- SECTION HEADER ---- */
+.jf-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 26px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--jf-border);
+}
+
+.jf-section-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.jf-icon--blue   { background: var(--jf-blue-soft);   color: var(--jf-blue);   }
+.jf-icon--green  { background: var(--jf-green-soft);  color: var(--jf-green);  }
+.jf-icon--purple { background: var(--jf-purple-soft); color: var(--jf-purple); }
+.jf-icon--amber  { background: var(--jf-amber-soft);  color: var(--jf-amber);  }
+.jf-icon--coral  { background: var(--jf-coral-soft);  color: var(--jf-coral);  }
+
+.jf-section-title {
+  font-family: var(--jf-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--jf-text);
+  margin: 0 0 3px;
+  letter-spacing: -0.01em;
+}
+
+.jf-section-sub {
+  font-size: 13px;
+  color: var(--jf-muted);
+  margin: 0;
+  font-weight: 400;
+}
+
+.jf-optional {
+  font-family: var(--jf-font);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f2f6;
+  color: var(--jf-muted);
+  vertical-align: middle;
+  margin-left: 6px;
+  letter-spacing: 0.03em;
+}
+
+/* ---- 2-COL GRID ---- */
+.jf-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+}
+
+/* ---- FIELD ---- */
+.jf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jf-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--jf-text);
+  letter-spacing: 0.01em;
+}
+
+.jf-label svg { color: var(--jf-subtle); flex-shrink: 0; }
+
+.jf-hint {
+  font-size: 12px;
+  color: var(--jf-subtle);
+  font-weight: 400;
+}
+
+/* ---- INPUT STYLING (targeting Django-rendered inputs) ---- */
+.jf-input-wrap input[type="text"],
+.jf-input-wrap input[type="number"],
+.jf-input-wrap select,
+.jf-input-wrap textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--jf-border);
+  border-radius: var(--jf-radius-input);
+  font-size: 14px;
+  font-family: var(--jf-font);
+  color: var(--jf-text);
+  background: #fafbfc;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+  box-sizing: border-box;
+  appearance: None;  
+  -webkit-appearance: none;
+}
+
+.jf-input-wrap input[type="text"]:focus,
+.jf-input-wrap input[type="number"]:focus,
+.jf-input-wrap select:focus,
+.jf-input-wrap textarea:focus {
+  border-color: var(--jf-border-focus);
+  background: var(--jf-white);
+  box-shadow: var(--jf-shadow-focus);
+}
+
+.jf-input-wrap select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* TEXTAREA */
+.jf-textarea-wrap textarea {
+  min-height: 160px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
+/* PREFIX INPUT (salary) */
+.jf-input-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.jf-prefix {
+  position: absolute;
+  left: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--jf-muted);
+  pointer-events: none;
+  z-index: 1;
+  letter-spacing: 0.04em;
+}
+
+.jf-input-prefix input[type="number"] {
+  padding-left: 52px !important;
+}
+
+/* ---- CHECKBOX ROW ---- */
+.jf-checkbox-row {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--jf-border);
+}
+
+.jf-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.jf-checkbox-wrap input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--jf-blue);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.jf-checkbox-text {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--jf-text);
+  margin-bottom: 2px;
+}
+
+.jf-checkbox-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--jf-muted);
+}
+
+/* ---- UPLOAD BOX ---- */
+.jf-upload-box {
+  border: 2px dashed var(--jf-border);
+  border-radius: var(--jf-radius-sm);
+  padding: 36px 24px;
+  text-align: center;
+  background: #fafbfc;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  cursor: pointer;
+}
+
+.jf-upload-box:hover {
+  border-color: var(--jf-blue);
+  background: var(--jf-blue-soft);
+}
+
+.jf-upload-icon {
+  color: var(--jf-subtle);
+  margin-bottom: 10px;
+}
+
+.jf-upload-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--jf-text);
+  margin: 0 0 4px;
+}
+
+.jf-upload-hint {
+  font-size: 12px;
+  color: var(--jf-subtle);
+  margin: 0 0 16px;
+}
+
+.jf-upload-input-wrap input[type="file"] {
+  font-size: 13px;
+  font-family: var(--jf-font);
+  color: var(--jf-muted);
+  cursor: pointer;
+}
+
+/* ---- PAYMENT CARD ---- */
+.jf-payment-card {
+  border: 1.5px solid var(--jf-border);
+}
+
+.jf-payment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: var(--jf-text);
+}
+
+.jf-payment-header svg { color: var(--jf-muted); }
+
+.jf-payment-sub {
+  font-size: 14px;
+  color: var(--jf-muted);
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.jf-payment-sub strong { color: var(--jf-text); }
+
+.jf-payment-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--jf-green);
+  background: var(--jf-green-soft);
+  border: 1px solid #a7f3d0;
+  border-radius: var(--jf-radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.jf-payment-note svg { flex-shrink: 0; }
+
+.jf-pay-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.jf-pay-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 2px solid transparent;
+  border-radius: var(--jf-radius-sm);
+  cursor: pointer;
+  font-family: var(--jf-font);
+  text-align: left;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.jf-pay-btn svg {
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.18s, transform 0.18s;
+}
+
+.jf-pay-btn:hover svg {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+/* eSewa */
+.jf-pay-btn--esewa {
+  background: var(--jf-esewa-soft);
+  border-color: #b8e8a3;
+  color: var(--jf-esewa-dark);
+}
+
+.jf-pay-btn--esewa:hover {
+  background: var(--jf-esewa);
+  border-color: var(--jf-esewa);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(106, 191, 75, 0.3);
+}
+
+/* Khalti */
+.jf-pay-btn--khalti {
+  background: var(--jf-khalti-soft);
+  border-color: #cdb5f0;
+  color: var(--jf-khalti-dark);
+}
+
+.jf-pay-btn--khalti:hover {
+  background: var(--jf-khalti);
+  border-color: var(--jf-khalti);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(92, 45, 145, 0.3);
+}
+
+/* Pay logos */
+.jf-pay-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  font-family: var(--jf-display);
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.jf-pay-logo--esewa {
+  background: var(--jf-esewa);
+  color: white;
+}
+
+.jf-pay-btn--esewa:hover .jf-pay-logo--esewa {
+  background: white;
+  color: var(--jf-esewa-dark);
+}
+
+.jf-pay-logo--khalti {
+  background: var(--jf-khalti);
+  color: white;
+}
+
+.jf-pay-btn--khalti:hover .jf-pay-logo--khalti {
+  background: white;
+  color: var(--jf-khalti-dark);
+}
+
+.jf-pay-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jf-pay-name {
+  font-size: 15px;
+  font-weight: 700;
+  display: block;
+  font-family: var(--jf-display);
+  letter-spacing: -0.01em;
+}
+
+.jf-pay-desc {
+  font-size: 12px;
+  display: block;
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 760px) {
+  .jf-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .jf-pay-btns {
+    grid-template-columns: 1fr;
+  }
+
+  .jf-card {
+    padding: 22px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .jf-wrapper { padding: 16px 14px 56px; }
+  .jf-page-title { font-size: 22px; }
+  .jf-pay-btn { flex-wrap: wrap; }
+}

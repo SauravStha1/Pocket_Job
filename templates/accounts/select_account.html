@@ -1,0 +1,15 @@
+<h3>Select Account</h3>
+
+<form method="POST" action="{% url 'select_account' %}">
+    {% csrf_token %}
+
+    {% for user in users %}
+        <div>
+            <input type="radio" name="user_id" value="{{ user.id }}" required>
+            <label>{{ user.username }}</label>
+        </div>
+    {% endfor %}
+
+    <button type="submit">Continue</button>
+    
+</form>

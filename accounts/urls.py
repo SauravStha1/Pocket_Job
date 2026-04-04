@@ -15,4 +15,12 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('profile/<int:user_id>/', views.view_profile, name='view_profile'),
     path('ban/<int:user_id>/', views.ban_user, name='ban_user'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('verify-reset-otp/', views.verify_reset_otp, name='verify_reset_otp'),
+    path('reset-password/', views.reset_password, name='reset_password'),
+
+    path('change-password/', views.change_password, name='change_password'),
+    path('select-account/', views.select_account, name='select_account'),
+    path('send-reset-otp/', views.send_reset_otp, name='send_reset_otp'),
+    path('select-account-page/', views.select_account_page, name='select_account_page'),
 ]
