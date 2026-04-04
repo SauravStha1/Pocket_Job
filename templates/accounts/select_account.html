@@ -1,15 +1,251 @@
-<h3>Select Account</h3>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Account | Pocket Job</title>
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+  <style>
+    /* ── Account selection cards ── */
+    .account-list {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      margin-bottom: 22px;
+    }
 
-<form method="POST" action="{% url 'select_account' %}">
-    {% csrf_token %}
+    .account-option {
+      position: relative;
+    }
 
-    {% for user in users %}
-        <div>
-            <input type="radio" name="user_id" value="{{ user.id }}" required>
-            <label>{{ user.username }}</label>
+    /* Hide native radio */
+    .account-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .account-card-label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--off-white);
+      cursor: pointer;
+      transition: border-color 0.18s, background 0.18s, box-shadow 0.18s, transform 0.15s;
+    }
+
+    .account-card-label:hover {
+      border-color: var(--blue);
+      background: rgba(33, 118, 204, 0.04);
+      box-shadow: 0 4px 16px rgba(33, 118, 204, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* Checked state */
+    .account-option input[type="radio"]:checked + .account-card-label {
+      border-color: var(--blue);
+      background: rgba(33, 118, 204, 0.06);
+      box-shadow: 0 0 0 3.5px rgba(33, 118, 204, 0.13), 0 4px 16px rgba(33, 118, 204, 0.12);
+    }
+
+    /* Avatar */
+    .account-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--navy-mid), var(--blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+    }
+
+    .account-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .account-username {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      display: block;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .account-hint {
+      font-size: 0.76rem;
+      color: var(--ink-3);
+    }
+
+    /* Custom radio indicator */
+    .account-radio-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.18s;
+    }
+
+    .account-radio-dot::after {
+      content: '';
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--blue);
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.15s, transform 0.15s;
+    }
+
+    .account-option input[type="radio"]:checked + .account-card-label .account-radio-dot {
+      border-color: var(--blue);
+    }
+
+    .account-option input[type="radio"]:checked + .account-card-label .account-radio-dot::after {
+      opacity: 1;
+      transform: scale(1);
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-wrapper">
+
+  <!-- ── LEFT BRANDING PANEL ── -->
+  <div class="auth-panel-left">
+    <div class="dots"></div>
+    <div class="glow"></div>
+
+    <div class="left-top">
+      <div class="brand-logo-wrap">
+        <img src="{% static 'images/pocketJob_logo.png' %}" alt="Pocket Job" class="brand-logo-img">
+        <span class="brand-name">Pocket<span>Job</span></span>
+      </div>
+
+      <h2 class="left-headline">
+        Multiple accounts,<br>
+        <em>one seamless</em><br>
+        experience.
+      </h2>
+      <p class="left-sub">
+        Easily switch between your Applicant and Recruiter profiles
+        on Pocket Job — all from one login.
+      </p>
+    </div>
+
+    <div class="left-bottom">
+      <div class="left-pill-row">
+        <span class="left-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          Multi-profile
+        </span>
+        <span class="left-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+          Instant Switch
+        </span>
+        <span class="left-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Secure
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT FORM PANEL ── -->
+  <div class="auth-panel-right">
+    <div class="auth-card">
+
+      <div class="auth-card-head">
+        <h2>Choose your <span>account</span> 👤</h2>
+        <p class="subtitle">Select the account you'd like to continue with</p>
+      </div>
+      <div class="auth-divider"></div>
+
+      <!-- Django messages -->
+      {% for message in messages %}
+      <div class="auth-alerts">
+        <div class="alert">
+          <svg class="alert-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+          </svg>
+          {{ message }}
         </div>
-    {% endfor %}
+      </div>
+      {% endfor %}
 
-    <button type="submit">Continue</button>
-    
-</form>
+      <form method="POST" action="{% url 'select_account' %}">
+        {% csrf_token %}
+
+        <div class="account-list">
+          {% for user in users %}
+          <div class="account-option">
+            <input
+              type="radio"
+              name="user_id"
+              id="user_{{ user.id }}"
+              value="{{ user.id }}"
+              required
+            >
+            <label class="account-card-label" for="user_{{ user.id }}">
+              <div class="account-avatar">{{ user.username|slice:":1" }}</div>
+              <div class="account-info">
+                <span class="account-username">{{ user.username }}</span>
+                <span class="account-hint">Pocket Job Account</span>
+              </div>
+              <div class="account-radio-dot"></div>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn-primary">Continue with Selected Account →</button>
+
+      </form>
+
+      <div class="auth-footer">
+        <p class="bottom-text">
+          Not your account? <a href="{% url 'login' %}">Back to Login</a>
+        </p>
+
+        <div class="trust-row">
+          <span class="trust-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            SSL Secured
+          </span>
+          <span class="trust-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+            Verified Accounts
+          </span>
+          <span class="trust-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+            100% Private
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

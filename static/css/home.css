@@ -342,6 +342,7 @@ a   { text-decoration: none; color: inherit; }
 .jm-row svg { flex-shrink: 0; color: var(--ink-3); }
 
 .salary strong  { color: var(--ink); font-weight: 600; }
+.location { color: var(--ink-2); }
 .deadline strong { color: var(--red); font-weight: 600; }
 
 .job-foot {

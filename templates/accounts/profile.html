@@ -424,13 +424,13 @@
           <p class="pj-section-title"><i class="fa-solid fa-book-open"></i> About the Company</p>
           <p class="pj-about">{{ profile.description|default:"No description provided." }}</p>
         </div>
-        <form method="POST" action="{% url 'report_user' user.id %}">
-            {% csrf_token %}
-
-            <textarea name="reason" class="form-control" placeholder="Report this user..." required></textarea>
-
-            <button class="btn btn-danger mt-2">🚨 Report User</button>
-        </form>
+        {% if profile.role == "RECRUITER" and request.user != profile.user %}
+            <form method="POST" action="{% url 'report_user' profile.user.id %}">
+                {% csrf_token %}
+                <textarea name="reason" class="form-control" placeholder="Report this user..." required></textarea>
+                <button class="btn btn-danger mt-2">🚨 Report User</button>
+            </form>
+        {% endif %}
 
       {% endif %}
 
@@ -439,6 +439,11 @@
         <a href="{% url 'edit_profile' %}" class="pj-btn pj-btn-primary">
           <i class="fa-solid fa-pen-to-square"></i> Edit Profile
         </a>
+
+        <a href="{% url 'change_password' %}" class="pj-btn pj-btn-primary">
+            <i class="fa-solid fa-key"></i> Change Password
+        </a>
+
         <form method="POST" action="{% url 'logout' %}" style="margin:0;">
           {% csrf_token %}
           <button type="submit" class="pj-btn pj-btn-danger">

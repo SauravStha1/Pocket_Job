@@ -1,36 +1,145 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Verify OTP | Pocket Job</title>
-    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP | Pocket Job</title>
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 </head>
 <body>
 
-<div class="auth-container">
+<div class="auth-wrapper">
+
+  <!-- ── LEFT BRANDING PANEL ── -->
+  <div class="auth-panel-left">
+    <div class="dots"></div>
+    <div class="glow"></div>
+
+    <div class="left-top">
+      <div class="brand-logo-wrap">
+        <img src="{% static 'images/pocketJob_logo.png' %}" alt="Pocket Job" class="brand-logo-img">
+        <span class="brand-name">Pocket<span>Job</span></span>
+      </div>
+
+      <h2 class="left-headline">
+        One step away<br>
+        from your <em>dream<br>
+        career.</em>
+      </h2>
+      <p class="left-sub">
+        We sent a secure one-time code to your email.
+        Verify now to activate your Pocket Job account.
+      </p>
+    </div>
+
+    <div class="left-bottom">
+      <div class="left-pill-row">
+        <span class="left-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Encrypted OTP
+        </span>
+        <span class="left-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Expires in 10 min
+        </span>
+        <span class="left-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+          One-time Use
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT FORM PANEL ── -->
+  <div class="auth-panel-right">
     <div class="auth-card">
 
-        <h2>Verify OTP</h2>
-        <p class="subtitle">Enter the OTP sent to your email</p>
+      <div class="auth-card-head">
+        <h2>Check your <span>email</span> 📬</h2>
+        <p class="subtitle">We've sent a 6-digit verification code. Enter it below to activate your account.</p>
+      </div>
+      <div class="auth-divider"></div>
 
-        {% for message in messages %}
-            <div class="alert">{{ message }}</div>
-        {% endfor %}
+      <!-- OTP Badge -->
+      <div class="otp-badge">
+        <div class="otp-badge-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="otp-badge-text">
+          <strong>Secure Verification Required</strong>
+          <span>Your OTP is valid for 10 minutes</span>
+        </div>
+      </div>
 
-        <form method="POST">
-            {% csrf_token %}
+      <!-- Django messages -->
+      {% for message in messages %}
+      <div class="auth-alerts">
+        <div class="alert">
+          <svg class="alert-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+          </svg>
+          {{ message }}
+        </div>
+      </div>
+      {% endfor %}
 
-            <label>OTP Code</label>
-            <input type="text" name="otp" placeholder="Enter OTP" required>
+      <form method="POST">
+        {% csrf_token %}
 
-            <button type="submit" class="btn-success">Verify OTP & Create Account</button>
-        </form>
+        <div class="field-group">
+          <div class="field">
+            <label for="id_otp" style="text-align:center;font-size:0.85rem;letter-spacing:0.04em;text-transform:uppercase;">
+              Enter OTP Code
+            </label>
+            <div class="otp-input-wrap">
+              <input
+                type="text"
+                id="id_otp"
+                name="otp"
+                placeholder="— — — — — —"
+                maxlength="6"
+                autocomplete="one-time-code"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autofocus
+                required
+              >
+            </div>
+          </div>
+        </div>
 
+        <button type="submit" class="btn-success">Verify &amp; Activate Account ✓</button>
+
+      </form>
+
+      <div class="auth-footer">
         <p class="bottom-text">
-            Didn't receive OTP? <a href="{% url 'register' %}">Register Again</a>
+          Didn't receive the code? &nbsp;
+          <a href="{% url 'register' %}">Register again</a>
         </p>
 
+        <div class="trust-row">
+          <span class="trust-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Encrypted
+          </span>
+          <span class="trust-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+            One-time Only
+          </span>
+          <span class="trust-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Auto-expires
+          </span>
+        </div>
+      </div>
+
     </div>
+  </div>
+
 </div>
 
 </body>
