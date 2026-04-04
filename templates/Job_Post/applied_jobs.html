@@ -176,6 +176,15 @@
     color: var(--brand);
   }
 
+  /* ── Card Actions (badge + button grouped) ── */
+  .aj-card-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
   /* ── Status Badge ── */
   .aj-badge {
     display: inline-flex;
@@ -186,7 +195,6 @@
     padding: 5px 12px;
     border-radius: 999px;
     white-space: nowrap;
-    flex-shrink: 0;
   }
 
   .aj-badge.pending {
@@ -205,6 +213,48 @@
     background: var(--rejected-bg);
     color: var(--rejected-text);
     border: 1px solid var(--rejected-bdr);
+  }
+
+  /* ── View Job Button ── */
+  .aj-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--brand-light);
+    color: var(--brand);
+    font-family: var(--font);
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 5px 13px;
+    border-radius: 8px;
+    border: 1px solid #b3d9f7;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .15s, color .15s, border-color .15s, transform .12s, box-shadow .15s;
+    letter-spacing: .01em;
+  }
+
+  .aj-view-btn i {
+    font-size: .72rem;
+    transition: transform .15s;
+  }
+
+  .aj-view-btn:hover {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(44,155,232,.25);
+    text-decoration: none;
+  }
+
+  .aj-view-btn:hover i {
+    transform: translateX(2px);
+  }
+
+  .aj-view-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
   }
 
   /* ── Summary Strip ── */
@@ -232,6 +282,7 @@
     margin-bottom: 3px;
   }
 
+  .aj-sum-num.total    { color: var(--brand); }
   .aj-sum-num.pending  { color: #F59E0B; }
   .aj-sum-num.hired    { color: #10B981; }
   .aj-sum-num.rejected { color: #EF4444; }
@@ -294,10 +345,22 @@
     color: #fff;
   }
 
+  /* ── Responsive ── */
   @media (max-width: 580px) {
-    .aj-card    { flex-wrap: wrap; }
-    .aj-badge   { width: 100%; justify-content: center; }
-    .aj-summary { grid-template-columns: 1fr; }
+    .aj-card {
+      flex-wrap: wrap;
+    }
+
+    .aj-card-actions {
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .aj-summary {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 
@@ -313,26 +376,24 @@
         </div>
       </div>
       {% if applications %}
-        <span class="aj-count">{{ applications|length }} applied</span>
+        <span class="aj-count">{{ total_applied }} applied</span>
       {% endif %}
     </div>
 
     {% if applications %}
 
-      <!-- Summary Strip -->
+      <!-- Summary Strip — counts passed from views.py context -->
       <div class="aj-summary">
         <div class="aj-sum-card">
-          <span class="aj-sum-num pending">
-            {% with applications|length as total %}{{ total }}{% endwith %}
-          </span>
+          <span class="aj-sum-num total">{{ total_applied }}</span>
           <span class="aj-sum-label">Total Applied</span>
         </div>
         <div class="aj-sum-card">
-          <span class="aj-sum-num hired">—</span>
+          <span class="aj-sum-num hired">{{ hired_count }}</span>
           <span class="aj-sum-label">Hired</span>
         </div>
         <div class="aj-sum-card">
-          <span class="aj-sum-num pending">—</span>
+          <span class="aj-sum-num pending">{{ pending_count }}</span>
           <span class="aj-sum-label">Pending</span>
         </div>
       </div>
@@ -341,6 +402,7 @@
       {% for app in applications %}
         <div class="aj-card status-{{ app.status }}">
 
+          <!-- Status Icon -->
           <div class="aj-card-icon">
             {% if app.status == 'HIRED' %}
               <i class="fa-solid fa-circle-check"></i>
@@ -351,6 +413,7 @@
             {% endif %}
           </div>
 
+          <!-- Job Info -->
           <div class="aj-card-body">
             <p class="aj-job-title">{{ app.job.title }}</p>
             <div class="aj-meta">
@@ -367,25 +430,34 @@
             </div>
           </div>
 
-          <!-- Status Badge -->
-          <span class="aj-badge
-            {% if app.status == 'PENDING' %}pending
-            {% elif app.status == 'HIRED' %}hired
-            {% else %}rejected
-            {% endif %}">
-            {% if app.status == 'PENDING' %}
-              <i class="fa-solid fa-clock"></i> Pending
-            {% elif app.status == 'HIRED' %}
-              <i class="fa-solid fa-check"></i> Hired
-            {% else %}
-              <i class="fa-solid fa-xmark"></i> Rejected
-            {% endif %}
-          </span>
+          <!-- Badge + View Job Button -->
+          <div class="aj-card-actions">
+
+            <span class="aj-badge
+              {% if app.status == 'PENDING' %}pending
+              {% elif app.status == 'HIRED' %}hired
+              {% else %}rejected
+              {% endif %}">
+              {% if app.status == 'PENDING' %}
+                <i class="fa-solid fa-clock"></i> Pending
+              {% elif app.status == 'HIRED' %}
+                <i class="fa-solid fa-check"></i> Hired
+              {% else %}
+                <i class="fa-solid fa-xmark"></i> Rejected
+              {% endif %}
+            </span>
+
+            <a href="{% url 'job_detail' app.job.id %}" class="aj-view-btn">
+              View Job <i class="fa-solid fa-arrow-right"></i>
+            </a>
+
+          </div>
 
         </div>
       {% endfor %}
 
     {% else %}
+      <!-- Empty State -->
       <div class="aj-empty">
         <div class="aj-empty-icon"><i class="fa-solid fa-paper-plane"></i></div>
         <h3>No applications yet</h3>

@@ -415,9 +415,15 @@ def applied_jobs(request):
         applicant=request.user.profile
     ).select_related('job').order_by('-applied_at')
 
-    return render(request, 'Job_Post/applied_jobs.html', {
-        'applications': applications
-    })
+    context = {
+        'applications': applications,
+        'total_applied': applications.count(),
+        'hired_count': applications.filter(status='HIRED').count(),
+        'pending_count': applications.filter(status='PENDING').count(),
+        'rejected_count': applications.filter(status='REJECTED').count(),
+    }
+
+    return render(request, 'Job_Post/applied_jobs.html', context)
 
 
 def create_notification(user, message, notification_type, link=None):

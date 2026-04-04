@@ -1,20 +1,422 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<h2 style="padding:20px;">🔔 Notifications</h2>
+<style>
+  /* ── Import same fonts as auth pages ── */
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-<div style="width:70%; margin:auto;">
+  /* ── Variables (mirrors auth.css + home.css) ── */
+  :root {
+    --navy:       #0d2550;
+    --navy-mid:   #163d7a;
+    --blue:       #2176cc;
+    --blue-light: #3b8fe8;
+    --cyan:       #7dd3fc;
+    --ink:        #0c1b35;
+    --ink-2:      #44556f;
+    --ink-3:      #8fa3bc;
+    --border:     #e2eaf4;
+    --border-lt:  #eef2f9;
+    --card:       #ffffff;
+    --bg:         #f4f7fb;
+    --green:      #16a34a;
+    --green-bg:   #dcfce7;
+    --r:          12px;
+    --r-sm:       8px;
+    --sh:         0 4px 20px rgba(12,27,53,0.08);
+    --sh-lg:      0 14px 36px rgba(12,27,53,0.13);
+    --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ── Page wrapper ── */
+  .notif-page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Page header ── */
+  .notif-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+
+  .notif-header-left {}
+
+  .notif-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: rgba(33,118,204,0.08);
+    border: 1px solid rgba(33,118,204,0.15);
+    border-radius: 99px;
+    padding: 4px 11px;
+    margin-bottom: 12px;
+  }
+
+  .notif-eyebrow svg { color: var(--blue); }
+
+  .notif-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin: 0 0 7px;
+  }
+
+  .notif-title span { color: var(--blue); }
+
+  .notif-subtitle {
+    font-size: 0.88rem;
+    color: var(--ink-3);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  /* Count badge */
+  .notif-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 4px;
+    box-shadow: 0 4px 14px rgba(13,37,80,0.22);
+    font-family: 'Sora', sans-serif;
+  }
+
+  .notif-count-badge .badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.55; transform: scale(0.7); }
+  }
+
+  /* ── Divider ── */
+  .notif-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 28px;
+  }
+
+  /* ── Notification list ── */
+  .notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ── Notification card ── */
+  .notif-card {
+    position: relative;
+    background: var(--card);
+    border: 1.5px solid var(--border-lt);
+    border-radius: var(--r);
+    padding: 18px 20px 18px 24px;
+    box-shadow: var(--sh);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), border-color 0.18s var(--ease);
+    overflow: hidden;
+    cursor: default;
+    animation: cardIn 0.4s var(--ease) both;
+  }
+
+  /* Staggered entrance */
+  .notif-card:nth-child(1)  { animation-delay: 0.04s; }
+  .notif-card:nth-child(2)  { animation-delay: 0.09s; }
+  .notif-card:nth-child(3)  { animation-delay: 0.14s; }
+  .notif-card:nth-child(4)  { animation-delay: 0.19s; }
+  .notif-card:nth-child(5)  { animation-delay: 0.24s; }
+  .notif-card:nth-child(6)  { animation-delay: 0.28s; }
+  .notif-card:nth-child(n+7){ animation-delay: 0.30s; }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Left accent bar */
+  .notif-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--navy-mid), var(--blue));
+    border-radius: 4px 0 0 4px;
+  }
+
+  .notif-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sh-lg);
+    border-color: #b9cafc;
+  }
+
+  .notif-card:hover::before {
+    background: linear-gradient(180deg, var(--blue), var(--cyan));
+  }
+
+  /* Top-right glow on hover */
+  .notif-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(ellipse at top right, rgba(33,118,204,0.07), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .notif-card:hover::after { opacity: 1; }
+
+  /* ── Icon bubble ── */
+  .notif-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(13,37,80,0.08), rgba(33,118,204,0.1));
+    border: 1px solid rgba(33,118,204,0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--blue);
+    transition: background 0.18s, transform 0.18s;
+  }
+
+  .notif-card:hover .notif-icon-wrap {
+    background: linear-gradient(135deg, var(--navy-mid), var(--blue));
+    color: #fff;
+    transform: scale(1.06);
+  }
+
+  /* ── Card body ── */
+  .notif-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notif-message {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.6;
+    margin: 0 0 8px;
+    display: block;
+  }
+
+  .notif-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .notif-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .notif-time svg { flex-shrink: 0; }
+
+  /* ── Empty state ── */
+  .notif-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 72px 32px;
+    background: var(--card);
+    border: 1.5px solid var(--border-lt);
+    border-radius: 18px;
+    box-shadow: var(--sh);
+    animation: cardIn 0.45s var(--ease) both;
+  }
+
+  .notif-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(13,37,80,0.06), rgba(33,118,204,0.09));
+    border: 1.5px solid rgba(33,118,204,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-3);
+    margin-bottom: 22px;
+  }
+
+  .notif-empty h3 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+
+  .notif-empty p {
+    font-size: 0.875rem;
+    color: var(--ink-3);
+    line-height: 1.7;
+    max-width: 300px;
+    margin: 0;
+  }
+
+  .notif-empty-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+
+  .notif-empty-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-3);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 5px 12px;
+  }
+
+  .notif-empty-pill svg { color: var(--blue); }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .notif-page { padding: 32px 16px 60px; }
+    .notif-card { padding: 16px 16px 16px 22px; gap: 12px; }
+    .notif-icon-wrap { width: 34px; height: 34px; border-radius: 8px; }
+    .notif-header { flex-direction: column; gap: 12px; }
+    .notif-count-badge { align-self: flex-start; }
+  }
+</style>
+
+<!-- ══════════════════════════════════════════
+     NOTIFICATIONS PAGE
+══════════════════════════════════════════ -->
+<div class="notif-page">
+
+  <!-- ── Header ── -->
+  <div class="notif-header">
+    <div class="notif-header-left">
+      <div class="notif-eyebrow">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+        Activity Center
+      </div>
+      <h1 class="notif-title">Your <span>Notifications</span></h1>
+      <p class="notif-subtitle">Stay updated with your latest job alerts and account activity</p>
+    </div>
+
+    {% if notifications %}
+    <div class="notif-count-badge">
+      <span class="badge-dot"></span>
+      {{ notifications|length }} update{{ notifications|length|pluralize }}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="notif-divider"></div>
+
+  <!-- ── Notification list ── -->
+  <div class="notif-list">
 
     {% for n in notifications %}
-        <div style="background:#f5f5f5; padding:15px; margin-bottom:10px; border-radius:8px;">
-            <p>{{ n.message }}</p>
-            <small style="color:gray;">{{ n.created_at }}</small>
+
+    <div class="notif-card">
+      <!-- Icon -->
+      <div class="notif-icon-wrap">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+      </div>
+
+      <!-- Body -->
+      <div class="notif-body">
+        <span class="notif-message">{{ n.message }}</span>
+        <div class="notif-meta">
+          <span class="notif-time">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            {{ n.created_at }}
+          </span>
         </div>
+      </div>
+    </div>
+
     {% empty %}
-        <p>No notifications yet.</p>
+
+    <!-- ── Empty state ── -->
+    <div class="notif-empty">
+      <div class="notif-empty-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+      </div>
+      <h3>No notifications yet</h3>
+      <p>We'll keep you updated when there's new activity on your account or applications</p>
+
+      <div class="notif-empty-pills">
+        <span class="notif-empty-pill">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+          Job updates
+        </span>
+        <span class="notif-empty-pill">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+          Recruiter replies
+        </span>
+        <span class="notif-empty-pill">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7l-8 8-4-4"/></svg>
+          Interview alerts
+        </span>
+      </div>
+    </div>
+
     {% endfor %}
 
+  </div>
 </div>
 
 {% endblock %}
