@@ -1,0 +1,69 @@
+<script src="https://khalti.com/static/khalti-checkout.js"></script>
+
+<div style="text-align:center; margin-top:50px;">
+    <h2>Pay with Khalti</h2>
+
+    <p><strong>Job:</strong> {{ payment.job.title }}</p>
+    <p><strong>Amount:</strong> Rs {{ amount_display }}</p>
+
+    <button id="khalti-button"
+        style="padding:15px 30px; background:purple; color:white; border:none;">
+        Pay with Khalti
+    </button>
+</div>
+
+<script>
+    var config = {
+        "publicKey": "YOUR_KHALTI_PUBLIC_KEY",
+        "productIdentity": "{{ payment.id }}",
+        "productName": "{{ payment.job.title }}",
+        "productUrl": "http://127.0.0.1:8000/",
+        "paymentPreference": [
+            "KHALTI",
+            "EBANKING",
+            "MOBILE_BANKING",
+            "CONNECT_IPS",
+            "SCT",
+        ],
+        "eventHandler": {
+            onSuccess(payload) {
+                // send to backend
+                fetch("{% url 'khalti_verify' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: new URLSearchParams({
+                        token: payload.token,
+                        amount: payload.amount,
+                        payment_id: "{{ payment.id }}"
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        alert("Payment Successful 🎉");
+                        window.location.href = "/";
+                    } else {
+                        alert("Payment Failed ❌");
+                    }
+                });
+            },
+            onError(error) {
+                console.log(error);
+                alert("Error occurred");
+            },
+            onClose() {
+                console.log("Widget closed");
+            }
+        }
+    };
+
+    var checkout = new KhaltiCheckout(config);
+    var btn = document.getElementById("khalti-button");
+
+    btn.onclick = function () {
+        checkout.show({ amount: {{ amount }} });
+    }
+</script>

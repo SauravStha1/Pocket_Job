@@ -12,6 +12,12 @@ class Payment(models.Model):
         ('FAILED', 'Failed'),
     ]
 
+    # ✅ NEW: Payment Methods
+    PAYMENT_METHODS = [
+        ('esewa', 'eSewa'),
+        ('khalti', 'Khalti'),
+    ]
+
     recruiter = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -25,6 +31,13 @@ class Payment(models.Model):
     )
 
     amount = models.IntegerField(default=1000)
+
+    # ✅ NEW FIELD
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHODS,
+        default='esewa'
+    )
 
     # Unique transaction id required by eSewa
     transaction_uuid = models.UUIDField(
@@ -42,4 +55,4 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment for Job {self.job.id} - {self.status}"
+        return f"{self.payment_method} | Job {self.job.id} | {self.status}"

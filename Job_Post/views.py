@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from accounts.decorators import recruiter_required, applicant_required
@@ -7,7 +8,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
-
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Job, JobApplication
 from .models import SavedJob  
@@ -22,6 +23,8 @@ import hashlib
 import base64
 import uuid
 import json
+import requests
+
 
 # ============================
 # PUBLIC JOB LIST (Applicants)
@@ -160,29 +163,37 @@ def job_applicants(request, pk):
 @recruiter_required
 @transaction.atomic
 def job_create(request):
-
-    if request.method == 'POST':
+    if request.method == "POST":
         form = JobForm(request.POST, request.FILES)
+
         if form.is_valid():
             job = form.save(commit=False)
             job.recruiter = request.user
-            job.deadline = timezone.now() + timedelta(days=30)
-            job.is_active = False  # job inactive until payment
+            job.is_active = False  # wait until payment
             job.save()
 
+            # ✅ GET PAYMENT METHOD FROM BUTTON
+            payment_method = request.POST.get('payment_method')
+
+            # ✅ CREATE PAYMENT OBJECT
             payment = Payment.objects.create(
                 recruiter=request.user,
                 job=job,
-                amount=1000
+                amount=1000,
+                payment_method=payment_method
             )
 
-            messages.success(request, "Job created. Please complete payment to publish the job.")
-            return redirect('pay_job', id=payment.id)
+            # ✅ REDIRECT BASED ON PAYMENT METHOD
+            if payment_method == "esewa":
+                return redirect('pay_job', payment.id)
+
+            elif payment_method == "khalti":
+                return redirect('khalti_payment', payment.id)
+
     else:
         form = JobForm()
 
-    return render(request, 'Job_Post/job_form.html', {'form': form})
-
+    return render(request, "Job_Post/job_form.html", {"form": form})
 
 # ============================
 # PAY JOB / PAYMENT SUCCESS / FAILURE
@@ -214,19 +225,21 @@ def pay_job(request, id):
 
     payment = get_object_or_404(Payment, id=id)
 
-    esewa_context = {
-        'amount': payment.amount,
-        'transaction_uuid': str(payment.transaction_uuid),
-        'product_code': settings.ESEWA_MERCHANT_CODE,
-        'signature': generate_signature(payment.amount, str(payment.transaction_uuid)),
-        'esewa_url': settings.ESEWA_URL,
-        'success_url': request.build_absolute_uri('/jobs/payment/success/'),
-        'failure_url': request.build_absolute_uri('/jobs/payment/failure/'),
-        "payment": payment
-    }
+    if payment.payment_method == 'esewa':
+        esewa_context = {
+            'amount': payment.amount,
+            'transaction_uuid': str(payment.transaction_uuid),
+            'product_code': settings.ESEWA_MERCHANT_CODE,
+            'signature': generate_signature(payment.amount, str(payment.transaction_uuid)),
+            'esewa_url': settings.ESEWA_URL,
+            'success_url': request.build_absolute_uri('/jobs/payment/success/'),
+            'failure_url': request.build_absolute_uri('/jobs/payment/failure/'),
+            "payment": payment
+        }
+        return render(request, "Job_Post/esewa_form.html", esewa_context)
 
-    return render(request, "Job_Post/esewa_form.html", esewa_context)
-
+    elif payment.payment_method == 'khalti':
+        return redirect('khalti_initiate', payment_id=payment.id)
 
 # ============================
 # PAYMENT SUCCESS (FIXED)
@@ -511,3 +524,142 @@ def recruiter_jobs(request):
         'jobs': jobs,
         'total_applicants': total_applicants,
     })
+
+
+@login_required
+def khalti_initiate(request, payment_id):
+
+    payment = get_object_or_404(Payment, id=payment_id)
+
+    payload = {
+        "return_url": request.build_absolute_uri('/jobs/khalti/callback/'),
+        "website_url": request.build_absolute_uri('/'),
+        "amount": payment.amount * 100,
+        "purchase_order_id": str(payment.transaction_uuid),
+        "purchase_order_name": f"Job Payment {payment.job.id}",
+    }
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(
+        "https://dev.khalti.com/api/v2/epayment/initiate/",
+        json=payload,
+        headers=headers
+    )
+
+    data = response.json()
+
+    if response.status_code == 200:
+        return redirect(data["payment_url"])
+    else:
+        payment.status = "FAILED"
+        payment.save()
+        messages.error(request, "Khalti initiation failed")
+        return redirect('job_list')
+
+@login_required
+def khalti_callback(request):
+
+    pidx = request.GET.get('pidx')
+    purchase_order_id = request.GET.get('purchase_order_id')
+
+    payment = get_object_or_404(Payment, transaction_uuid=purchase_order_id)
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(
+        "https://dev.khalti.com/api/v2/epayment/lookup/",
+        json={"pidx": pidx},
+        headers=headers
+    )
+
+    data = response.json()
+
+    if data.get("status") == "Completed":
+        payment.status = "COMPLETED"
+        payment.save()
+
+        job = payment.job
+        job.is_active = True
+        job.save()
+
+        return render(request, "payments/success.html")
+
+    else:
+        payment.status = "FAILED"
+        payment.save()
+
+        return render(request, "payments/failure.html")
+    
+def khalti_payment(request, payment_id):
+    payment = get_object_or_404(Payment, id=payment_id)
+
+    url = "https://dev.khalti.com/api/v2/epayment/initiate/"
+
+    payload = {
+        "return_url": request.build_absolute_uri(f'/jobs/khalti/verify/?payment_id={payment.id}'),
+        "website_url": "http://127.0.0.1:8000/",
+        "amount": payment.amount * 100,
+        "purchase_order_id": str(payment.transaction_uuid),
+        "purchase_order_name": payment.job.title,
+    }
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    print("STATUS:", response.status_code)
+    print("RESPONSE:", response.text)  # 🔥 IMPORTANT
+
+    if response.status_code == 200:
+        data = response.json()
+        return redirect(data["payment_url"])
+    else:
+        return HttpResponse(response.text)
+
+
+
+@csrf_exempt
+def khalti_verify(request):
+    payment_id = request.GET.get("payment_id")
+    pidx = request.GET.get("pidx")
+
+    payment = get_object_or_404(Payment, id=payment_id)
+
+    url = "https://dev.khalti.com/api/v2/epayment/lookup/"
+
+    payload = json.dumps({
+        "pidx": pidx
+    })
+
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(url, headers=headers, data=payload)
+    data = response.json()
+
+    if data.get("status") == "Completed":
+        payment.status = "COMPLETED"
+        payment.job.is_active = True
+
+        payment.job.save()
+        payment.save()
+
+        return render(request, "payments/success.html")
+
+    else:
+        payment.status = "FAILED"
+        payment.save()
+
+        return HttpResponse("❌ Payment Failed")

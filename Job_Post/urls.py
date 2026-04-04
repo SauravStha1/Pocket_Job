@@ -33,4 +33,10 @@ urlpatterns = [
     path('recruiter/jobs/', views.recruiter_jobs, name='recruiter_jobs'),
     path('recruiter/applicants/', views.applied_applicants, name='applied_applicants'),
 
+    path('khalti/initiate/<int:payment_id>/', views.khalti_initiate, name='khalti_initiate'),
+    path('khalti/callback/', views.khalti_callback, name='khalti_callback'),
+    path('khalti/<int:payment_id>/', views.khalti_payment, name='khalti_payment'),
+    path('khalti/verify/', views.khalti_verify, name='khalti_verify'),
+
+
 ]

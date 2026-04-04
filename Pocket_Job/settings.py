@@ -164,3 +164,7 @@ ESEWA_MERCHANT_CODE = 'EPAYTEST'  # Test merchant code
 ESEWA_SECRET_KEY = '8gBm/:&EnhH.1/q'  # Test secret key
 ESEWA_URL = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'  # Test URL
 ESEWA_VERIFY_URL = 'https://rc-epay.esewa.com.np/api/epay/transaction/status/'  # Status check URL
+
+# Khalti Configuration
+KHALTI_SECRET_KEY = os.getenv('KHALTI_SECRET_KEY')
+KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY')
