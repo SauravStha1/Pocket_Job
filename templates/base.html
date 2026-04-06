@@ -40,6 +40,8 @@
         <a href="{% url 'view_applicants' %}">Applicants</a>
         <a href="{% url 'view_recruiters' %}">Recruiters</a>
         <a href="{% url 'admin_reports' %}">Reports</a>
+        <a href="{% url 'admin_revenue' %}">Revenue</a>
+
 
       <!-- ================= APPLICANT ================= -->
       {% elif user.profile.role == "APPLICANT" %}

@@ -9,6 +9,8 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncMonth
 
 from .models import Job, JobApplication
 from .models import SavedJob  
@@ -16,6 +18,7 @@ from .forms import JobForm
 from .payment_models import Payment
 from accounts.models import Profile
 from accounts.models import Notification
+from django.db.models import Sum
 
 from django.conf import settings
 import hmac
@@ -483,7 +486,9 @@ def admin_dashboard(request):
     # ── Revenue (if exists) ──
     total_revenue = 0
     if Payment:
-        total_revenue = sum(p.amount for p in Payment.objects.all())
+        total_revenue = Payment.objects.filter(status='COMPLETED').aggregate(
+            total=Sum('amount')
+        )['total'] or 0
 
     # ── Latest Jobs & Applications ──
     latest_jobs = Job.objects.order_by('-created_at')[:10]
@@ -669,3 +674,65 @@ def khalti_verify(request):
         payment.save()
 
         return HttpResponse("❌ Payment Failed")
+
+
+@staff_member_required
+def admin_revenue(request):
+
+    filter_type = request.GET.get('filter', 'all')
+
+    payments = Payment.objects.filter(status='COMPLETED')
+
+    # ✅ APPLY DATE FILTER
+    if filter_type == 'today':
+        payments = payments.filter(created_at__date=timezone.now().date())
+
+    elif filter_type == 'week':
+        payments = payments.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        )
+
+    elif filter_type == 'month':
+        payments = payments.filter(
+            created_at__gte=timezone.now() - timedelta(days=30)
+        )
+
+    # ✅ TOTALS
+    total_revenue = payments.aggregate(total=Sum('amount'))['total'] or 0
+
+    esewa_total = payments.filter(payment_method='esewa').aggregate(total=Sum('amount'))['total'] or 0
+    khalti_total = payments.filter(payment_method='khalti').aggregate(total=Sum('amount'))['total'] or 0
+
+    # ✅ CHART DATA
+    chart_qs = payments.annotate(date=TruncDate('created_at')) \
+                       .values('date') \
+                       .annotate(total=Sum('amount')) \
+                       .order_by('date')
+
+    chart_labels = [str(item['date']) for item in chart_qs]
+    chart_data = [item['total'] for item in chart_qs]
+    # 📊 MONTHLY CHART DATA (Jan, Feb, Mar...)
+    monthly_qs = payments.annotate(month=TruncMonth('created_at')) \
+                        .values('month') \
+                        .annotate(total=Sum('amount')) \
+                        .order_by('month')
+
+    monthly_labels = [
+        item['month'].strftime('%b') for item in monthly_qs
+    ]
+
+    monthly_data = [item['total'] for item in monthly_qs]
+
+    context = {
+        'payments': payments.order_by('-created_at')[:20],
+        'total_revenue': total_revenue,
+        'esewa_total': esewa_total,
+        'khalti_total': khalti_total,
+        'chart_labels': chart_labels,
+        'chart_data': chart_data,
+        'current_filter': filter_type,
+        'monthly_labels': monthly_labels,
+        'monthly_data': monthly_data,
+    }
+
+    return render(request, 'Job_Post/revenue.html', context)
