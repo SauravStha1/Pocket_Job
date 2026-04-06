@@ -1,30 +1,570 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
-<div class="container mt-5">
+<style>
+  /* ── Tokens (same as profile.html) ── */
+  :root {
+    --brand:        #0A66C2;
+    --brand-dark:   #004182;
+    --brand-light:  #EBF4FF;
+    --surface:      #FFFFFF;
+    --bg:           #F3F2EF;
+    --border:       #E0DDD8;
+    --text-primary: #191919;
+    --text-sec:     #5E5E5E;
+    --danger:       #CC1016;
+    --danger-dark:  #A3000A;
+    --success:      #057642;
+    --success-light:#E8F5EF;
+    --radius-card:  12px;
+    --shadow-card:  0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    --font-main:    'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }
 
-    <div class="card shadow-sm">
-        <div class="card-body text-center">
+  /* ── Page Shell ── */
+  .vp-page {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 32px 16px 64px;
+    font-family: var(--font-main);
+    color: var(--text-primary);
+  }
 
-            <h3>{{ profile_user.username }}</h3>
-            <p><strong>Email:</strong> {{ profile_user.email }}</p>
+  .vp-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-            {% if profile_user.profile %}
-                <p><strong>Role:</strong> {{ profile_user.profile.role }}</p>
-            {% endif %}
+  /* ── Back link ── */
+  .vp-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--text-sec);
+    text-decoration: none;
+    transition: color .15s;
+  }
+  .vp-back:hover { color: var(--brand); }
 
+  /* ── Card ── */
+  .vp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  /* ── Cover ── */
+  .vp-cover {
+    height: 120px;
+    background: linear-gradient(135deg, var(--brand) 0%, #1a8fe3 60%, #56b4ff 100%);
+    position: relative;
+  }
+
+  .vp-avatar-wrap {
+    position: absolute;
+    bottom: -48px;
+    left: 28px;
+  }
+
+  .vp-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 4px solid var(--surface);
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    display: block;
+  }
+
+  .vp-avatar-placeholder {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 4px solid var(--surface);
+    background: linear-gradient(135deg, #0A66C2 0%, #56b4ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  }
+
+  /* ── Identity ── */
+  .vp-identity {
+    padding: 60px 28px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .vp-identity-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .vp-name {
+    font-size: 1.45rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -.3px;
+  }
+
+  .vp-username-line {
+    color: var(--text-sec);
+    font-size: .92rem;
+    margin: 0;
+  }
+
+  .vp-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid #b3d4f0;
+    white-space: nowrap;
+    margin-top: 4px;
+  }
+
+  .vp-role-badge.recruiter {
+    background: #f0ebff;
+    color: #6b21a8;
+    border-color: #c4b5fd;
+  }
+
+  /* ── Sections ── */
+  .vp-section {
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .vp-section:last-child { border-bottom: none; }
+
+  .vp-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-sec);
+    margin: 0 0 18px;
+  }
+  .vp-section-title i { color: var(--brand); font-size: .95rem; }
+
+  /* ── Info Grid ── */
+  .vp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+  }
+
+  .vp-field label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--text-sec);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 3px;
+  }
+
+  .vp-field p {
+    margin: 0;
+    font-size: .95rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* ── Skills ── */
+  .vp-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .vp-skill-chip {
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid #b3d4f0;
+  }
+
+  /* ── About ── */
+  .vp-about {
+    font-size: .95rem;
+    color: var(--text-primary);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .vp-no-data {
+    color: var(--text-sec);
+    font-size: .9rem;
+    font-style: italic;
+  }
+
+  /* ── CV Download Button ── */
+  .vp-cv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--success-light);
+    color: var(--success);
+    font-size: .9rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1.5px solid #a7d7bc;
+    transition: background .15s, color .15s, box-shadow .15s, transform .12s;
+    font-family: var(--font-main);
+  }
+  .vp-cv-btn:hover {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(5,118,66,.25);
+  }
+
+  .vp-no-cv {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-sec);
+    font-size: .9rem;
+    padding: 10px 16px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+  }
+
+  /* ── Report Form ── */
+  .vp-report-wrap {
+    padding: 20px 28px 24px;
+  }
+
+  .vp-report-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: .9rem;
+    font-family: var(--font-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    resize: vertical;
+    color: var(--text-primary);
+    outline: none;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    transition: border-color .15s;
+  }
+  .vp-report-textarea:focus { border-color: var(--danger); }
+
+  /* ── Admin Ban Card ── */
+  .vp-admin-card {
+    background: #fff5f5;
+    border-color: #fecaca;
+  }
+
+  .vp-admin-note {
+    font-size: .88rem;
+    color: var(--text-sec);
+    margin: 0 0 14px;
+  }
+
+  /* ── Buttons ── */
+  .vp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-main);
+    font-size: .9rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform .12s, box-shadow .12s, background .15s;
+  }
+  .vp-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+
+  .vp-btn-danger {
+    background: #fff;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+  }
+  .vp-btn-danger:hover {
+    background: var(--danger);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(204,16,22,.25);
+  }
+
+  .vp-btn-message {
+    background: var(--brand);
+    color: #fff;
+  }
+  .vp-btn-message:hover {
+    background: var(--brand-dark);
+    color: #fff;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 560px) {
+    .vp-grid { grid-template-columns: 1fr; }
+    .vp-identity-top { flex-direction: column; }
+  }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkWQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<div class="vp-page">
+  <div class="vp-wrap">
+
+    <!-- Back -->
+    <a href="javascript:history.back()" class="vp-back">
+      <i class="fa-solid fa-arrow-left"></i> Back
+    </a>
+
+    <!-- ── Main Profile Card ── -->
+    <div class="vp-card">
+
+      <!-- Cover + Avatar -->
+      <div class="vp-cover">
+        <div class="vp-avatar-wrap">
+          {% if profile_user.profile and profile_user.profile.profile_pic %}
+            <img class="vp-avatar" src="{{ profile_user.profile.profile_pic.url }}" alt="{{ profile_user.username }}">
+          {% else %}
+            <div class="vp-avatar-placeholder">
+              {{ profile_user.username|first|upper }}
+            </div>
+          {% endif %}
         </div>
-    </div>
+      </div>
+
+      <!-- Identity -->
+      <div class="vp-identity">
+        <div class="vp-identity-top">
+          <div>
+            <h1 class="vp-name">
+              {% if profile_user.profile.role == "APPLICANT" and profile_user.profile.full_name %}
+                {{ profile_user.profile.full_name }}
+              {% elif profile_user.profile.role == "RECRUITER" and profile_user.profile.company_name %}
+                {{ profile_user.profile.company_name }}
+              {% else %}
+                {{ profile_user.username }}
+              {% endif %}
+            </h1>
+            <p class="vp-username-line">@{{ profile_user.username }} &middot; {{ profile_user.email }}</p>
+          </div>
+          <div>
+            {% if profile_user.profile %}
+              {% if profile_user.profile.role == "APPLICANT" %}
+                <span class="vp-role-badge">
+                  <i class="fa-solid fa-user-tie"></i> Applicant
+                </span>
+              {% elif profile_user.profile.role == "RECRUITER" %}
+                <span class="vp-role-badge recruiter">
+                  <i class="fa-solid fa-building"></i> Recruiter
+                </span>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           APPLICANT SECTIONS
+           ══════════════════════════════ -->
+      {% if profile_user.profile.role == "APPLICANT" %}
+
+        <!-- Basic Info -->
+        <div class="vp-section">
+          <p class="vp-section-title">
+            <i class="fa-solid fa-circle-info"></i> Basic Information
+          </p>
+          <div class="vp-grid">
+            <div class="vp-field">
+              <label>Full Name</label>
+              <p>{{ profile_user.profile.full_name|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Age</label>
+              <p>{{ profile_user.profile.age|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Location</label>
+              <p>{{ profile_user.profile.location|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Contact Email</label>
+              <p>{{ profile_user.profile.contact_email|default:profile_user.email }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="vp-section">
+          <p class="vp-section-title">
+            <i class="fa-solid fa-star"></i> Skills
+          </p>
+          {% if profile_user.profile.skills %}
+            <div class="vp-skills">
+              {% for skill in profile_user.profile.skills.split %}
+                <span class="vp-skill-chip">{{ skill }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="vp-no-data">No skills listed yet.</p>
+          {% endif %}
+        </div>
+
+        <!-- About -->
+        <div class="vp-section">
+          <p class="vp-section-title">
+            <i class="fa-solid fa-book-open"></i> About
+          </p>
+          <p class="vp-about">{{ profile_user.profile.description|default:"No description provided." }}</p>
+        </div>
+
+        <!-- CV — always shown, download only visible to recruiters -->
+        <div class="vp-section">
+          <p class="vp-section-title">
+            <i class="fa-solid fa-file-lines"></i> Curriculum Vitae
+          </p>
+          {% if profile_user.profile.cv %}
+            {% if request.user.is_authenticated and request.user.profile.role == "RECRUITER" or request.user.is_staff %}
+              <a class="vp-cv-btn" href="{{ profile_user.profile.cv.url }}" target="_blank" download>
+                <i class="fa-solid fa-download"></i> Download CV
+              </a>
+            {% else %}
+              <span class="vp-no-cv">
+                <i class="fa-solid fa-lock"></i> CV available (visible to recruiters only)
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="vp-no-cv">
+              <i class="fa-regular fa-circle-xmark"></i> No CV uploaded
+            </span>
+          {% endif %}
+        </div>
+
+      {% endif %}
+
+      <!-- ══════════════════════════════
+           RECRUITER SECTIONS
+           ══════════════════════════════ -->
+      {% if profile_user.profile.role == "RECRUITER" %}
+
+        <!-- Company Info -->
+        <div class="vp-section">
+          <p class="vp-section-title">
+            <i class="fa-solid fa-building"></i> Company Information
+          </p>
+          <div class="vp-grid">
+            <div class="vp-field">
+              <label>Company Name</label>
+              <p>{{ profile_user.profile.company_name|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Owner / Contact</label>
+              <p>{{ profile_user.profile.owner_name|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Location</label>
+              <p>{{ profile_user.profile.company_location|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Company Type</label>
+              <p>{{ profile_user.profile.company_type|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Phone</label>
+              <p>{{ profile_user.profile.phone|default:"—" }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Email</label>
+              <p>{{ profile_user.profile.company_email|default:profile_user.email }}</p>
+            </div>
+            <div class="vp-field">
+              <label>Founded</label>
+              <p>{{ profile_user.profile.founded_date|default:"—" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- About Company -->
+        <div class="vp-section">
+          <p class="vp-section-title">
+            <i class="fa-solid fa-book-open"></i> About the Company
+          </p>
+          <p class="vp-about">{{ profile_user.profile.description|default:"No description provided." }}</p>
+        </div>
+
+        <!-- Report Recruiter (visible to non-owner applicants) -->
+        {% if request.user.is_authenticated and request.user != profile_user %}
+          <div class="vp-section">
+            <p class="vp-section-title">
+              <i class="fa-solid fa-flag"></i> Report This User
+            </p>
+            <form method="POST" action="{% url 'report_user' profile_user.id %}">
+              {% csrf_token %}
+              <textarea name="reason" class="vp-report-textarea" placeholder="Describe why you're reporting this user..." required rows="3"></textarea>
+              <button type="submit" class="vp-btn vp-btn-danger">
+                <i class="fa-solid fa-triangle-exclamation"></i> Submit Report
+              </button>
+            </form>
+          </div>
+        {% endif %}
+
+      {% endif %}
+
+    </div><!-- /.vp-card -->
+
+    <!-- ── Admin Ban Card (outside main card, always at bottom) ── -->
     {% if request.user.is_staff %}
+    <div class="vp-card vp-admin-card">
+      <div class="vp-section" style="border-bottom:none;">
+        <p class="vp-section-title" style="color:#b91c1c;">
+          <i class="fa-solid fa-shield-halved" style="color:#b91c1c;"></i> Admin Actions
+        </p>
+        <p class="vp-admin-note">
+          Banning this user will restrict their access to the platform immediately.
+        </p>
         <form method="POST" action="{% url 'ban_user' profile_user.id %}">
-            {% csrf_token %}
-            <button class="btn btn-danger mt-3">
-                🚫 Ban User
-            </button>
+          {% csrf_token %}
+          <button type="submit" class="vp-btn vp-btn-danger">
+            <i class="fa-solid fa-ban"></i> Ban This User
+          </button>
         </form>
+      </div>
+    </div>
     {% endif %}
 
-</div>
+  </div><!-- /.vp-wrap -->
+</div><!-- /.vp-page -->
 
 {% endblock %}

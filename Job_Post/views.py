@@ -624,7 +624,7 @@ def khalti_payment(request, payment_id):
     response = requests.post(url, json=payload, headers=headers)
 
     print("STATUS:", response.status_code)
-    print("RESPONSE:", response.text)  # 🔥 IMPORTANT
+    print("RESPONSE:", response.text)  # IMPORTANT
 
     if response.status_code == 200:
         data = response.json()

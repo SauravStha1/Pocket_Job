@@ -231,7 +231,9 @@
             {{ job.recruiter.username|first|upper }}
           </div>
           <div>
-            <p class="jd-recruiter-name">{{ job.recruiter.username }}</p>
+            <a href="{% url 'view_profile' job.recruiter.id %}" class="jd-recruiter-name jd-recruiter-name--link">
+              {{ job.recruiter.username }}
+            </a>
             <p class="jd-recruiter-role">Recruiter</p>
           </div>
         </div>

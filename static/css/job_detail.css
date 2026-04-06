@@ -604,3 +604,12 @@
 
   .jd-meta-row { flex-direction: column; gap: 8px; }
 }
+
+.jd-recruiter-name--link {
+  text-decoration: none;
+  color: var(--jd-text);
+  transition: color 0.18s;
+}
+.jd-recruiter-name--link:hover {
+  color: var(--jd-blue);
+}

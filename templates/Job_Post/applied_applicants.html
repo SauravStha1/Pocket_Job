@@ -1,112 +1,493 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Applied Applicants | Pocket Job</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Applied Applicants | Pocket Job</title>
 
-    <style>
-        body {
-            font-family: Arial;
-            background: #f5f7fa;
-        }
+  <!-- Your existing fonts & styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'css/nav.css' %}">
 
-        .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 40px auto;
-        }
+  <style>
+    /* ── PAGE TOKENS ── */
+    :root {
+      --navy:       #1a3c5e;
+      --blue:       #3b82f6;
+      --blue-lt:    #eff6ff;
+      --success:    #10b981;
+      --success-lt: #d1fae5;
+      --danger:     #ef4444;
+      --danger-lt:  #fee2e2;
+      --warning-lt: #fef3c7;
+      --txt:        #0f172a;
+      --txt2:       #475569;
+      --txt3:       #94a3b8;
+      --border:     #e2e8f0;
+      --bg:         #f1f5f9;
+      --card:       #ffffff;
+      --radius:     14px;
+      --ease:       0.22s cubic-bezier(.4,0,.2,1);
+    }
 
-        .card {
-            background: white;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    /* offset fixed navbar */
+    body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        .left {
-            display: flex;
-            align-items: center;
-        }
+    a { text-decoration: none; color: inherit; }
 
-        img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
+    /* ── PAGE WRAPPER ── */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
 
-        .btn {
-            padding: 6px 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 13px;
-        }
+    /* ── PAGE HEADER ── */
+    .page-hdr {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .page-hdr-icon {
+      width: 48px; height: 48px;
+      background: var(--blue-lt);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .page-hdr h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--txt);
+      line-height: 1.15;
+      margin: 0;
+    }
+    .page-hdr p {
+      font-size: 13px;
+      color: var(--txt3);
+      margin: 2px 0 0;
+    }
 
-        .accept {
-            background: green;
-            color: white;
-        }
+    /* ── APPLICANT CARD ── */
+    .app-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      transition: border-color var(--ease), box-shadow var(--ease), transform var(--ease);
+    }
+    .app-card:hover {
+      border-color: #93c5fd;
+      box-shadow: 0 6px 20px rgba(0,0,0,.09);
+      transform: translateY(-2px);
+    }
 
-        .reject {
-            background: red;
-            color: white;
-        }
+    /* Avatar — hard fixed size */
+    .avatar-wrap { flex-shrink: 0; }
+    .avatar-wrap a { display: block; }
 
-        .cv {
-            background: #007bff;
-            color: white;
-        }
+    .avatar {
+      width: 58px;
+      height: 58px;
+      min-width: 58px;
+      max-width: 58px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      border: 2.5px solid var(--border);
+      transition: border-color var(--ease);
+    }
+    .app-card:hover .avatar { border-color: var(--blue); }
 
-        .status {
-            font-weight: bold;
-            margin-right: 10px;
-        }
-    </style>
+    /* Info */
+    .app-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .app-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--txt);
+      display: inline-block;
+      margin-bottom: 2px;
+      transition: color var(--ease);
+    }
+    .app-name:hover { color: var(--blue); }
+
+    .app-job {
+      font-size: 13px;
+      color: var(--txt3);
+      margin-bottom: 7px;
+    }
+    .app-job a {
+      color: var(--txt2);
+      font-weight: 600;
+      transition: color var(--ease);
+    }
+    .app-job a:hover { color: var(--blue); text-decoration: underline; }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .status-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .75;
+    }
+    .status-PENDING  { background: var(--warning-lt);  color: #92400e; }
+    .status-ACCEPTED { background: var(--success-lt);  color: #065f46; }
+    .status-REJECTED { background: var(--danger-lt);   color: #991b1b; }
+
+    /* Vertical divider */
+    .vdiv {
+      width: 1px;
+      height: 50px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Actions */
+    .app-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .act-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--ease);
+      text-decoration: none;
+      border: none;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .act-btn:hover { transform: translateY(-1px); }
+
+    .btn-chat {
+      background: var(--navy);
+      color: #fff;
+    }
+    .btn-chat:hover {
+      background: var(--blue);
+      box-shadow: 0 4px 12px rgba(59,130,246,.35);
+    }
+
+    .btn-cv {
+      background: transparent;
+      color: var(--blue);
+      border: 1.5px solid var(--blue);
+    }
+    .btn-cv:hover { background: var(--blue-lt); }
+
+    .btn-accept {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-accept:hover {
+      background: #059669;
+      box-shadow: 0 4px 12px rgba(16,185,129,.3);
+    }
+
+    .btn-reject {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-reject:hover {
+      background: #dc2626;
+      box-shadow: 0 4px 12px rgba(239,68,68,.3);
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1.5px dashed var(--border);
+    }
+    .empty-ico { font-size: 38px; opacity: .5; margin-bottom: 10px; }
+    .empty h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--txt2);
+      margin-bottom: 6px;
+    }
+    .empty p { color: var(--txt3); font-size: 13.5px; }
+
+    @media (max-width: 680px) {
+      .app-card { flex-wrap: wrap; }
+      .vdiv { display: none; }
+      .app-actions { width: 100%; justify-content: flex-start; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
+<!-- ===================== YOUR EXISTING NAVBAR ===================== -->
+<header class="navbar">
 
-    <h2>Applied Applicants</h2>
+  <div class="logo">
+    <img src="{% static 'images/pocketJob_logo.png' %}" class="logo-img" alt="Pocket Job">
+    <strong class="logo-text">Pocket<span class="logo-accent">Job</span></strong>
+  </div>
 
-    {% for app in applications %}
-        <div class="card">
+  <nav>
+    {% if user.is_authenticated %}
 
-            <div class="left">
-                <img src="{{ app.applicant.profile_pic.url }}" alt="profile">
+      {% if user.is_staff %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'view_applicants' %}">Applicants</a>
+        <a href="{% url 'view_recruiters' %}">Recruiters</a>
+        <a href="{% url 'admin_reports' %}">Reports</a>
 
-                <div>
-                    <strong>{{ app.applicant.full_name }}</strong><br>
-                    Applied for: {{ app.job.title }}<br>
-                    Status: <span class="status">{{ app.status }}</span>
-                </div>
+      {% elif user.profile.role == "APPLICANT" %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'applied_jobs' %}">Applied Jobs</a>
+        <a href="{% url 'inbox' %}">
+          Inbox
+          {% if unread_count > 0 %}<span class="badge">{{ unread_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'saved_jobs' %}">Saved Jobs</a>
+        <a href="{% url 'about' %}">About</a>
 
-            </div>
+      {% elif user.profile.role == "RECRUITER" %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'recruiter_dashboard' %}">Dashboard</a>
+        <a href="{% url 'recruiter_jobs' %}">Posted Jobs</a>
+        <a href="{% url 'applied_applicants' %}">Applied Applicants</a>
+        <a href="{% url 'inbox' %}">
+          Inbox
+          {% if unread_count > 0 %}<span class="badge">{{ unread_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'job_create' %}" class="post-job-btn">+ Post a Job</a>
+      {% endif %}
 
-            <div>
-                <!-- 🔥 FIXED CHAT BUTTON -->
-                <a href="{% url 'start_chat' app.id app.job.id %}">
-                    💬 Chat
-                </a>
+    {% else %}
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'about' %}">About</a>
+    {% endif %}
+  </nav>
 
-                {% if app.applicant.cv %}
-                    <a href="{{ app.applicant.cv.url }}" class="btn cv">View CV</a>
-                {% endif %}
+  <div class="profile">
+    {% if user.is_authenticated %}
 
-                {% if app.status == "PENDING" %}
-                    <a href="{% url 'accept_application' app.id %}" class="btn accept">Accept</a>
-                    <a href="{% url 'reject_application' app.id %}" class="btn reject">Reject</a>
-                {% endif %}
-            </div>
-
+      {% if not user.is_staff %}
+      <div class="notification-wrapper">
+        <span class="bell" onclick="toggleDropdown()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          {% if unread_count > 0 %}<span class="bell-dot"></span>{% endif %}
+        </span>
+        <div id="notificationDropdown" class="dropdown">
+          <div class="dropdown-header">Notifications</div>
+          <div id="notificationList">
+            <p class="notif-placeholder">Loading...</p>
+          </div>
         </div>
-    {% empty %}
-        <p>No applicants yet.</p>
-    {% endfor %}
+      </div>
+      {% endif %}
+
+      <a href="{% url 'profile' %}" class="profile-link">
+        {% if user.profile and user.profile.profile_pic %}
+          <img src="{{ user.profile.profile_pic.url }}" class="profile-pic" alt="{{ user.username }}">
+        {% else %}
+          <img src="{% static 'images/default.png' %}" class="profile-pic">
+        {% endif %}
+        <span>{{ user.username }}</span>
+      </a>
+
+      <span class="role-badge">
+        {% if user.is_staff %}Admin
+        {% elif user.profile.role == "APPLICANT" %}Applicant
+        {% elif user.profile.role == "RECRUITER" %}Recruiter
+        {% endif %}
+      </span>
+
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-login-btn">Log In</a>
+    {% endif %}
+  </div>
+
+</header>
+<!-- ===================== END NAVBAR ===================== -->
+
+
+<!-- ===================== APPLICANTS CONTENT ===================== -->
+<div class="page-wrap">
+
+  <div class="page-hdr">
+    <div class="page-hdr-icon">👥</div>
+    <div>
+      <h2>Applied Applicants</h2>
+      <p>Review and manage candidates for your listings</p>
+    </div>
+  </div>
+
+  {% for app in applications %}
+    <div class="app-card">
+
+      <!-- Avatar -->
+      <div class="avatar-wrap">
+        <a href="{% url 'view_profile' app.applicant.user.id %}">
+          <img src="{{ app.applicant.profile_pic.url }}"
+               alt="{{ app.applicant.full_name }}"
+               class="avatar">
+        </a>
+      </div>
+
+      <!-- Info -->
+      <div class="app-info">
+        <a href="{% url 'view_profile' app.applicant.user.id %}" class="app-name">
+          {{ app.applicant.full_name }}
+        </a>
+        <div class="app-job">
+          Applied for&nbsp;<a href="{% url 'job_detail' app.job.id %}">{{ app.job.title }}</a>
+        </div>
+        <span class="status-badge status-{{ app.status }}">{{ app.status }}</span>
+      </div>
+
+      <!-- Divider -->
+      <div class="vdiv"></div>
+
+      <!-- Actions -->
+      <div class="app-actions">
+
+        <a href="{% url 'start_chat' app.id app.job.id %}" class="act-btn btn-chat">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Chat
+        </a>
+
+        {% if app.applicant.cv %}
+          <a href="{{ app.applicant.cv.url }}" target="_blank" class="act-btn btn-cv">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            View CV
+          </a>
+        {% endif %}
+
+        {% if app.status == "PENDING" %}
+          <a href="{% url 'accept_application' app.id %}" class="act-btn btn-accept">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Accept
+          </a>
+          <a href="{% url 'reject_application' app.id %}" class="act-btn btn-reject">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Reject
+          </a>
+        {% endif %}
+
+      </div>
+    </div>
+  {% empty %}
+    <div class="empty">
+      <div class="empty-ico">📭</div>
+      <h3>No applicants yet</h3>
+      <p>When candidates apply to your jobs, they'll show up here.</p>
+    </div>
+  {% endfor %}
 
 </div>
+
+
+<!-- ===================== YOUR EXISTING SCRIPTS ===================== -->
+<script>
+function toggleDropdown() {
+  const dropdown = document.getElementById("notificationDropdown");
+  if (!dropdown) return;
+  dropdown.classList.toggle("show");
+  if (dropdown.classList.contains("show")) loadNotifications();
+}
+
+function loadNotifications() {
+  fetch("/api/notifications/")
+    .then(response => response.json())
+    .then(data => {
+      let html = "";
+      if (!data.notifications || data.notifications.length === 0) {
+        html = '<p class="notif-placeholder">No notifications yet.</p>';
+      } else {
+        data.notifications.forEach(n => {
+          html += `<a href="${n.link}" class="notification-item ${n.is_read ? '' : 'unread'}">${n.message}</a>`;
+        });
+      }
+      document.getElementById("notificationList").innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById("notificationList").innerHTML = '<p class="notif-placeholder">Could not load.</p>';
+    });
+}
+
+document.addEventListener("click", function(e) {
+  const wrapper = document.querySelector(".notification-wrapper");
+  if (wrapper && !wrapper.contains(e.target)) {
+    const dd = document.getElementById("notificationDropdown");
+    if (dd) dd.classList.remove("show");
+  }
+});
+
+setInterval(() => {
+  const dd = document.getElementById("notificationDropdown");
+  if (dd && dd.classList.contains("show")) loadNotifications();
+}, 5000);
+
+window.addEventListener("scroll", function() {
+  const nb = document.querySelector(".navbar");
+  if (nb) nb.classList.toggle("navbar-scrolled", window.scrollY > 10);
+});
+</script>
 
 </body>
 </html>

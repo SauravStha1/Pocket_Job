@@ -1,129 +1,504 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Inbox | Pocket Job</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inbox | Pocket Job</title>
 
-    <style>
-        body { font-family: Arial; background: #f5f7fa; }
-        .container { width: 90%; max-width: 900px; margin: 40px auto; }
+  <!-- Your existing fonts & styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'css/nav.css' %}">
 
-        .card {
-            background: white;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+  <style>
+    /* ── PAGE TOKENS ── */
+    :root {
+      --navy:     #1a3c5e;
+      --blue:     #3b82f6;
+      --blue-lt:  #eff6ff;
+      --amber-lt: #fef3c7;
+      --txt:      #0f172a;
+      --txt2:     #475569;
+      --txt3:     #94a3b8;
+      --border:   #e2e8f0;
+      --bg:       #f1f5f9;
+      --card:     #ffffff;
+      --radius:   14px;
+      --ease:     0.22s cubic-bezier(.4,0,.2,1);
+    }
 
-        .left { display: flex; flex-direction: column; }
-        .job-title { font-weight: bold; }
-        .person { color: #555; }
-        .latest-message { font-size: 13px; color: #333; margin-top: 5px; }
+    /* offset for fixed navbar — adjust if your navbar height differs */
+    body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        .btn {
-            padding: 6px 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 13px;
-            background: #007bff;
-            color: white;
-        }
+    a { text-decoration: none; color: inherit; }
 
-        .no-message { color: red; font-size: 12px; }
+    /* ── PAGE WRAPPER ── */
+    .inbox-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
 
-        .badge {
-            color: red;
-            font-size: 12px;
-            font-weight: bold;
-        }
-    </style>
+    /* ── PAGE HEADER ── */
+    .page-hdr {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .page-hdr-icon {
+      width: 48px; height: 48px;
+      background: var(--blue-lt);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .page-hdr h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--txt);
+      line-height: 1.15;
+      margin: 0;
+    }
+    .page-hdr p {
+      font-size: 13px;
+      color: var(--txt3);
+      margin: 2px 0 0;
+    }
+
+    /* ── SECTION LABEL ── */
+    .sec-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--txt3);
+      margin-bottom: 12px;
+    }
+
+    /* ── CHAT CARD ── */
+    .chat-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      transition: border-color var(--ease), box-shadow var(--ease), transform var(--ease);
+    }
+    .chat-card:hover {
+      border-color: #93c5fd;
+      box-shadow: 0 6px 20px rgba(0,0,0,.09);
+      transform: translateY(-2px);
+    }
+    .chat-card.unread {
+      border-left: 3.5px solid var(--blue);
+      background: #fafcff;
+    }
+
+    /* Thumbnail — hard fixed size, never grows */
+    .chat-thumb {
+      width: 54px;
+      height: 54px;
+      min-width: 54px;
+      max-width: 54px;
+      border-radius: 10px;
+      object-fit: cover;
+      display: block;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+
+    /* Body */
+    .chat-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .chat-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--txt);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+      transition: color var(--ease);
+    }
+    .chat-card:hover .chat-title { color: var(--blue); }
+    .chat-title a { color: inherit; }
+
+    .chat-person {
+      font-size: 12.5px;
+      color: var(--txt3);
+      margin-bottom: 4px;
+    }
+    .chat-person a { color: var(--blue); font-weight: 600; }
+    .chat-person a:hover { text-decoration: underline; }
+
+    .chat-preview {
+      font-size: 13px;
+      color: var(--txt2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-no-msg {
+      font-size: 12.5px;
+      color: var(--txt3);
+      font-style: italic;
+    }
+
+    .unread-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+    .unread-pill::before {
+      content: '';
+      width: 5px; height: 5px;
+      background: rgba(255,255,255,.75);
+      border-radius: 50%;
+    }
+
+    /* CTA button */
+    .chat-action { flex-shrink: 0; }
+
+    .open-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: background var(--ease), box-shadow var(--ease), transform var(--ease);
+    }
+    .open-btn:hover {
+      background: var(--blue);
+      box-shadow: 0 4px 14px rgba(59,130,246,.35);
+      transform: translateY(-1px);
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 52px 20px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1.5px dashed var(--border);
+    }
+    .empty-ico { font-size: 36px; opacity: .5; margin-bottom: 10px; }
+    .empty p { color: var(--txt3); font-size: 14px; }
+
+    /* Pending section */
+    .pending-section { margin-top: 44px; }
+
+    .pending-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      transition: box-shadow var(--ease);
+    }
+    .pending-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+
+    .pending-info strong {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--txt);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .pending-info span { font-size: 12.5px; color: var(--txt3); }
+
+    .waiting-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #92400e;
+      background: var(--amber-lt);
+      padding: 5px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(245,158,11,.3);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 560px) {
+      .chat-card { flex-wrap: wrap; }
+      .open-btn { width: 100%; justify-content: center; }
+      .pending-card { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="container">
-    <h2>Inbox</h2>
+<!-- ===================== YOUR EXISTING NAVBAR ===================== -->
+<header class="navbar">
 
-    <h3>Active Chats</h3>
+  <div class="logo">
+    <img src="{% static 'images/pocketJob_logo.png' %}" class="logo-img" alt="Pocket Job">
+    <strong class="logo-text">Pocket<span class="logo-accent">Job</span></strong>
+  </div>
 
-    {% for room in chatrooms %}
-        <div class="card" id="room-{{ room.id }}">
-            <div class="left">
-                <span class="job-title">{{ room.job.title }}</span>
+  <nav>
+    {% if user.is_authenticated %}
 
-                {% if role == "RECRUITER" %}
-                    <span class="person">Applicant: {{ room.applicant.username }}</span>
-                {% else %}
-                    <span class="person">Recruiter: {{ room.recruiter.username }}</span>
-                {% endif %}
+      {% if user.is_staff %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+        <a href="{% url 'view_applicants' %}">Applicants</a>
+        <a href="{% url 'view_recruiters' %}">Recruiters</a>
+        <a href="{% url 'admin_reports' %}">Reports</a>
 
-                {% with last_message=room.messages.last %}
-                    {% if last_message %}
-                        <span class="latest-message" id="last-msg-{{ room.id }}">
-                            {{ last_message.content|truncatechars:50 }}
-                        </span>
+      {% elif user.profile.role == "APPLICANT" %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'applied_jobs' %}">Applied Jobs</a>
+        <a href="{% url 'inbox' %}">
+          Inbox
+          {% if unread_count > 0 %}<span class="badge">{{ unread_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'saved_jobs' %}">Saved Jobs</a>
+        <a href="{% url 'about' %}">About</a>
 
-                        <span class="badge" id="badge-{{ room.id }}">
-                            {% if room.unread_count > 0 %}
-                                🔴 {{ room.unread_count }} new
-                            {% endif %}
-                        </span>
-                    {% else %}
-                        <span class="no-message">No messages yet</span>
-                    {% endif %}
-                {% endwith %}
-            </div>
+      {% elif user.profile.role == "RECRUITER" %}
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'recruiter_dashboard' %}">Dashboard</a>
+        <a href="{% url 'recruiter_jobs' %}">Posted Jobs</a>
+        <a href="{% url 'applied_applicants' %}">Applied Applicants</a>
+        <a href="{% url 'inbox' %}">
+          Inbox
+          {% if unread_count > 0 %}<span class="badge">{{ unread_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'job_create' %}" class="post-job-btn">+ Post a Job</a>
+      {% endif %}
 
-            <div>
-                <a href="{% url 'chat_room' room.id %}" class="btn">Open Chat</a>
-            </div>
-        </div>
-    {% empty %}
-        <p>No active chats.</p>
-    {% endfor %}
-
-    {% if role == "APPLICANT" %}
-        <h3>Waiting for Recruiter</h3>
-
-        {% for app in pending_apps %}
-            <div class="card">
-                <div>
-                    <strong>{{ app.job.title }}</strong><br>
-                    Status: {{ app.status }}
-                </div>
-                <span style="color:red;">Recruiter has not started chat yet</span>
-            </div>
-        {% empty %}
-            <p>No pending applications.</p>
-        {% endfor %}
+    {% else %}
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'about' %}">About</a>
     {% endif %}
+  </nav>
+
+  <div class="profile">
+    {% if user.is_authenticated %}
+
+      {% if not user.is_staff %}
+      <div class="notification-wrapper">
+        <span class="bell" onclick="toggleDropdown()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          {% if unread_count > 0 %}<span class="bell-dot"></span>{% endif %}
+        </span>
+        <div id="notificationDropdown" class="dropdown">
+          <div class="dropdown-header">Notifications</div>
+          <div id="notificationList">
+            <p class="notif-placeholder">Loading...</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <a href="{% url 'profile' %}" class="profile-link">
+        {% if user.profile and user.profile.profile_pic %}
+          <img src="{{ user.profile.profile_pic.url }}" class="profile-pic" alt="{{ user.username }}">
+        {% else %}
+          <img src="{% static 'images/default.png' %}" class="profile-pic">
+        {% endif %}
+        <span>{{ user.username }}</span>
+      </a>
+
+      <span class="role-badge">
+        {% if user.is_staff %}Admin
+        {% elif user.profile.role == "APPLICANT" %}Applicant
+        {% elif user.profile.role == "RECRUITER" %}Recruiter
+        {% endif %}
+      </span>
+
+    {% else %}
+      <a href="{% url 'login' %}" class="nav-login-btn">Log In</a>
+    {% endif %}
+  </div>
+
+</header>
+<!-- ===================== END NAVBAR ===================== -->
+
+
+<!-- ===================== INBOX CONTENT ===================== -->
+<div class="inbox-wrap">
+
+  <div class="page-hdr">
+    <div class="page-hdr-icon">💬</div>
+    <div>
+      <h2>Inbox</h2>
+      <p>Your active conversations</p>
+    </div>
+  </div>
+
+  <p class="sec-label">Active Chats</p>
+
+  {% for room in chatrooms %}
+    <div class="chat-card {% if room.unread_count > 0 %}unread{% endif %}">
+
+      {% if room.job.image %}
+        <img src="{{ room.job.image.url }}" class="chat-thumb" alt="{{ room.job.title }}">
+      {% else %}
+        <img src="https://placehold.co/54x54/e2e8f0/94a3b8?text=J" class="chat-thumb" alt="Job">
+      {% endif %}
+
+      <div class="chat-body">
+        <div class="chat-title">
+          <a href="{% url 'job_detail' room.job.id %}">{{ room.job.title }}</a>
+        </div>
+
+        <div class="chat-person">
+          {% if role == "RECRUITER" %}
+            Applicant:&nbsp;<a href="{% url 'view_profile' room.applicant.id %}">{{ room.applicant.username }}</a>
+          {% else %}
+            Recruiter:&nbsp;<strong style="color:var(--txt2);">{{ room.recruiter.username }}</strong>
+          {% endif %}
+        </div>
+
+        {% with last_message=room.messages.last %}
+          {% if last_message %}
+            <div class="chat-preview">{{ last_message.content|truncatechars:55 }}</div>
+            {% if room.unread_count > 0 %}
+              <span class="unread-pill">{{ room.unread_count }} new</span>
+            {% endif %}
+          {% else %}
+            <div class="chat-no-msg">No messages yet — start the conversation.</div>
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      <div class="chat-action">
+        <a href="{% url 'chat_room' room.id %}" class="open-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Open Chat
+        </a>
+      </div>
+
+    </div>
+  {% empty %}
+    <div class="empty">
+      <div class="empty-ico">💬</div>
+      <p>No active chats yet.</p>
+    </div>
+  {% endfor %}
+
+  {% if role == "APPLICANT" %}
+    <div class="pending-section">
+      <p class="sec-label">⏳ Waiting for Recruiter</p>
+
+      {% for app in pending_apps %}
+        <div class="pending-card">
+          <div class="pending-info">
+            <strong>{{ app.job.title }}</strong>
+            <span>Status: {{ app.status }}</span>
+          </div>
+          <span class="waiting-tag">⏳ Recruiter hasn't started chat</span>
+        </div>
+      {% empty %}
+        <div class="empty">
+          <div class="empty-ico">📋</div>
+          <p>No pending applications.</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
 </div>
 
-<!-- 🔥 REAL-TIME INBOX WEBSOCKET -->
+
+<!-- ===================== YOUR EXISTING SCRIPTS ===================== -->
 <script>
-    const socket = new WebSocket(
-        (window.location.protocol === "https:" ? "wss://" : "ws://") +
-        window.location.host +
-        "/ws/notifications/"
-    );
+function toggleDropdown() {
+  const dropdown = document.getElementById("notificationDropdown");
+  if (!dropdown) return;
+  dropdown.classList.toggle("show");
+  if (dropdown.classList.contains("show")) loadNotifications();
+}
 
-    socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
+function loadNotifications() {
+  fetch("/api/notifications/")
+    .then(response => response.json())
+    .then(data => {
+      let html = "";
+      if (!data.notifications || data.notifications.length === 0) {
+        html = '<p class="notif-placeholder">No notifications yet.</p>';
+      } else {
+        data.notifications.forEach(n => {
+          html += `<a href="${n.link}" class="notification-item ${n.is_read ? '' : 'unread'}">${n.message}</a>`;
+        });
+      }
+      document.getElementById("notificationList").innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById("notificationList").innerHTML = '<p class="notif-placeholder">Could not load.</p>';
+    });
+}
 
-        if (data.type === "notification") {
-            const badge = document.getElementById(`badge-${data.room_id}`);
+document.addEventListener("click", function(e) {
+  const wrapper = document.querySelector(".notification-wrapper");
+  if (wrapper && !wrapper.contains(e.target)) {
+    const dd = document.getElementById("notificationDropdown");
+    if (dd) dd.classList.remove("show");
+  }
+});
 
-            if (badge) {
-                if (data.unread_count > 0) {
-                    badge.innerText = `🔴 ${data.unread_count} new`;
-                } else {
-                    badge.innerText = "";
-                }
-            }
-        }
-    };
+setInterval(() => {
+  const dd = document.getElementById("notificationDropdown");
+  if (dd && dd.classList.contains("show")) loadNotifications();
+}, 5000);
+
+window.addEventListener("scroll", function() {
+  const nb = document.querySelector(".navbar");
+  if (nb) nb.classList.toggle("navbar-scrolled", window.scrollY > 10);
+});
+
+/* WebSocket real-time unread badge */
+const socket = new WebSocket(
+  (window.location.protocol === "https:" ? "wss://" : "ws://") +
+  window.location.host + "/ws/notifications/"
+);
+socket.onmessage = function(e) {
+  const data = JSON.parse(e.data);
+  if (data.type === "notification") {
+    const badge = document.getElementById(`badge-${data.room_id}`);
+    if (badge) badge.innerText = data.unread_count > 0 ? `🔴 ${data.unread_count} new` : "";
+  }
+};
 </script>
 
 </body>
