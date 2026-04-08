@@ -39,5 +39,6 @@ urlpatterns = [
     path('khalti/<int:payment_id>/', views.khalti_payment, name='khalti_payment'),
     path('khalti/verify/', views.khalti_verify, name='khalti_verify'),
 
-
+    path('admin/profile/<int:user_id>/', views.admin_view_profile, name='admin_view_profile'),
+    path('admin/ban/<int:user_id>/', views.ban_user, name='ban_user'),
 ]

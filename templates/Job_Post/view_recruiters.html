@@ -1,5 +1,273 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<h2>Recruiters Page</h2>
+<style>
+  .pj-page {
+    min-height: 100vh;
+    background: #f0f4f8;
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  .pj-header {
+    max-width: 1100px;
+    margin: 0 auto 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .pj-header-icon {
+    width: 48px;
+    height: 48px;
+    background: #fef3e8;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .pj-header-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: #f59e0b;
+  }
+
+  .pj-header-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin: 0;
+  }
+
+  .pj-header-sub {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0.15rem 0 0;
+  }
+
+  .pj-grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 900px) {
+    .pj-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 560px) {
+    .pj-grid { grid-template-columns: 1fr; }
+  }
+
+  .pj-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.75rem 1.25rem 1.5rem;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pj-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.10);
+  }
+
+  .pj-avatar-wrap {
+    position: relative;
+    width: 88px;
+    height: 88px;
+    margin-bottom: 1rem;
+  }
+
+  .pj-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fef3e8;
+    display: block;
+  }
+
+  .pj-avatar-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #f59e0b;
+    opacity: 0.3;
+  }
+
+  .pj-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 0.25rem;
+    text-decoration: none;
+    display: block;
+  }
+
+  .pj-name:hover {
+    color: #f59e0b;
+  }
+
+  .pj-email {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin: 0 0 1.25rem;
+    word-break: break-all;
+  }
+
+  .pj-badge {
+    display: inline-block;
+    background: #fef3e8;
+    color: #92580a;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .pj-btn {
+    display: inline-block;
+    padding: 0.5rem 1.4rem;
+    background: #f59e0b;
+    color: #ffffff !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: background 0.18s ease, transform 0.15s ease;
+    letter-spacing: 0.01em;
+    margin-top: auto;
+  }
+
+  .pj-btn:hover {
+    background: #d97706;
+    transform: scale(1.04);
+    color: #ffffff !important;
+    text-decoration: none;
+  }
+
+  /* Empty State */
+  .pj-empty {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 1rem;
+    text-align: center;
+  }
+
+  .pj-empty-icon {
+    width: 72px;
+    height: 72px;
+    background: #fef3e8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .pj-empty-icon svg {
+    width: 34px;
+    height: 34px;
+    stroke: #f59e0b;
+  }
+
+  .pj-empty h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 0.4rem;
+  }
+
+  .pj-empty p {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin: 0;
+  }
+</style>
+
+<div class="pj-page">
+
+  <!-- HEADER -->
+  <div class="pj-header">
+    <div class="pj-header-icon">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="pj-header-title">Recruiters</h1>
+      <p class="pj-header-sub">Manage and review all registered recruiters</p>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  {% if recruiters %}
+  <div class="pj-grid">
+    {% for recruiter in recruiters %}
+    <div class="pj-card">
+
+      <!-- AVATAR -->
+      <div class="pj-avatar-wrap">
+        <div class="pj-avatar-ring"></div>
+        {% if recruiter.user.profile.profile_pic %}
+          <img src="{{ recruiter.user.profile.profile_pic.url }}"
+               class="pj-avatar" alt="{{ recruiter.user.username }}">
+        {% else %}
+          <img src="{% static 'images/default.png' %}"
+               class="pj-avatar" alt="{{ recruiter.user.username }}">
+        {% endif %}
+      </div>
+
+      <!-- ROLE BADGE -->
+      <span class="pj-badge">Recruiter</span>
+
+      <!-- NAME -->
+      <a href="{% url 'view_profile' recruiter.user.id %}" class="pj-name">
+        {{ recruiter.user.username }}
+      </a>
+
+      <!-- EMAIL -->
+      <p class="pj-email">{{ recruiter.user.email }}</p>
+
+      <!-- CTA -->
+      <a href="{% url 'view_profile' recruiter.user.id %}" class="pj-btn">
+        View Profile
+      </a>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- EMPTY STATE -->
+  <div class="pj-empty">
+    <div class="pj-empty-icon">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+      </svg>
+    </div>
+    <h3>No Recruiters Found</h3>
+    <p>There are no registered recruiters to display yet.</p>
+  </div>
+  {% endif %}
+
+</div>
 {% endblock %}

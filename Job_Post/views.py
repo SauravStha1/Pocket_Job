@@ -508,11 +508,45 @@ def admin_dashboard(request):
 
     return render(request, 'Job_Post/admin_dashboard.html', context)
 
+@staff_member_required
 def view_applicants(request):
-    return render(request, 'Job_Post/view_applicants.html')
+    applicants = Profile.objects.filter(role='APPLICANT')
+    return render(request, 'Job_Post/view_applicants.html', {
+        'applicants': applicants
+    })
 
+
+@staff_member_required
 def view_recruiters(request):
-    return render(request, 'Job_Post/view_recruiters.html')
+    recruiters = Profile.objects.filter(role='RECRUITER')
+    return render(request, 'Job_Post/view_recruiters.html', {
+        'recruiters': recruiters
+    })
+
+@staff_member_required
+def admin_view_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    profile = get_object_or_404(Profile, user=user)
+
+    jobs = None
+    if profile.role == "RECRUITER":
+        jobs = Job.objects.filter(recruiter=user)
+
+    return render(request, 'Job_Post/admin_view_profile.html', {
+        'profile_user': user,
+        'profile': profile,
+        'jobs': jobs
+    })
+
+@staff_member_required
+def ban_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.is_active = False
+    user.save()
+
+    messages.warning(request, f"{user.username} has been banned.")
+
+    return redirect(request.META.get('HTTP_REFERER', 'admin_dashboard'))
 
 def admin_reports(request):
     return render(request, 'Job_Post/admin_reports.html')

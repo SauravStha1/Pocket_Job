@@ -1,183 +1,612 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="container mt-5">
+<style>
+  /* ── PAGE SHELL ── */
+  .rev-page {
+    background: #f0f4f8;
+    min-height: 100vh;
+    padding: 2.5rem 1.5rem 5rem;
+  }
 
-    <h2 class="mb-4">💰 Revenue Dashboard</h2>
-    <p class="text-muted">
-        Showing: {{ current_filter|title }} Data
-    </p>
-    <div class="mb-4 d-flex gap-2">
+  /* ── HEADER ── */
+  .rev-header {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
 
-        <a href="?filter=all"
-        class="btn btn-sm {% if current_filter == 'all' %}btn-dark{% else %}btn-outline-dark{% endif %}">
-            All
-        </a>
+  .rev-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 
-        <a href="?filter=today"
-        class="btn btn-sm {% if current_filter == 'today' %}btn-success{% else %}btn-outline-success{% endif %}">
-            Today
-        </a>
+  .rev-header-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
 
-        <a href="?filter=week"
-        class="btn btn-sm {% if current_filter == 'week' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-            This Week
-        </a>
+  .rev-header-icon svg {
+    width: 26px;
+    height: 26px;
+    stroke: #fff;
+  }
 
-        <a href="?filter=month"
-        class="btn btn-sm {% if current_filter == 'month' %}btn-warning{% else %}btn-outline-warning{% endif %}">
-            This Month
-        </a>
+  .rev-title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .rev-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0.2rem 0 0;
+  }
+
+  /* ── FILTER PILLS ── */
+  .rev-filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .rev-filter-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-right: 0.25rem;
+    align-self: center;
+  }
+
+  .rev-pill {
+    display: inline-block;
+    padding: 0.42rem 1.1rem;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    transition: all 0.18s ease;
+    color: #475569;
+    background: #ffffff;
+    border-color: #e2e8f0;
+  }
+
+  .rev-pill:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .rev-pill.active-all   { background: #1e293b; border-color: #1e293b; color: #fff; }
+  .rev-pill.active-today { background: #16a34a; border-color: #16a34a; color: #fff; }
+  .rev-pill.active-week  { background: #2563eb; border-color: #2563eb; color: #fff; }
+  .rev-pill.active-month { background: #d97706; border-color: #d97706; color: #fff; }
+
+  .rev-pill.active-all:hover,
+  .rev-pill.active-today:hover,
+  .rev-pill.active-week:hover,
+  .rev-pill.active-month:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  /* ── CONTENT WRAPPER ── */
+  .rev-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── STAT CARDS ── */
+  .rev-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 900px) { .rev-stats { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .rev-stats { grid-template-columns: 1fr; } }
+
+  .rev-stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem 1.5rem 1.35rem;
+    border: 1px solid #e9edf2;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .rev-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .rev-stat-card.card-total::before  { background: linear-gradient(90deg, #16a34a, #4ade80); }
+  .rev-stat-card.card-esewa::before  { background: linear-gradient(90deg, #059669, #34d399); }
+  .rev-stat-card.card-khalti::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+
+  .rev-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.09);
+  }
+
+  .rev-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+
+  .rev-stat-icon.ic-total  { background: #dcfce7; }
+  .rev-stat-icon.ic-esewa  { background: #d1fae5; }
+  .rev-stat-icon.ic-khalti { background: #ede9fe; }
+
+  .rev-stat-body { flex: 1; }
+
+  .rev-stat-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0 0 0.35rem;
+  }
+
+  .rev-stat-amount {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.1;
+  }
+
+  .rev-stat-amount span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-right: 0.2rem;
+  }
+
+  /* ── CHART CARDS ── */
+  .rev-charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  @media (max-width: 800px) { .rev-charts { grid-template-columns: 1fr; } }
+
+  .rev-chart-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem 1.5rem 1.25rem;
+    border: 1px solid #e9edf2;
+  }
+
+  .rev-chart-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .rev-chart-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .rev-chart-dot.dot-line { background: #2563eb; }
+  .rev-chart-dot.dot-bar  { background: #16a34a; }
+
+  .rev-chart-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  /* ── TABLE CARD ── */
+  .rev-table-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e9edf2;
+    overflow: hidden;
+  }
+
+  .rev-table-header {
+    padding: 1.25rem 1.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .rev-table-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .rev-table-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    margin-left: auto;
+  }
+
+  .rev-table-wrap {
+    overflow-x: auto;
+  }
+
+  .rev-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .rev-table thead tr {
+    background: #f8fafc;
+  }
+
+  .rev-table thead th {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+  }
+
+  .rev-table tbody tr {
+    border-bottom: 1px solid #f8fafc;
+    transition: background 0.15s ease;
+    cursor: default;
+  }
+
+  .rev-table tbody tr:last-child { border-bottom: none; }
+
+  .rev-table tbody tr:hover { background: #f8fafc; }
+
+  .rev-table td {
+    padding: 0.9rem 1.25rem;
+    color: #1e293b;
+    vertical-align: middle;
+  }
+
+  .rev-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .rev-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e7ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #3730a3;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .rev-amount {
+    font-weight: 700;
+    color: #16a34a;
+  }
+
+  .rev-badge {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-esewa   { background: #dcfce7; color: #166534; }
+  .badge-khalti  { background: #ede9fe; color: #5b21b6; }
+  .badge-done    { background: #dcfce7; color: #166534; }
+  .badge-pending { background: #fef9c3; color: #854d0e; }
+  .badge-failed  { background: #fee2e2; color: #991b1b; }
+
+  .rev-date {
+    color: #64748b;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  /* ── EMPTY STATE ── */
+  .rev-empty {
+    padding: 4.5rem 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .rev-empty-icon {
+    width: 68px;
+    height: 68px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 1rem;
+  }
+
+  .rev-empty h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.3rem;
+  }
+
+  .rev-empty p {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+</style>
+
+<div class="rev-page">
+
+  <!-- ── HEADER ── -->
+  <div class="rev-header">
+    <div class="rev-header-left">
+      <div class="rev-header-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="rev-title">Revenue Dashboard</h1>
+        <p class="rev-subtitle">Track your platform earnings and transactions &mdash; <strong style="color:#0f172a;">{{ current_filter|title }}</strong> view</p>
+      </div>
+    </div>
+
+    <!-- FILTER PILLS -->
+    <div class="rev-filters">
+      <span class="rev-filter-label">Period:</span>
+      <a href="?filter=all"   class="rev-pill {% if current_filter == 'all' %}active-all{% endif %}">All</a>
+      <a href="?filter=today" class="rev-pill {% if current_filter == 'today' %}active-today{% endif %}">Today</a>
+      <a href="?filter=week"  class="rev-pill {% if current_filter == 'week' %}active-week{% endif %}">This Week</a>
+      <a href="?filter=month" class="rev-pill {% if current_filter == 'month' %}active-month{% endif %}">This Month</a>
+    </div>
+  </div>
+
+  <div class="rev-inner">
+
+    <!-- ── STAT CARDS ── -->
+    <div class="rev-stats">
+
+      <div class="rev-stat-card card-total">
+        <div class="rev-stat-icon ic-total">💰</div>
+        <div class="rev-stat-body">
+          <p class="rev-stat-label">Total Revenue</p>
+          <p class="rev-stat-amount"><span>Rs.</span>{{ total_revenue }}</p>
+        </div>
+      </div>
+
+      <div class="rev-stat-card card-esewa">
+        <div class="rev-stat-icon ic-esewa">📈</div>
+        <div class="rev-stat-body">
+          <p class="rev-stat-label">eSewa Revenue</p>
+          <p class="rev-stat-amount"><span>Rs.</span>{{ esewa_total }}</p>
+        </div>
+      </div>
+
+      <div class="rev-stat-card card-khalti">
+        <div class="rev-stat-icon ic-khalti">💳</div>
+        <div class="rev-stat-body">
+          <p class="rev-stat-label">Khalti Revenue</p>
+          <p class="rev-stat-amount"><span>Rs.</span>{{ khalti_total }}</p>
+        </div>
+      </div>
 
     </div>
 
-    <!-- ===================== -->
-    <!-- TOP STATS CARDS -->
-    <!-- ===================== -->
-    <div class="row g-4 mb-4">
+    <!-- ── CHARTS ── -->
+    <div class="rev-charts">
 
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-3">
-                <h6>Total Revenue</h6>
-                <h3 class="fw-bold text-success">Rs. {{ total_revenue }}</h3>
-            </div>
+      <div class="rev-chart-card">
+        <div class="rev-chart-header">
+          <div class="rev-chart-dot dot-line"></div>
+          <p class="rev-chart-title">Revenue Over Time</p>
         </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-3">
-                <h6>eSewa Revenue</h6>
-                <h4 class="fw-bold text-success">Rs. {{ esewa_total }}</h4>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm text-center p-3">
-                <h6>Khalti Revenue</h6>
-                <h4 class="fw-bold text-primary">Rs. {{ khalti_total }}</h4>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- ===================== -->
-    <!-- CHART -->
-    <!-- ===================== -->
-    <div class="card shadow-sm mb-4 p-4">
-        <h5 class="mb-3">📊 Revenue Over Time</h5>
         <canvas id="revenueChart"></canvas>
-    </div>
-    <div class="card shadow-sm mb-4 p-4">
-        <h5 class="mb-3">📊 Monthly Revenue</h5>
+      </div>
+
+      <div class="rev-chart-card">
+        <div class="rev-chart-header">
+          <div class="rev-chart-dot dot-bar"></div>
+          <p class="rev-chart-title">Monthly Revenue</p>
+        </div>
         <canvas id="monthlyChart"></canvas>
+      </div>
+
     </div>
 
-    <!-- ===================== -->
-    <!-- TRANSACTION TABLE -->
-    <!-- ===================== -->
-    <div class="card shadow-sm p-4">
-        <h5 class="mb-3">🧾 Recent Transactions</h5>
+    <!-- ── TRANSACTION TABLE ── -->
+    <div class="rev-table-card">
 
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Job</th>
-                    <th>Amount</th>
-                    <th>Method</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
+      <div class="rev-table-header">
+        <svg width="16" height="16" fill="none" stroke="#64748b" stroke-width="2"
+             viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="rev-table-title">Recent Transactions</p>
+        <span class="rev-table-count">{{ payments|length }} records</span>
+      </div>
 
-                {% for payment in payments %}
-                <tr>
-                    <td>{{ payment.recruiter.username }}</td>
-                    <td>{{ payment.job.title }}</td>
-                    <td>Rs. {{ payment.amount }}</td>
+      <div class="rev-table-wrap">
+        <table class="rev-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Job</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
 
-                    <td>
-                        {% if payment.payment_method == 'esewa' %}
-                            <span class="badge bg-success">eSewa</span>
-                        {% else %}
-                            <span class="badge bg-primary">Khalti</span>
-                        {% endif %}
-                    </td>
+            {% for payment in payments %}
+            <tr>
+              <td>
+                <div class="rev-user-cell">
+                  <div class="rev-avatar">{{ payment.recruiter.username|slice:":2" }}</div>
+                  <span>{{ payment.recruiter.username }}</span>
+                </div>
+              </td>
+              <td>{{ payment.job.title }}</td>
+              <td class="rev-amount">Rs. {{ payment.amount }}</td>
 
-                    <td>
-                        {% if payment.status == 'COMPLETED' %}
-                            <span class="badge bg-success">Completed</span>
-                        {% elif payment.status == 'PENDING' %}
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        {% else %}
-                            <span class="badge bg-danger">Failed</span>
-                        {% endif %}
-                    </td>
+              <td>
+                {% if payment.payment_method == 'esewa' %}
+                  <span class="rev-badge badge-esewa">eSewa</span>
+                {% else %}
+                  <span class="rev-badge badge-khalti">Khalti</span>
+                {% endif %}
+              </td>
 
-                    <td>{{ payment.created_at|date:"M d, Y H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center text-muted">
-                        No transactions yet
-                    </td>
-                </tr>
-                {% endfor %}
+              <td>
+                {% if payment.status == 'COMPLETED' %}
+                  <span class="rev-badge badge-done">Completed</span>
+                {% elif payment.status == 'PENDING' %}
+                  <span class="rev-badge badge-pending">Pending</span>
+                {% else %}
+                  <span class="rev-badge badge-failed">Failed</span>
+                {% endif %}
+              </td>
 
-            </tbody>
+              <td class="rev-date">{{ payment.created_at|date:"M d, Y H:i" }}</td>
+            </tr>
+
+            {% empty %}
+            <tr>
+              <td colspan="6">
+                <div class="rev-empty">
+                  <div class="rev-empty-icon">🧾</div>
+                  <h4>No transactions yet</h4>
+                  <p>Transactions will appear here once payments are made.</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+
+          </tbody>
         </table>
+      </div>
     </div>
 
+  </div>
 </div>
 
-<!-- ===================== -->
-<!-- CHART.JS -->
-<!-- ===================== -->
+<!-- ── CHART.JS ── -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-    const ctx = document.getElementById('revenueChart').getContext('2d');
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  const revenueChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ chart_labels|safe }},
+      datasets: [{
+        label: 'Revenue (Rs)',
+        data: {{ chart_data|safe }},
+        tension: 0.4,
+        fill: true,
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37,99,235,0.08)',
+        pointBackgroundColor: '#2563eb',
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: true } },
+      scales: {
+        x: { grid: { color: '#f1f5f9' } },
+        y: { grid: { color: '#f1f5f9' }, beginAtZero: true }
+      }
+    }
+  });
 
-    const revenueChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ chart_labels|safe }},
-            datasets: [{
-                label: 'Revenue (Rs)',
-                data: {{ chart_data|safe }},
-                tension: 0.3,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true
-                }
-            }
-        }
-    });
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-
-    const monthlyChart = new Chart(monthlyCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ monthly_labels|safe }},
-            datasets: [{
-                label: 'Monthly Revenue (Rs)',
-                data: {{ monthly_data|safe }}
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true
-                }
-            }
-        }
-    });
+  const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+  const monthlyChart = new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ monthly_labels|safe }},
+      datasets: [{
+        label: 'Monthly Revenue (Rs)',
+        data: {{ monthly_data|safe }},
+        backgroundColor: 'rgba(22,163,74,0.15)',
+        borderColor: '#16a34a',
+        borderWidth: 2,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: true } },
+      scales: {
+        x: { grid: { color: '#f1f5f9' } },
+        y: { grid: { color: '#f1f5f9' }, beginAtZero: true }
+      }
+    }
+  });
 </script>
 
 {% endblock %}

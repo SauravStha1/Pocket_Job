@@ -7,6 +7,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.core.files.base import ContentFile
 
+import Job_Post
+from Job_Post.models import Job
+
 from .models import Profile
 import random
 from .models import Notification
@@ -248,10 +251,17 @@ def mark_notification_read(request, id):
         return JsonResponse({"status": "error"})
 
 def view_profile(request, user_id):
-    user_obj = get_object_or_404(User, id=user_id)
+    user = get_object_or_404(User, id=user_id)
+
+    jobs = None
+
+    # only if recruiter
+    if hasattr(user, 'profile') and user.profile.role == "RECRUITER":
+        jobs = Job.objects.filter(recruiter=user)
 
     return render(request, 'accounts/view_profile.html', {
-        'profile_user': user_obj
+        'profile_user': user,
+        'jobs': jobs
     })
 
 def ban_user(request, user_id):
