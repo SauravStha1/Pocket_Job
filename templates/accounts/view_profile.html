@@ -622,6 +622,18 @@
           <div class="vp-jobs-grid">
             {% for job in jobs %}
             <div class="vp-job-card">
+              {% if request.user.is_staff %}
+              <form method="POST" action="{% url 'job_delete' job.id %}">
+                {% csrf_token %}
+                <button type="submit" class="vp-btn vp-btn-danger"
+                  style="margin-top:8px;"
+                  onclick="return confirm('Delete this job?')">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </form>
+              {% endif %}
+
+
               <p class="vp-job-title">{{ job.title }}</p>
               <p class="vp-job-desc">{{ job.description|truncatewords:12 }}</p>
               <div class="vp-job-meta">
@@ -680,7 +692,7 @@
         <p class="vp-admin-note">
           Banning this user will restrict their access to the platform immediately.
         </p>
-        <form method="POST" action="{% url 'ban_user' profile_user.id %}">
+        <form method="POST" action="/jobs/ban-user/{{ profile_user.id }}/">
           {% csrf_token %}
           <button type="submit" class="vp-btn vp-btn-danger">
             <i class="fa-solid fa-ban"></i> Ban This User

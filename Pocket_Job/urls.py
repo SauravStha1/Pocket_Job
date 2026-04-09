@@ -34,6 +34,7 @@ urlpatterns = [
     path('', include('homepage.urls')),
     path('jobs/', include('Job_Post.urls')),
     path('', include('accounts.urls')),
+    path('admin/', admin.site.urls), 
     path('chat/', include('chat.urls')),
     path('about/', about, name='about'),
     path('', include('reports.urls')),

@@ -105,10 +105,22 @@
       <!-- APPLY BUTTON (MOBILE + BOTTOM) -->
       <div class="jd-apply-bottom">
         {% if user.is_superuser %}
+          <!-- DELETE JOB -->
           <form action="{% url 'job_delete' job.pk %}" method="post">
             {% csrf_token %}
-            <button type="submit" class="jd-apply-btn" style="background: #e02424;">
+            <button type="submit" class="jd-apply-btn"
+              style="background:#e02424;"
+              onclick="return confirm('Delete this job?')">
               🗑 Delete Job
+            </button>
+          </form>
+          <!-- BAN RECRUITER -->
+          <form action="{% url 'ban_user' job.recruiter.id %}" method="post" style="margin-top:10px;">
+            {% csrf_token %}
+            <button type="submit" class="jd-apply-btn"
+              style="background:#111;"
+              onclick="return confirm('Ban this recruiter?')">
+              🚫 Ban Recruiter
             </button>
           </form>
         {% elif user.is_authenticated and user.profile.role == "APPLICANT" %}
@@ -153,11 +165,22 @@
       <!-- APPLY CTA CARD (Desktop) -->
       <div class="jd-card jd-cta-card">
         {% if user.is_superuser %}
-          <!-- ADMIN VIEW -->
+          <!-- DELETE JOB -->
           <form action="{% url 'job_delete' job.pk %}" method="post">
             {% csrf_token %}
-            <button type="submit" class="jd-apply-btn" style="background: #e02424;">
+            <button type="submit" class="jd-apply-btn"
+              style="background:#e02424;"
+              onclick="return confirm('Delete this job?')">
               🗑 Delete Job
+            </button>
+          </form>
+          <!-- BAN RECRUITER -->
+          <form action="{% url 'ban_user' job.recruiter.id %}" method="post" style="margin-top:10px;">
+            {% csrf_token %}
+            <button type="submit" class="jd-apply-btn"
+              style="background:#111;"
+              onclick="return confirm('Ban this recruiter?')">
+              🚫 Ban Recruiter
             </button>
           </form>
         {% elif user.is_authenticated and user.profile.role == "APPLICANT" %}

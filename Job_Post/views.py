@@ -342,6 +342,7 @@ def job_edit(request, pk):
 # ============================
 
 @login_required
+
 @transaction.atomic
 @staff_member_required
 def job_delete(request, pk):
@@ -533,7 +534,7 @@ def admin_view_profile(request, user_id):
     if profile.role == "RECRUITER":
         jobs = Job.objects.filter(recruiter=user)
 
-    return render(request, 'Job_Post/admin_view_profile.html', 
+    return render(request, 'Job_Post/admin_view_profile.html', {
         'profile_user': user,
         'profile': profile,
         'jobs': jobs
