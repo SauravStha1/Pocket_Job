@@ -6,8 +6,9 @@ urlpatterns = [
     path('report/user/<int:user_id>/', views.report_user, name='report_user'),
 
     path('reports/', views.admin_reports, name='admin_reports'),
-    path('admin/delete-job/<int:job_id>/', views.delete_reported_job, name='delete_reported_job'),
-    path('admin/ban-user/<int:user_id>/', views.ban_user, name='ban_user'),
+    path('delete-job/<int:job_id>/', views.delete_reported_job, name='delete_reported_job'),
+    path('ban-user/<int:user_id>/', views.ban_user, name='ban_user'),
     path('reports/<int:report_id>/', views.report_detail, name='report_detail'),
-    path('admin/reports/resolve/<int:report_id>/', views.mark_report_resolved, name='mark_report_resolved'),
+    path('resolve/<int:report_id>/', views.resolve_report, name='resolve_report'),
+
 ]

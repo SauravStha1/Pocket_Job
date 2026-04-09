@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -112,8 +113,12 @@ def report_detail(request, report_id):
     })
 
 @staff_member_required
-def mark_report_resolved(request, report_id):
+def resolve_report(request, report_id):
     report = get_object_or_404(Report, id=report_id)
+
     report.status = 'RESOLVED'
     report.save()
-    return redirect('admin_reports')  # back to reports page
+
+    messages.success(request, "Report marked as resolved.")
+
+    return redirect('admin_reports')

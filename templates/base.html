@@ -18,15 +18,7 @@
 </head>
 
 <body>
-  {% if messages %}
-    <div class="msg-container">
-      {% for message in messages %}
-        <div class="msg {{ message.tags }}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+
 
 <!-- ===================== NAVBAR ===================== -->
 <header class="navbar">
@@ -87,6 +79,15 @@
     {% endif %}
 
   </nav>
+    {% if messages %}
+      <div class="msg-container">
+        {% for message in messages %}
+          <div class="msg {{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
   <!-- ================= RIGHT PROFILE AREA ================= -->
   <div class="profile">

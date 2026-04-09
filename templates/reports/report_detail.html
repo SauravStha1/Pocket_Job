@@ -529,7 +529,7 @@
 
       {% if report.status == 'PENDING' %}
       <div class="admin-actions">
-        <a href="{% url 'mark_report_resolved' report.id %}" class="btn-action-lg btn-primary-action" style="background:#16A34A;">
+        <a href="{% url 'resolve_report' report.id %}" class="btn-action-lg btn-primary-action" style="background:#16A34A;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>

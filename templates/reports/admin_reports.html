@@ -417,10 +417,14 @@
               </a>
 
               {% if report.status == 'PENDING' %}
-              <a href="{% url 'mark_report_resolved' report.id %}" class="btn-action btn-resolve">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <a href="{% url 'resolve_report' report.id %}" 
+                class="btn-action btn-resolve"
+                onclick="return confirm('Mark this report as resolved?')">
+                
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
+
                 <span>Resolve</span>
               </a>
               {% endif %}
