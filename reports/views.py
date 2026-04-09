@@ -68,11 +68,23 @@ def report_user(request, user_id):
 # 🧑‍💼 ADMIN VIEW REPORTS
 @staff_member_required
 def admin_reports(request):
-    reports = Report.objects.all().order_by('-created_at')
+    filter_type = request.GET.get('filter', 'all')
 
-    return render(request, 'reports/admin_reports.html', {
-        'reports': reports
-    })
+    reports = Report.objects.all().order_by('-id')
+
+    if filter_type == 'pending':
+        reports = reports.filter(status='PENDING')
+    elif filter_type == 'job':
+        reports = reports.filter(report_type='job')
+    elif filter_type == 'user':
+        reports = reports.filter(report_type='user')
+
+    context = {
+        'reports': reports,
+        'current_filter': filter_type
+    }
+
+    return render(request, 'reports/admin_reports.html', context)
 
 
 # ❌ DELETE JOB
@@ -98,3 +110,10 @@ def report_detail(request, report_id):
     return render(request, 'reports/report_detail.html', {
         'report': report
     })
+
+@staff_member_required
+def mark_report_resolved(request, report_id):
+    report = get_object_or_404(Report, id=report_id)
+    report.status = 'RESOLVED'
+    report.save()
+    return redirect('admin_reports')  # back to reports page

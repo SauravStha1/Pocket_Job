@@ -342,14 +342,15 @@ def job_edit(request, pk):
 # ============================
 
 @login_required
-@recruiter_required
 @transaction.atomic
+@staff_member_required
 def job_delete(request, pk):
-    job = get_object_or_404(Job, pk=pk, recruiter=request.user)
+    job = get_object_or_404(Job, pk=pk)
     job.is_active = False
     job.save()
-    messages.success(request, "Job deleted successfully.")
-    return redirect("recruiter_jobs")
+
+    messages.success(request, "Job deleted by admin.")
+    return redirect('job_list')
 
 # ============================
 # ALL APPLIED APPLICANTS (Recruiter)
@@ -532,7 +533,7 @@ def admin_view_profile(request, user_id):
     if profile.role == "RECRUITER":
         jobs = Job.objects.filter(recruiter=user)
 
-    return render(request, 'Job_Post/admin_view_profile.html', {
+    return render(request, 'Job_Post/admin_view_profile.html', 
         'profile_user': user,
         'profile': profile,
         'jobs': jobs

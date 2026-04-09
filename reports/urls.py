@@ -9,4 +9,5 @@ urlpatterns = [
     path('admin/delete-job/<int:job_id>/', views.delete_reported_job, name='delete_reported_job'),
     path('admin/ban-user/<int:user_id>/', views.ban_user, name='ban_user'),
     path('reports/<int:report_id>/', views.report_detail, name='report_detail'),
+    path('admin/reports/resolve/<int:report_id>/', views.mark_report_resolved, name='mark_report_resolved'),
 ]

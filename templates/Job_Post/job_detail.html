@@ -104,7 +104,14 @@
 
       <!-- APPLY BUTTON (MOBILE + BOTTOM) -->
       <div class="jd-apply-bottom">
-        {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
+        {% if user.is_superuser %}
+          <form action="{% url 'job_delete' job.pk %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="jd-apply-btn" style="background: #e02424;">
+              🗑 Delete Job
+            </button>
+          </form>
+        {% elif user.is_authenticated and user.profile.role == "APPLICANT" %}
           {% if has_applied %}
             <button class="jd-applied-btn" disabled>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -116,7 +123,9 @@
               <button type="submit" class="jd-apply-btn">Apply Now</button>
             </form>
           {% endif %}
-        {% elif not user.is_authenticated %}
+        {% elif user.is_authenticated and user.profile.role == "RECRUITER" %}
+          <p class="jd-recruiter-note">You are viewing this as a recruiter.</p>
+        {% else %}
           <p class="jd-login-cta">
             <a href="{% url 'login' %}">Log in</a> to apply for this position.
           </p>
@@ -143,7 +152,15 @@
 
       <!-- APPLY CTA CARD (Desktop) -->
       <div class="jd-card jd-cta-card">
-        {% if user.is_authenticated and user.profile.role == "APPLICANT" %}
+        {% if user.is_superuser %}
+          <!-- ADMIN VIEW -->
+          <form action="{% url 'job_delete' job.pk %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="jd-apply-btn" style="background: #e02424;">
+              🗑 Delete Job
+            </button>
+          </form>
+        {% elif user.is_authenticated and user.profile.role == "APPLICANT" %}
           {% if has_applied %}
             <button class="jd-applied-btn" disabled>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -155,10 +172,10 @@
               <button type="submit" class="jd-apply-btn">Apply Now</button>
             </form>
           {% endif %}
-        {% elif not user.is_authenticated %}
-          <a href="{% url 'login' %}" class="jd-apply-btn" style="display:block; text-align:center; text-decoration:none;">Log In to Apply</a>
-        {% else %}
+        {% elif user.is_authenticated and user.profile.role == "RECRUITER" %}
           <p class="jd-recruiter-note">You are viewing this as a recruiter.</p>
+        {% else %}
+          <a href="{% url 'login' %}" class="jd-apply-btn" style="display:block; text-align:center; text-decoration:none;">Log In to Apply</a>
         {% endif %}
         <p class="jd-deadline-note">
           {% if job.deadline %}

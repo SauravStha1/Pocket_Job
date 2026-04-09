@@ -2,115 +2,588 @@
 
 {% block content %}
 
-<div class="container mt-5">
+<style>
+  .detail-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
 
-    <h2 class="mb-4">🚨 Report Details</h2>
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #6B7280;
+    text-decoration: none;
+    margin-bottom: 1.75rem;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    background: #fff;
+    transition: all 0.15s ease;
+  }
+  .back-btn:hover {
+    background: #F8FAFC;
+    color: #111827;
+    border-color: #D1D5DB;
+  }
+  .back-btn svg { width: 15px; height: 15px; }
 
-    <!-- Report Info Card -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-            <h5>
-                <strong>Reporter:</strong> 
-                {% if report.reporter and report.reporter.user %}
-                    <a href="{% url 'view_profile' report.reporter.user.id %}">
-                        {{ report.reporter.user.username }}
-                    </a>
-                {% else %}
-                    Unknown
-                {% endif %}
-            </h5>
+  .section-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
 
-            <p><strong>Type:</strong> {{ report.report_type|title }}</p>
-            <p><strong>Reason:</strong> {{ report.reason }}</p>
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 22px;
+    border-bottom: 1px solid #F3F4F6;
+    background: #F8FAFC;
+  }
 
-            <p>
-                <strong>Status:</strong> 
-                {% if report.status == 'PENDING' %}
-                    <span class="badge bg-warning text-dark">Pending</span>
-                {% else %}
-                    <span class="badge bg-success">Resolved</span>
-                {% endif %}
-            </p>
+  .card-header svg {
+    width: 16px;
+    height: 16px;
+    color: #6B7280;
+    flex-shrink: 0;
+  }
 
-        </div>
+  .card-header-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .card-body {
+    padding: 22px;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #F9FAFB;
+  }
+  .meta-row:last-child { border-bottom: none; }
+
+  .meta-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 100px;
+    padding-top: 1px;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    color: #111827;
+    flex: 1;
+    line-height: 1.6;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  .status-badge.pending  { background: #FFFBEB; color: #B45309; border: 1px solid #FCD34D; }
+  .status-badge.resolved { background: #F0FDF4; color: #166534; border: 1px solid #86EFAC; }
+
+  .type-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .type-pill.job  { background: #EFF6FF; color: #1D4ED8; }
+  .type-pill.user { background: #F5F3FF; color: #6D28D9; }
+  .type-pill svg { width: 12px; height: 12px; }
+
+  .profile-link {
+    font-weight: 600;
+    color: #2563EB;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.15s;
+  }
+  .profile-link:hover { color: #1D4ED8; text-decoration: underline; }
+
+  .avatar-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #DBEAFE;
+    color: #1D4ED8;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .avatar-circle.purple {
+    background: #EDE9FE;
+    color: #6D28D9;
+  }
+
+  /* Job preview */
+  .job-preview {
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .job-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+
+  .job-meta-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .job-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    background: #F3F4F6;
+    color: #6B7280;
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+  .job-meta-pill svg { width: 12px; height: 12px; }
+
+  .job-description {
+    font-size: 13.5px;
+    color: #6B7280;
+    line-height: 1.65;
+    border-top: 1px solid #F3F4F6;
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  /* User preview */
+  .user-preview {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+
+  .user-avatar-lg {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #EDE9FE;
+    color: #6D28D9;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .user-info-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    text-decoration: none;
+  }
+  .user-info-name:hover { text-decoration: underline; }
+
+  .user-info-email {
+    font-size: 13px;
+    color: #6B7280;
+    margin-top: 2px;
+  }
+
+  /* Actions card */
+  .actions-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1.5px solid #FEE2E2;
+    box-shadow: 0 2px 12px rgba(220,38,38,0.06);
+    overflow: hidden;
+  }
+
+  .actions-card .card-header {
+    background: #FFF5F5;
+    border-bottom: 1px solid #FEE2E2;
+  }
+
+  .actions-card .card-header svg { color: #EF4444; }
+  .actions-card .card-header .card-header-title { color: #991B1B; }
+
+  .admin-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-action-lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.17s ease;
+  }
+
+  .btn-action-lg svg { width: 15px; height: 15px; }
+
+  .btn-primary-action {
+    background: #2563EB;
+    color: #fff;
+  }
+  .btn-primary-action:hover { background: #1D4ED8; color: #fff; }
+
+  .btn-danger-action {
+    background: #EF4444;
+    color: #fff;
+  }
+  .btn-danger-action:hover { background: #DC2626; color: #fff; }
+
+  .btn-warning-action {
+    background: #F59E0B;
+    color: #fff;
+  }
+  .btn-warning-action:hover { background: #D97706; color: #fff; }
+
+  .warning-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #FFFBEB;
+    border: 1px solid #FCD34D;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: #92400E;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .warning-note svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  @media (max-width: 640px) {
+    .meta-row { flex-direction: column; gap: 4px; }
+    .meta-label { min-width: unset; }
+  }
+</style>
+
+<div class="detail-page">
+
+  <!-- Back Button -->
+  <a href="{% url 'admin_reports' %}" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Back to Reports
+  </a>
+
+  <!-- Page Title -->
+  <h2 class="page-title">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    Report Details
+  </h2>
+
+  <!-- ===== REPORT INFO CARD ===== -->
+  <div class="section-card">
+    <div class="card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span class="card-header-title">Report Information</span>
     </div>
+    <div class="card-body">
 
-    <!-- ===================== -->
-    <!-- JOB REPORT -->
-    <!-- ===================== -->
-    {% if report.report_type == 'job' and report.job %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-
-            <h4 class="mb-3">📄 Reported Job</h4>
-
-            <p><strong>Title:</strong> {{ report.job.title }}</p>
-
-            <!-- ✅ FIXED: recruiter instead of posted_by -->
-            <p>
-                <strong>Posted By:</strong> 
-                {% if report.job.recruiter %}
-                    <a href="{% url 'view_profile' report.job.recruiter.id %}" style="text-decoration:none;">
-                        {{ report.job.recruiter.username }}
-                    </a>
-                {% else %}
-                    Unknown
-                {% endif %}
-            </p>
-
-            <p><strong>Description:</strong> {{ report.job.description }}</p>
-            <p><strong>Location:</strong> {{ report.job.location }}</p>
-
-            <div class="mt-3">
-                <a href="{% url 'job_detail' report.job.id %}" class="btn btn-primary">
-                    View Job Page
-                </a>
-
-                {% if request.user.is_staff %}
-                <a href="{% url 'delete_reported_job' report.job.id %}" 
-                   class="btn btn-danger"
-                   onclick="return confirm('Delete this job?');">
-                   Delete Job
-                </a>
-                {% endif %}
-            </div>
-
+      <div class="meta-row">
+        <span class="meta-label">Reporter</span>
+        <div class="meta-value">
+          {% if report.reporter and report.reporter.user %}
+            <a href="{% url 'view_profile' report.reporter.user.id %}" class="profile-link">
+              <span class="avatar-circle">{{ report.reporter.user.username|first|upper }}</span>
+              {{ report.reporter.user.username }}
+            </a>
+          {% else %}
+            <span style="color:#9CA3AF;">Unknown</span>
+          {% endif %}
         </div>
-    </div>
-    {% endif %}
+      </div>
 
-    <!-- ===================== -->
-    <!-- USER REPORT -->
-    <!-- ===================== -->
-    {% if report.report_type == 'user' and report.reported_user %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-
-            <h4 class="mb-3">👤 Reported User</h4>
-
-            <p>
-                <strong>Username:</strong> 
-                <a href="{% url 'view_profile' report.reported_user.id %}" style="text-decoration:none;">
-                    {{ report.reported_user.username }}
-                </a>
-            </p>
-
-            <p><strong>Email:</strong> {{ report.reported_user.email }}</p>
-
-            {% if request.user.is_staff %}
-            <div class="mt-3">
-                <a href="{% url 'ban_user' report.reported_user.id %}" 
-                   class="btn btn-warning"
-                   onclick="return confirm('Ban this user?');">
-                   🚫 Ban User
-                </a>
-            </div>
-            {% endif %}
-
+      <div class="meta-row">
+        <span class="meta-label">Type</span>
+        <div class="meta-value">
+          {% if report.report_type == 'job' %}
+            <span class="type-pill job">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+              </svg>
+              Job Report
+            </span>
+          {% else %}
+            <span class="type-pill user">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              User Report
+            </span>
+          {% endif %}
         </div>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Reason</span>
+        <div class="meta-value" style="color:#374151; line-height:1.65;">{{ report.reason }}</div>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Status</span>
+        <div class="meta-value">
+          {% if report.status == 'PENDING' %}
+            <span class="status-badge pending">⏳ Pending Review</span>
+          {% else %}
+            <span class="status-badge resolved">✓ Resolved</span>
+          {% endif %}
+        </div>
+      </div>
+
     </div>
-    {% endif %}
+  </div>
+
+
+  <!-- ===== JOB REPORT SECTION ===== -->
+  {% if report.report_type == 'job' and report.job %}
+  <div class="section-card">
+    <div class="card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      </svg>
+      <span class="card-header-title">Reported Job</span>
+    </div>
+    <div class="card-body">
+
+      <div class="job-preview">
+        <div class="job-title">{{ report.job.title }}</div>
+        <div class="job-meta-pills">
+          {% if report.job.location %}
+          <span class="job-meta-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ report.job.location }}
+          </span>
+          {% endif %}
+          {% if report.job.recruiter %}
+          <span class="job-meta-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Posted by
+            <a href="{% url 'view_profile' report.job.recruiter.id %}" style="color:#2563EB; font-weight:600; text-decoration:none;">
+              {{ report.job.recruiter.username }}
+            </a>
+          </span>
+          {% endif %}
+          <span class="job-meta-pill">ID #{{ report.job.id }}</span>
+        </div>
+        <div class="job-description">{{ report.job.description }}</div>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+        <a href="{% url 'job_detail' report.job.id %}" class="btn-action-lg btn-primary-action">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          View Job Page
+        </a>
+
+        {% if request.user.is_staff %}
+        <a href="{% url 'delete_reported_job' report.job.id %}"
+           class="btn-action-lg btn-danger-action"
+           onclick="return confirm('Delete this job? This cannot be undone.');">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+          Delete Job
+        </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+
+
+  <!-- ===== USER REPORT SECTION ===== -->
+  {% if report.report_type == 'user' and report.reported_user %}
+  <div class="section-card">
+    <div class="card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="card-header-title">Reported User</span>
+    </div>
+    <div class="card-body">
+
+      <div class="user-preview">
+        <div class="user-avatar-lg">{{ report.reported_user.username|first|upper }}</div>
+        <div>
+          <a href="{% url 'view_profile' report.reported_user.id %}" class="user-info-name">
+            {{ report.reported_user.username }}
+          </a>
+          <div class="user-info-email">{{ report.reported_user.email }}</div>
+        </div>
+      </div>
+
+      {% if request.user.is_staff %}
+      <div class="admin-actions" style="margin-top:4px;">
+        <a href="{% url 'ban_user' report.reported_user.id %}"
+           class="btn-action-lg btn-warning-action"
+           onclick="return confirm('Ban {{ report.reported_user.username }}? This will restrict their access.');">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+          Ban User
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
+
+  <!-- ===== ADMIN ACTIONS CARD ===== -->
+  {% if request.user.is_staff %}
+  <div class="actions-card">
+    <div class="card-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <span class="card-header-title">Admin Actions</span>
+    </div>
+    <div class="card-body">
+
+      {% if report.status == 'PENDING' %}
+      <div class="admin-actions">
+        <a href="{% url 'mark_report_resolved' report.id %}" class="btn-action-lg btn-primary-action" style="background:#16A34A;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Mark as Resolved
+        </a>
+
+        {% if report.report_type == 'job' and report.job %}
+        <a href="{% url 'delete_reported_job' report.job.id %}"
+           class="btn-action-lg btn-danger-action"
+           onclick="return confirm('Delete this job? This action is permanent.');">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+          Delete Job
+        </a>
+        {% endif %}
+
+        {% if report.report_type == 'user' and report.reported_user %}
+        <a href="{% url 'ban_user' report.reported_user.id %}"
+           class="btn-action-lg btn-warning-action"
+           onclick="return confirm('Ban this user?');">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+          Ban User
+        </a>
+        {% endif %}
+      </div>
+
+      <div class="warning-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        These actions are permanent. Please review the report carefully before taking action.
+      </div>
+
+      {% else %}
+      <div style="display:flex;align-items:center;gap:8px;color:#166534;font-size:14px;font-weight:500;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        This report has been resolved and no further action is required.
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
 
 </div>
 

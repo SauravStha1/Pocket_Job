@@ -2,85 +2,474 @@
 
 {% block content %}
 
-<div class="container mt-5">
-    <h2 class="mb-4">🚨 Reports</h2>
+<style>
+  .reports-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
 
-    <table class="table table-bordered table-hover align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>Reporter</th>
-                <th>Type</th>
-                <th>Reported Object</th>
-                <th>Job Name</th> <!-- NEW COLUMN -->
-                <th>Reason</th>
-                <th>Action</th>
-            </tr>
-        </thead>
+  .reports-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
 
-        <tbody>
-            {% for report in reports %}
-            <tr>
+  .reports-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+  }
 
-                <!-- Reporter -->
-                <td>{{ report.reporter.username }}</td>
+  .reports-title svg {
+    color: #EF4444;
+  }
 
-                <!-- Type -->
-                <td>
-                    {% if report.report_type == 'job' %}
-                        <span class="badge bg-primary">Job</span>
-                    {% else %}
-                        <span class="badge bg-secondary">User</span>
-                    {% endif %}
-                </td>
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+  }
 
-                <!-- Report Detail Page -->
-                <td>
-                    <a href="{% url 'report_detail' report.id %}" 
-                       style="text-decoration:none; font-weight:600;">
-                        {% if report.report_type == 'job' %}
-                            Job #{{ report.job.id }}
-                        {% else %}
-                            {{ report.reported_user.username }}
-                        {% endif %}
-                    </a>
-                </td>
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 50px;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    transition: all 0.18s ease;
+    cursor: pointer;
+  }
 
-                <!-- JOB NAME (CLICKABLE TO JOB PAGE) -->
-                <td>
-                    {% if report.report_type == 'job' %}
-                        <a href="{% url 'job_detail' report.job.id %}" 
-                           style="text-decoration:none; color:#0d6efd; font-weight:500;">
-                            {{ report.job.title }}
-                        </a>
-                    {% else %}
-                        —
-                    {% endif %}
-                </td>
+  .filter-pill svg {
+    width: 14px;
+    height: 14px;
+  }
 
-                <!-- Reason -->
-                <td>{{ report.reason|truncatechars:50 }}</td>
+  .filter-pill.all       { background: #F1F5F9; color: #475569; border-color: #E2E8F0; }
+  .filter-pill.all:hover { background: #1E293B; color: #fff; border-color: #1E293B; }
+  .filter-pill.all.active { background: #1E293B; color: #fff; border-color: #1E293B; }
 
-                <!-- Action -->
-                <td>
-                    {% if report.report_type == 'job' %}
-                        <a href="{% url 'delete_reported_job' report.job.id %}" 
-                           class="btn btn-danger btn-sm"
-                           onclick="return confirm('Delete this job?');">
-                            Delete Job
-                        </a>
-                    {% else %}
-                        <a href="{% url 'ban_user' report.reported_user.id %}" 
-                           class="btn btn-warning btn-sm"
-                           onclick="return confirm('Ban this user?');">
-                            Ban User
-                        </a>
-                    {% endif %}
-                </td>
+  .filter-pill.pending        { background: #FFFBEB; color: #92400E; border-color: #FCD34D; }
+  .filter-pill.pending:hover  { background: #F59E0B; color: #fff; border-color: #F59E0B; }
+  .filter-pill.pending.active { background: #F59E0B; color: #fff; border-color: #F59E0B; }
 
-            </tr>
-            {% endfor %}
-        </tbody>
+  .filter-pill.job        { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+  .filter-pill.job:hover  { background: #2563EB; color: #fff; border-color: #2563EB; }
+  .filter-pill.job.active { background: #2563EB; color: #fff; border-color: #2563EB; }
+
+  .filter-pill.user        { background: #F5F3FF; color: #6D28D9; border-color: #DDD6FE; }
+  .filter-pill.user:hover  { background: #7C3AED; color: #fff; border-color: #7C3AED; }
+  .filter-pill.user.active { background: #7C3AED; color: #fff; border-color: #7C3AED; }
+
+  .table-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .reports-table thead tr {
+    background: #F8FAFC;
+    border-bottom: 1.5px solid #E5E7EB;
+  }
+
+  .reports-table thead th {
+    padding: 13px 18px;
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #6B7280;
+    white-space: nowrap;
+  }
+
+  .reports-table tbody tr {
+    border-bottom: 1px solid #F3F4F6;
+    transition: background 0.13s ease;
+  }
+
+  .reports-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .reports-table tbody tr:hover {
+    background: #F8FAFC;
+  }
+
+  .reports-table td {
+    padding: 14px 18px;
+    vertical-align: middle;
+    color: #374151;
+  }
+
+  .reporter-link {
+    font-weight: 600;
+    color: #2563EB;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+  }
+  .reporter-link:hover { color: #1D4ED8; text-decoration: underline; }
+
+  .reporter-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #DBEAFE;
+    color: #1D4ED8;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .type-badge.job  { background: #EFF6FF; color: #1D4ED8; }
+  .type-badge.user { background: #F5F3FF; color: #6D28D9; }
+
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-badge.pending  { background: #FFFBEB; color: #B45309; border: 1px solid #FCD34D; }
+  .status-badge.resolved { background: #F0FDF4; color: #166534; border: 1px solid #86EFAC; }
+
+  .reason-text {
+    color: #6B7280;
+    font-size: 13px;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .job-link {
+    font-weight: 500;
+    color: #2563EB;
+    text-decoration: none;
+    font-size: 13.5px;
+  }
+  .job-link:hover { text-decoration: underline; }
+
+  .user-link {
+    font-weight: 600;
+    color: #374151;
+    text-decoration: none;
+  }
+  .user-link:hover { color: #111; text-decoration: underline; }
+
+  .action-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn-action svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  .btn-view    { background: #EFF6FF; color: #2563EB; }
+  .btn-view:hover { background: #2563EB; color: #fff; }
+
+  .btn-resolve { background: #F0FDF4; color: #166534; }
+  .btn-resolve:hover { background: #16A34A; color: #fff; }
+
+  .btn-delete  { background: #FEF2F2; color: #DC2626; }
+  .btn-delete:hover { background: #DC2626; color: #fff; }
+
+  .btn-ban     { background: #FFFBEB; color: #D97706; }
+  .btn-ban:hover { background: #D97706; color: #fff; }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #9CA3AF;
+  }
+
+  .empty-state svg {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    display: block;
+    color: #D1D5DB;
+  }
+
+  .empty-state h3 {
+    font-size: 16px;
+    color: #6B7280;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+    color: #9CA3AF;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .reports-table thead th:nth-child(4),
+    .reports-table td:nth-child(4) { display: none; }
+    .reason-text { max-width: 120px; }
+    .btn-action span { display: none; }
+    .btn-action { padding: 6px 8px; }
+  }
+</style>
+
+<div class="reports-page">
+
+  <!-- Header -->
+  <div class="reports-header">
+    <h2 class="reports-title">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Reports
+    </h2>
+  </div>
+
+  <!-- Filter Pills -->
+  <div class="filter-bar">
+
+    <a href="?filter=all"
+      class="filter-pill all {% if current_filter == 'all' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span>All Reports</span>
+    </a>
+
+    <a href="?filter=pending"
+      class="filter-pill pending {% if current_filter == 'pending' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span>Pending</span>
+    </a>
+
+    <a href="?filter=job"
+      class="filter-pill job {% if current_filter == 'job' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      </svg>
+      <span>Job Reports</span>
+    </a>
+
+    <a href="?filter=user"
+      class="filter-pill user {% if current_filter == 'user' %}active{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span>User Reports</span>
+    </a>
+
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <table class="reports-table">
+      <thead>
+        <tr>
+          <th>Reporter</th>
+          <th>Type</th>
+          <th>Reported</th>
+          <th>Job</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for report in reports %}
+        <tr>
+
+          <!-- Reporter -->
+          <td>
+            <a href="{% url 'view_profile' report.reporter.id %}" class="reporter-link">
+              <span class="reporter-avatar">{{ report.reporter.username|first|upper }}</span>
+              {{ report.reporter.username }}
+            </a>
+          </td>
+
+          <!-- Type -->
+          <td>
+            {% if report.report_type == 'job' %}
+              <span class="type-badge job">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                </svg>
+                Job
+              </span>
+            {% else %}
+              <span class="type-badge user">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                User
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- Reported Object -->
+          <td>
+            {% if report.report_type == 'job' %}
+              <a href="{% url 'report_detail' report.id %}" class="user-link">
+                Job #{{ report.job.id }}
+              </a>
+            {% else %}
+              <a href="{% url 'view_profile' report.reported_user.id %}" class="user-link">
+                {{ report.reported_user.username }}
+              </a>
+            {% endif %}
+          </td>
+
+          <!-- Job Name -->
+          <td>
+            {% if report.report_type == 'job' %}
+              <a href="{% url 'job_detail' report.job.id %}" class="job-link">
+                {{ report.job.title }}
+              </a>
+            {% else %}
+              <span style="color:#D1D5DB;">—</span>
+            {% endif %}
+          </td>
+
+          <!-- Reason -->
+          <td>
+            <span class="reason-text" title="{{ report.reason }}">{{ report.reason|truncatechars:50 }}</span>
+          </td>
+
+          <!-- Status -->
+          <td>
+            {% if report.status == 'PENDING' %}
+              <span class="status-badge pending">Pending</span>
+            {% else %}
+              <span class="status-badge resolved">Resolved</span>
+            {% endif %}
+          </td>
+
+          <!-- Actions -->
+          <td>
+            <div class="action-group">
+
+              <a href="{% url 'report_detail' report.id %}" class="btn-action btn-view">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>View</span>
+              </a>
+
+              {% if report.status == 'PENDING' %}
+              <a href="{% url 'mark_report_resolved' report.id %}" class="btn-action btn-resolve">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Resolve</span>
+              </a>
+              {% endif %}
+
+              {% if report.report_type == 'job' %}
+              <a href="{% url 'delete_reported_job' report.job.id %}" class="btn-action btn-delete"
+                 onclick="return confirm('Delete this job?');">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/>
+                  <path d="M9 6V4h6v2"/>
+                </svg>
+                <span>Delete</span>
+              </a>
+              {% else %}
+              <a href="{% url 'ban_user' report.reported_user.id %}" class="btn-action btn-ban"
+                 onclick="return confirm('Ban this user?');">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+                <span>Ban</span>
+              </a>
+              {% endif %}
+
+            </div>
+          </td>
+
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="2"/>
+                <line x1="9" y1="12" x2="15" y2="12"/>
+                <line x1="9" y1="16" x2="12" y2="16"/>
+              </svg>
+              <h3>No reports found</h3>
+              <p>There are no reports matching this filter right now.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+
+      </tbody>
     </table>
+  </div>
 
 </div>
 
