@@ -18,7 +18,7 @@ from .forms import JobForm
 from .payment_models import Payment
 from accounts.models import Profile
 from accounts.models import Notification
-from django.db.models import Sum
+from django.db.models import Count, Sum
 
 from django.conf import settings
 import hmac
@@ -127,24 +127,113 @@ def apply_job(request, pk):
 @login_required
 @recruiter_required
 def recruiter_dashboard(request):
-    jobs = Job.objects.filter(
-        recruiter=request.user,
-        is_active=True
+
+    now = timezone.now()
+
+    # =====================
+    # 📦 ONLY THIS RECRUITER JOBS
+    # =====================
+    all_jobs = Job.objects.filter(recruiter=request.user)
+
+    # ✅ TOTAL JOBS
+    total_jobs = all_jobs.count()
+
+    # =====================
+    # ✅ ACTIVE JOBS
+    # =====================
+    active_jobs_qs = all_jobs.filter(
+        is_active=True,
+        deadline__gte=now
     )
 
-    # ✅ TOTAL APPLICANTS COUNT
+    active_jobs = active_jobs_qs.count()
+
+    # =====================
+    # ✅ CLOSED JOBS (FINAL FIX)
+    # =====================
+    closed_jobs_qs = all_jobs.exclude(
+        is_active=True,
+        deadline__gte=now
+    )
+
+    closed_jobs = closed_jobs_qs.count()
+
+    # =====================
+    # ✅ TOTAL APPLICANTS (ONLY ACTIVE JOBS)
+    # =====================
     total_applicants = JobApplication.objects.filter(
-        job__recruiter=request.user
+        job__in=active_jobs_qs
     ).count()
 
-    # ✅ OPTIONAL (extra stats - good for future charts)
-    total_jobs = jobs.count()
+    # =====================
+    # 🔔 NOTIFICATIONS
+    # =====================
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:5]
 
-    return render(request, 'Job_Post/recruiter_dashboard.html', {
-        'jobs': jobs,
-        'total_applicants': total_applicants,
-        'total_jobs': total_jobs
-    })
+    # =====================
+    # 📈 APPLICATION CHART
+    # =====================
+    last_7_days = now - timedelta(days=7)
+
+    applications_chart = JobApplication.objects.filter(
+        job__in=active_jobs_qs,
+        applied_at__gte=last_7_days
+    ).annotate(date=TruncDate('applied_at')) \
+     .values('date') \
+     .annotate(count=Count('id')) \
+     .order_by('date')
+
+    chart_labels = [str(i['date']) for i in applications_chart]
+    chart_data = [i['count'] for i in applications_chart]
+
+    # =====================
+    # 📊 JOB POST CHART
+    # =====================
+    jobs_chart = all_jobs.annotate(
+        month=TruncMonth('created_at')
+    ).values('month') \
+     .annotate(count=Count('id')) \
+     .order_by('month')
+
+    job_labels = [i['month'].strftime('%b') for i in jobs_chart]
+    job_data = [i['count'] for i in jobs_chart]
+
+    # =====================
+    # ✅ HIRED & REJECTED COUNTS (FIX)
+    # =====================
+    hired_count = JobApplication.objects.filter(
+        job__recruiter=request.user,
+        status='HIRED'
+    ).count()
+
+    rejected_count = JobApplication.objects.filter(
+        job__recruiter=request.user,
+        status='REJECTED'
+    ).count()
+
+    # =====================
+    # 📋 RECENT JOBS
+    # =====================
+    recent_jobs = all_jobs.prefetch_related('applications').order_by('-created_at')[:5]
+    context = {
+        "jobs": recent_jobs,
+        "total_jobs": total_jobs,
+        "active_jobs": active_jobs,
+        "closed_jobs": closed_jobs,
+        "total_applicants": total_applicants,
+        "notifications": notifications,
+        "chart_labels": chart_labels,
+        "chart_data": chart_data,
+        "job_labels": job_labels,
+        "job_data": job_data,
+        "now": now,
+        "hired_count": hired_count,
+        "rejected_count": rejected_count,
+    }
+
+    return render(request, 'Job_Post/recruiter_dashboard.html', context)
 
 # ============================
 # LIST APPLICANTS (Recruiter)
@@ -564,8 +653,10 @@ def recruiter_jobs(request):
         recruiter=request.user,
         is_active=True
     ).order_by('-created_at')
-    total_applicants = JobApplication.objects.filter(job__recruiter=request.user).count()
 
+    total_applicants = JobApplication.objects.filter(
+        job__recruiter=request.user
+    ).count()
 
     return render(request, 'Job_Post/job_list.html', {
         'jobs': jobs,

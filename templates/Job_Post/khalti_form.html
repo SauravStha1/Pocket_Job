@@ -1,17 +1,341 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://khalti.com/static/khalti-checkout.js"></script>
 
-<div style="text-align:center; margin-top:50px;">
-    <h2>Pay with Khalti</h2>
+<style>
+  .checkout-page {
+    font-family: 'Sora', sans-serif;
+    min-height: 88vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px 60px;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -5%, rgba(98,0,234,.08) 0%, transparent 65%),
+      linear-gradient(160deg, #faf5ff 0%, #f8fafc 45%, #f0f4ff 100%);
+    position: relative;
+    overflow: hidden;
+  }
 
-    <p><strong>Job:</strong> {{ payment.job.title }}</p>
-    <p><strong>Amount:</strong> Rs {{ amount_display }}</p>
+  .checkout-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+    background-size: 26px 26px;
+    opacity: .22;
+    pointer-events: none;
+  }
 
-    <button id="khalti-button"
-        style="padding:15px 30px; background:purple; color:white; border:none;">
-        Pay with Khalti
-    </button>
+  .checkout-card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,.93);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,.95);
+    border-radius: 24px;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,.04),
+      0 16px 48px rgba(0,0,0,.10),
+      0 0 0 1px rgba(98,0,234,.08);
+    max-width: 500px;
+    width: 100%;
+    overflow: hidden;
+    animation: cardIn .5s cubic-bezier(.22,.68,0,1.2) both;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(24px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Header band ── */
+  .card-header {
+    background: linear-gradient(135deg, #4a0099 0%, #6200ea 55%, #7c3aed 100%);
+    padding: 28px 32px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+  }
+
+  .card-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 50%;
+    transform: translateX(-50%);
+    width: 120%; height: 60px;
+    background: rgba(255,255,255,.93);
+    border-radius: 50%;
+  }
+
+  .khalti-logo-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 40px;
+    padding: 6px 16px 6px 10px;
+    margin-bottom: 16px;
+  }
+
+  .khalti-logo-wrap .logo-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: #6200ea;
+    flex-shrink: 0;
+  }
+
+  .khalti-logo-wrap span {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .06em;
+  }
+
+  .card-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: -.02em;
+  }
+
+  .card-header p {
+    font-size: 13px;
+    color: rgba(255,255,255,.78);
+    margin: 0;
+  }
+
+  /* ── Body ── */
+  .card-body {
+    padding: 36px 32px 32px;
+  }
+
+  .summary-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+
+  .summary-box {
+    background: #f8f7ff;
+    border: 1px solid #ede9fe;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 18px;
+    border-bottom: 1px solid #ede9fe;
+  }
+
+  .summary-row:last-child { border-bottom: none; }
+
+  .summary-row .s-label {
+    font-size: 13px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .summary-row .s-label i {
+    width: 18px;
+    color: #a78bfa;
+    font-size: 12px;
+  }
+
+  .summary-row .s-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    max-width: 55%;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  /* total row */
+  .summary-row.total-row {
+    background: #f3f0ff;
+    border-top: 1px solid #ddd6fe;
+  }
+
+  .summary-row.total-row .s-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #5b21b6;
+  }
+
+  .summary-row.total-row .s-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #6200ea;
+  }
+
+  /* ── payment method pills ── */
+  .methods-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+
+  .methods-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 24px;
+  }
+
+  .method-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f3f0ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6d28d9;
+  }
+
+  .method-pill i { font-size: 11px; }
+
+  /* ── Khalti button ── */
+  .khalti-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px 24px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4a0099 0%, #6200ea 55%, #7c3aed 100%);
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(98,0,234,.38);
+    transition: transform .18s ease, box-shadow .18s ease;
+    margin-bottom: 16px;
+  }
+
+  .khalti-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(98,0,234,.50);
+  }
+
+  .khalti-btn:active { transform: translateY(0); }
+
+  /* ── Trust strip ── */
+  .trust-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .trust-strip i { font-size: 13px; color: #7c3aed; }
+
+  @media (max-width: 520px) {
+    .card-body { padding: 28px 20px 24px; }
+    .card-header { padding: 24px 20px 22px; }
+  }
+</style>
+
+<div class="checkout-page">
+  <div class="checkout-card">
+
+    <!-- Header -->
+    <div class="card-header">
+      <div class="khalti-logo-wrap">
+        <div class="logo-icon"><i class="fa-solid fa-wallet"></i></div>
+        <span>Khalti</span>
+      </div>
+      <h1>Secure Payment with Khalti</h1>
+      <p>Complete payment to publish your job posting</p>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body">
+
+      <!-- Summary -->
+      <p class="summary-label">Payment Summary</p>
+      <div class="summary-box">
+        <div class="summary-row">
+          <span class="s-label"><i class="fa-solid fa-briefcase"></i> Job Title</span>
+          <span class="s-value">{{ payment.job.title }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="s-label"><i class="fa-solid fa-wallet"></i> Method</span>
+          <span class="s-value">Khalti</span>
+        </div>
+        <div class="summary-row total-row">
+          <span class="s-label"><i class="fa-solid fa-receipt"></i> Total Amount</span>
+          <span class="s-value">Rs {{ amount_display }}</span>
+        </div>
+      </div>
+
+      <!-- Payment method pills -->
+      <p class="methods-label">Accepted via</p>
+      <div class="methods-row">
+        <span class="method-pill"><i class="fa-solid fa-k"></i> Khalti Wallet</span>
+        <span class="method-pill"><i class="fa-solid fa-building-columns"></i> E-Banking</span>
+        <span class="method-pill"><i class="fa-solid fa-mobile-screen"></i> Mobile Banking</span>
+        <span class="method-pill"><i class="fa-solid fa-credit-card"></i> Connect IPS</span>
+      </div>
+
+      <!-- Khalti button — id preserved for JS -->
+      <button id="khalti-button" class="khalti-btn">
+        <i class="fa-solid fa-lock"></i>
+        Pay Rs {{ amount_display }} with Khalti
+      </button>
+
+      <div class="trust-strip">
+        <i class="fa-solid fa-shield-halved"></i>
+        100% Secure Payment &nbsp;·&nbsp; Encrypted &amp; Protected
+      </div>
+
+    </div>
+  </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     KHALTI JAVASCRIPT — completely unchanged from original
+     ═══════════════════════════════════════════════════════════ -->
 <script>
     var config = {
         "publicKey": "YOUR_KHALTI_PUBLIC_KEY",
@@ -27,7 +351,6 @@
         ],
         "eventHandler": {
             onSuccess(payload) {
-                // send to backend
                 fetch("{% url 'khalti_verify' %}", {
                     method: "POST",
                     headers: {
@@ -67,3 +390,5 @@
         checkout.show({ amount: {{ amount }} });
     }
 </script>
+
+{% endblock %}

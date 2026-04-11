@@ -93,3 +93,18 @@ class SavedJob(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.job.title}"
+    
+@property
+def status(self):
+    now = timezone.now()
+
+    # ❌ expired jobs
+    if self.deadline and self.deadline < now:
+        return "closed"
+
+    # ✅ active jobs
+    if self.is_active:
+        return "active"
+
+    # ❌ everything else
+    return "closed"

@@ -2,47 +2,282 @@
 
 {% block content %}
 
-<div style="display:flex; justify-content:center; align-items:center; min-height:70vh;">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-```
-<div style="
-    background:white;
-    padding:40px;
-    border-radius:12px;
-    box-shadow:0 4px 15px rgba(0,0,0,0.1);
-    text-align:center;
-    max-width:500px;
-    width:100%;
-">
+<style>
+  .pay-page {
+    font-family: 'Sora', sans-serif;
+    min-height: 88vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% -10%, rgba(239,68,68,.08) 0%, transparent 70%),
+      linear-gradient(160deg, #fff5f5 0%, #f8fafc 50%, #eff6ff 100%);
+    position: relative;
+    overflow: hidden;
+  }
 
-    <div style="font-size:60px; color:#dc3545;">✖</div>
+  .pay-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: .28;
+    pointer-events: none;
+  }
 
-    <h2 style="margin-top:10px; color:#dc3545;">
-        Payment Failed
-    </h2>
+  .pay-card {
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.9);
+    border-radius: 24px;
+    box-shadow:
+      0 4px 6px rgba(0,0,0,.04),
+      0 20px 60px rgba(0,0,0,.09),
+      0 0 0 1px rgba(239,68,68,.07);
+    padding: 56px 48px 48px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    animation: cardIn .55s cubic-bezier(.22,.68,0,1.2) both;
+  }
 
-    <p style="margin-top:15px; color:#555;">
-        Unfortunately your payment could not be completed.
-        Please try again to publish your job.
-    </p>
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(28px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0)   scale(1);    }
+  }
 
-    <div style="margin-top:30px;">
-        <a href="{% url 'home' %}" 
-           style="
-            background:#007bff;
-            color:white;
-            padding:12px 25px;
-            border-radius:6px;
-            text-decoration:none;
-            font-weight:500;
-           ">
-           Go to Homepage
-        </a>
+  /* ── Icon ── */
+  .pay-icon-ring {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 28px;
+    position: relative;
+    animation: popIn .5s .2s cubic-bezier(.22,.68,0,1.3) both;
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(.5); }
+    to   { opacity: 1; transform: scale(1);  }
+  }
+
+  .pay-icon-ring::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(239,68,68,.18);
+    animation: pulse 2.6s ease-in-out 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1);   opacity: 1; }
+    50%       { transform: scale(1.1); opacity: 0; }
+  }
+
+  .pay-icon-ring svg {
+    width: 38px; height: 38px;
+    stroke: #dc2626;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ── Text ── */
+  .pay-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: #dc2626;
+    background: #fee2e2;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .pay-card h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    letter-spacing: -.02em;
+  }
+
+  .pay-card p {
+    font-size: 14.5px;
+    color: #64748b;
+    line-height: 1.7;
+    max-width: 360px;
+    margin: 0 auto 32px;
+  }
+
+  /* ── Divider ── */
+  .pay-divider {
+    width: 48px;
+    height: 3px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #ef4444, #f87171);
+    margin: 0 auto 28px;
+  }
+
+  /* ── Info box ── */
+  .pay-info-box {
+    background: #fef9ec;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    color: #92400e;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .pay-info-box svg {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    stroke: #b45309; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ── Buttons ── */
+  .pay-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .pay-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    color: #fff;
+    text-decoration: none;
+    padding: 13px 26px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    box-shadow: 0 4px 16px rgba(37,99,235,.35);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+
+  .pay-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(37,99,235,.45);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .pay-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: #374151;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    transition: transform .18s ease, border-color .18s ease, color .18s ease;
+  }
+
+  .pay-btn-secondary:hover {
+    transform: translateY(-2px);
+    border-color: #2563eb;
+    color: #2563eb;
+    text-decoration: none;
+  }
+
+  .pay-btn-primary svg,
+  .pay-btn-secondary svg {
+    width: 15px; height: 15px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2.2;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* ── Footer note ── */
+  .pay-footnote {
+    margin-top: 24px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  @media (max-width: 520px) {
+    .pay-card { padding: 40px 24px 36px; }
+    .pay-card h1 { font-size: 22px; }
+    .pay-actions { flex-direction: column; align-items: center; }
+  }
+</style>
+
+<div class="pay-page">
+  <div class="pay-card">
+
+    <!-- Icon -->
+    <div class="pay-icon-ring">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
     </div>
 
-</div>
-```
+    <!-- Status badge -->
+    <div class="pay-status">
+      <svg width="7" height="7" viewBox="0 0 7 7" fill="#dc2626"><circle cx="3.5" cy="3.5" r="3.5"/></svg>
+      Not Processed
+    </div>
 
+    <h1>Payment Failed</h1>
+
+    <div class="pay-divider"></div>
+
+    <p>
+      We could not process your payment.<br>
+      No charges have been made to your account.
+    </p>
+
+    <!-- Hint box -->
+    <div class="pay-info-box">
+      <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      <span>This can happen due to insufficient funds, an expired card, or a temporary network issue. Please verify your payment details and try again.</span>
+    </div>
+
+    <div class="pay-actions">
+      <a href="{% url 'home' %}" class="pay-btn-secondary">
+        <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>
+        Homepage
+      </a>
+      <a href="{% url 'home' %}" class="pay-btn-primary">
+        <svg viewBox="0 0 24 24"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+        Try Again
+      </a>
+    </div>
+
+    <p class="pay-footnote">Need help? Contact our support team for assistance.</p>
+
+  </div>
 </div>
 
 {% endblock %}

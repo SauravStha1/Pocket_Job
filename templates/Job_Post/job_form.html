@@ -4,7 +4,7 @@
 {% block content %}
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -37,16 +37,19 @@
 }
 
 .jf-title {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
   font-size: 38px;
-  font-weight: 400;
+  font-weight: 800;
   color: #0f172a;
   margin: 0 0 8px;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
 }
 
-.jf-title em { font-style: italic; color: #2563eb; }
+.jf-title em {
+  font-style: normal;
+  color: #2563eb;
+}
 
 .jf-subtitle {
   font-size: 15px;
@@ -155,12 +158,12 @@
 }
 
 .jf-sec-title {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 19px;
-  font-weight: 400;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 3px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .jf-sec-sub { font-size: 13px; color: #64748b; margin: 0; }
@@ -343,12 +346,12 @@
 }
 
 .jf-pay-heading {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 22px;
-  font-weight: 400;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
   color: #0f172a;
   margin: 0;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.025em;
 }
 
 .jf-pay-desc {
@@ -430,9 +433,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 20px;
-  font-style: italic;
   flex-shrink: 0;
   transition: background 0.2s;
 }
@@ -647,7 +647,6 @@
       </div>
       <div class="jf-pay-grid">
 
-        <!-- eSewa -->
         <!-- eSewa -->
         <button type="submit" name="payment_method" value="esewa" class="jf-pbtn jf-esewa">
           <span class="jf-plogo">
