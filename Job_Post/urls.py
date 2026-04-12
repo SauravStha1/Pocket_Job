@@ -25,6 +25,7 @@ urlpatterns = [
     path('saved/', views.saved_jobs, name='saved_jobs'),
 
     path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin/jobs/', views.admin_jobs, name='admin_jobs'),
 
     path('admin/applicants/', views.view_applicants, name='view_applicants'),
     path('admin/recruiters/', views.view_recruiters, name='view_recruiters'),

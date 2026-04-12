@@ -10,7 +10,9 @@ from django.utils import timezone
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.functions import TruncDate
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, TruncYear
+
+
 
 from .models import Job, JobApplication
 from .models import SavedJob  
@@ -19,6 +21,7 @@ from .payment_models import Payment
 from accounts.models import Profile
 from accounts.models import Notification
 from django.db.models import Count, Sum
+from reports.models import Report
 
 from django.conf import settings
 import hmac
@@ -27,6 +30,7 @@ import base64
 import uuid
 import json
 import requests
+import json
 
 
 # ============================
@@ -562,6 +566,62 @@ def about(request):
 
 @staff_member_required
 def admin_dashboard(request):
+    filter_type = request.GET.get('filter', 'monthly')
+
+    # =========================
+    # JOB CHART DATA
+    # =========================
+
+    if filter_type == 'yearly':
+        job_data_qs = (
+            Job.objects.annotate(year=TruncYear('created_at'))
+            .values('year')
+            .annotate(count=Count('id'))
+            .order_by('year')
+        )
+
+        job_labels = [str(i['year'].year) for i in job_data_qs if i['year']]
+        job_data = [i['count'] for i in job_data_qs]
+
+    else:
+        job_data_qs = (
+            Job.objects.annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        job_labels = [i['month'].strftime('%b %Y') for i in job_data_qs if i['month']]
+        job_data = [i['count'] for i in job_data_qs]
+
+
+    # =========================
+    # REVENUE CHART DATA
+    # =========================
+
+    if filter_type == 'yearly':
+        revenue_qs = (
+            Payment.objects.filter(status='COMPLETED')
+            .annotate(year=TruncYear('created_at'))
+            .values('year')
+            .annotate(total=Sum('amount'))
+            .order_by('year')
+        )
+
+        revenue_labels = [str(i['year'].year) for i in revenue_qs if i['year']]
+        revenue_data = [float(i['total'] or 0) for i in revenue_qs]
+
+    else:
+        revenue_qs = (
+            Payment.objects.filter(status='COMPLETED')
+            .annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(total=Sum('amount'))
+            .order_by('month')
+        )
+
+        revenue_labels = [i['month'].strftime('%b %Y') for i in revenue_qs if i['month']]
+        revenue_data = [float(i['total'] or 0) for i in revenue_qs]
     # ── User Stats ──
     total_users = User.objects.count()
     total_applicants = Profile.objects.filter(role='APPLICANT').count()
@@ -571,19 +631,38 @@ def admin_dashboard(request):
     total_jobs = Job.objects.count()
     active_jobs = Job.objects.filter(is_active=True).count()
 
-    # ── Applications (if exists) ──
+    # ── Applications ──
     total_applications = JobApplication.objects.count()
 
-    # ── Revenue (if exists) ──
+    # ── Reports ──
+    total_reports = Report.objects.count()
+    pending_reports = Report.objects.filter(status='PENDING').count()
+
+    # ── Revenue ──
     total_revenue = 0
     if Payment:
         total_revenue = Payment.objects.filter(status='COMPLETED').aggregate(
             total=Sum('amount')
         )['total'] or 0
 
-    # ── Latest Jobs & Applications ──
+    # ── Insights (FIXED LOCATION) ──
+    active_job_percent = (active_jobs / total_jobs * 100) if total_jobs else 0
+    pending_report_percent = (pending_reports / total_reports * 100) if total_reports else 0
+    avg_applications = (total_applications / total_jobs) if total_jobs else 0
+
+    # ── Latest ──
     latest_jobs = Job.objects.order_by('-created_at')[:10]
     latest_applications = JobApplication.objects.order_by('-applied_at')[:10]
+
+    # ── Jobs per month ──
+    jobs_per_month = (
+        Job.objects.filter(created_at__isnull=False)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+
 
     context = {
         'total_users': total_users,
@@ -593,11 +672,29 @@ def admin_dashboard(request):
         'active_jobs': active_jobs,
         'total_applications': total_applications,
         'total_revenue': total_revenue,
+        'total_reports': total_reports,
+        'pending_reports': pending_reports,
         'latest_jobs': latest_jobs,
         'latest_applications': latest_applications,
+
+
+        'active_job_percent': active_job_percent,
+        'pending_report_percent': pending_report_percent,
+        'avg_applications': avg_applications,
+        'job_labels_json': json.dumps(job_labels),
+        'job_data_json': json.dumps(job_data),
+        'revenue_labels_json': json.dumps(revenue_labels),
+        'revenue_data_json': json.dumps(revenue_data),
     }
 
+
     return render(request, 'Job_Post/admin_dashboard.html', context)
+
+@staff_member_required
+def admin_jobs(request):
+    jobs = Job.objects.all().order_by('-created_at')
+    return render(request, 'Job_Post/admin_jobs.html', {'jobs': jobs})
+
 
 @staff_member_required
 def view_applicants(request):
