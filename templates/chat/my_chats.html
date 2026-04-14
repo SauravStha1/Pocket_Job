@@ -1,37 +1,377 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Chats | Pocket Job</title>
-    <style>
-        body { font-family: Arial; background: #f5f7fa; }
-        .container { width: 90%; max-width: 800px; margin: 40px auto; }
-        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .left { display: flex; flex-direction: column; }
-        .status { font-weight: bold; color: #555; }
-        .btn { padding: 6px 10px; border-radius: 5px; text-decoration: none; font-size: 13px; background: #007bff; color: white; }
-        .no-message { color: red; font-size: 12px; margin-top: 5px; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+{% load static %}
 
-<div class="container">
-    <h2>My Chats</h2>
-    {% for room in chatrooms %}
-        <div class="card">
-            <div class="left">
-                <strong>Job: {{ room.job.title }}</strong>
-                <span class="status">Recruiter: {{ room.recruiter.username }}</span>
-                {% if room.messages.count == 0 %}
-                    <span class="no-message">Waiting for recruiter to start the chat...</span>
-                {% endif %}
-            </div>
-            <div>
-                <a href="{% url 'chat_room' room.id %}" class="btn">Open Chat</a>
-            </div>
+{% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+<style>
+  :root {
+    --navy:       #0d2550;
+    --blue:       #1a5fba;
+    --blue-lt:    #eff6ff;
+    --blue-mid:   #bfdbfe;
+    --surface:    #ffffff;
+    --bg:         #f0f3f8;
+    --border:     #e2e8f0;
+    --text:       #0c1b35;
+    --muted:      #64748b;
+    --green:      #16a34a;
+    --green-bg:   #dcfce7;
+    --green-bdr:  #86efac;
+    --amber:      #b45309;
+    --amber-bg:   #fef3c7;
+    --amber-bdr:  #fcd34d;
+    --red:        #dc2626;
+    --red-bg:     #fee2e2;
+    --red-bdr:    #fca5a5;
+    --radius:     16px;
+    --shadow:     0 2px 12px rgba(12,27,53,0.08);
+    --shadow-hov: 0 8px 28px rgba(12,27,53,0.14);
+    --ease:       0.2s ease;
+    --font:       'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .mc-page * { box-sizing: border-box; }
+
+  /* ── Page shell ── */
+  .mc-page {
+    font-family: var(--font);
+    background: var(--bg);
+    background-image: radial-gradient(circle, rgba(26,95,186,0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+    min-height: calc(100vh - 64px);
+    padding: 40px 16px 80px;
+    color: var(--text);
+  }
+
+  .mc-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* ── Page header ── */
+  .mc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .mc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mc-header-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(13,37,80,0.3);
+  }
+
+  .mc-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .mc-count-badge {
+    background: var(--blue-lt);
+    color: var(--blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--blue-mid);
+  }
+
+  /* ── Chat Card ── */
+  .mc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease);
+    animation: fadeUp 0.45s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Stagger card animations */
+  .mc-card:nth-child(1) { animation-delay: 0.05s; }
+  .mc-card:nth-child(2) { animation-delay: 0.10s; }
+  .mc-card:nth-child(3) { animation-delay: 0.15s; }
+  .mc-card:nth-child(4) { animation-delay: 0.20s; }
+  .mc-card:nth-child(5) { animation-delay: 0.25s; }
+
+  /* Blue left accent on hover */
+  .mc-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--navy), var(--blue));
+    border-radius: 3px 0 0 3px;
+    opacity: 0;
+    transition: opacity var(--ease);
+  }
+
+  .mc-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hov);
+    border-color: #c7d8f5;
+  }
+
+  .mc-card:hover::before { opacity: 1; }
+
+  /* ── Avatar ── */
+  .mc-avatar {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+    box-shadow: 0 2px 8px rgba(13,37,80,0.25);
+  }
+
+  /* ── Card body ── */
+  .mc-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .mc-job-title {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+
+  .mc-recruiter {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .mc-recruiter i { font-size: 0.72rem; color: var(--blue); }
+
+  /* Status badge */
+  .mc-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 99px;
+    width: fit-content;
+    margin-top: 2px;
+  }
+
+  .mc-status.waiting {
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid var(--amber-bdr);
+  }
+
+  .mc-status.active {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid var(--green-bdr);
+  }
+
+  /* ── Card right action ── */
+  .mc-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .mc-open-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 99px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform var(--ease), box-shadow var(--ease);
+    box-shadow: 0 2px 8px rgba(13,37,80,0.28);
+  }
+
+  .mc-card:hover .mc-open-btn {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(13,37,80,0.38);
+  }
+
+  .mc-arrow {
+    color: #c4cdd8;
+    font-size: 0.85rem;
+    transition: color var(--ease), transform var(--ease);
+  }
+
+  .mc-card:hover .mc-arrow {
+    color: var(--blue);
+    transform: translateX(3px);
+  }
+
+  /* ── Empty state ── */
+  .mc-empty {
+    text-align: center;
+    padding: 64px 24px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .mc-empty-icon {
+    font-size: 3rem;
+    color: #c4cdd8;
+    margin-bottom: 16px;
+  }
+
+  .mc-empty h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+
+  .mc-empty p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 520px) {
+    .mc-page { padding: 24px 12px 60px; }
+    .mc-card { padding: 14px 14px; gap: 12px; }
+    .mc-avatar { width: 42px; height: 42px; font-size: 1rem; }
+    .mc-open-btn span { display: none; }   /* show only arrow on tiny screens */
+    .mc-open-btn { padding: 8px 12px; }
+    .mc-title { font-size: 1.2rem; }
+  }
+</style>
+
+<div class="mc-page">
+  <div class="mc-wrap">
+
+    <!-- Page Header -->
+    <div class="mc-header">
+      <div class="mc-header-left">
+        <div class="mc-header-icon">
+          <i class="fa-solid fa-comments"></i>
         </div>
+        <div>
+          <h1 class="mc-title">My Chats</h1>
+        </div>
+      </div>
+      {% if chatrooms %}
+        <span class="mc-count-badge">{{ chatrooms|length }} conversation{{ chatrooms|length|pluralize }}</span>
+      {% endif %}
+    </div>
+
+    <!-- Chat List -->
+    {% for room in chatrooms %}
+
+      <a href="{% url 'chat_room' room.id %}" class="mc-card">
+
+        <!-- Avatar -->
+        <div class="mc-avatar">
+          {{ room.job.title|first|upper }}
+        </div>
+
+        <!-- Info -->
+        <div class="mc-card-body">
+          <div class="mc-job-title">{{ room.job.title }}</div>
+          <div class="mc-recruiter">
+            <i class="fa-solid fa-circle-user"></i>
+            {{ room.recruiter.username }}
+          </div>
+
+          {% if room.messages.count == 0 %}
+            <span class="mc-status waiting">
+              <i class="fa-solid fa-clock"></i> Waiting for recruiter
+            </span>
+          {% else %}
+            <span class="mc-status active">
+              <i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Active
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Right: button + arrow -->
+        <div class="mc-card-right">
+          <div class="mc-open-btn">
+            <i class="fa-solid fa-comment-dots"></i>
+            <span>Open Chat</span>
+          </div>
+          <i class="mc-arrow fa-solid fa-chevron-right"></i>
+        </div>
+
+      </a>
+
     {% empty %}
-        <p>No chats yet. Waiting for recruiter to start.</p>
+
+      <div class="mc-empty">
+        <div class="mc-empty-icon"><i class="fa-regular fa-comments"></i></div>
+        <h3>No conversations yet</h3>
+        <p>When a recruiter starts a conversation with you,<br>it will appear here.</p>
+      </div>
+
     {% endfor %}
+
+  </div>
 </div>
-</body>
-</html>
+
+{% endblock %}

@@ -1,163 +1,525 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Chat - Pocket Job</title>
+{% extends "base.html" %}
+{% load static %}
 
-    <style>
-        body { font-family: Arial; background: #e5ddd5; }
+{% block content %}
 
-        .chat-container {
-            width: 90%;
-            max-width: 700px;
-            margin: 30px auto;
-            background: #efeae2;
-            padding: 15px;
-            border-radius: 10px;
-        }
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 
-        #chat-log {
-            max-height: 400px;
-            overflow-y: auto;
-        }
+<style>
+  /* ── CSS Variables ── */
+  :root {
+    --navy:        #0d2550;
+    --blue:        #1a5fba;
+    --blue-lt:     #eff6ff;
+    --sent-bg:     #d1f0e0;
+    --sent-text:   #0a3d25;
+    --recv-bg:     #ffffff;
+    --recv-text:   #1a1a2e;
+    --chat-bg:     #edf0f5;
+    --header-bg:   #ffffff;
+    --input-bg:    #ffffff;
+    --border:      #e2e8f0;
+    --muted:       #7a8ea8;
+    --radius-msg:  18px;
+    --shadow-sm:   0 1px 4px rgba(0,0,0,0.07);
+    --shadow-md:   0 4px 20px rgba(0,0,0,0.10);
+    --font:        'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    --ease:        0.2s ease;
+  }
 
-        .message {
-            padding: 10px;
-            margin: 10px;
-            border-radius: 10px;
-            max-width: 60%;
-        }
+  /* ── Reset scoped to chat page ── */
+  .cr-page * { box-sizing: border-box; }
 
-        .sent {
-            background: #dcf8c6;
-            margin-left: auto;
-            text-align: right;
-        }
+  /* ── Page shell — sits below base.html navbar ── */
+  .cr-page {
+    font-family: var(--font);
+    background: var(--chat-bg);
+    height: calc(100vh - 64px);   /* 64px = navbar height — adjust if yours differs */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+  }
 
-        .received {
-            background: white;
-            margin-right: auto;
-        }
+  /* ── Chat window ── */
+  .cr-window {
+    width: 100%;
+    max-width: 780px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #f7f8fc;
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
 
-        .sender {
-            font-size: 12px;
-            font-weight: bold;
-        }
+  /* ════════════════════════════
+     HEADER
+  ════════════════════════════ */
+  .cr-header {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    position: relative;
+    z-index: 10;
+  }
 
-        .time {
-            font-size: 10px;
-            color: gray;
-        }
+  .cr-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--blue);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background var(--ease), color var(--ease);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 
-        .input-box {
-            display: flex;
-            margin-top: 15px;
-        }
+  .cr-back-btn:hover {
+    background: var(--blue-lt);
+    color: var(--navy);
+  }
 
-        input {
-            flex: 1;
-            padding: 10px;
-            border-radius: 20px;
-            border: none;
-        }
+  .cr-back-btn i { font-size: 0.85rem; }
 
-        button {
-            padding: 10px 15px;
-            border: none;
-            background: #075e54;
-            color: white;
-            border-radius: 20px;
-            margin-left: 10px;
-            cursor: pointer;
-        }
-    </style>
-</head>
+  /* Avatar circle */
+  .cr-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: -0.02em;
+  }
 
-<body>
+  .cr-header-info { flex: 1; min-width: 0; }
 
-<div class="chat-container">
+  .cr-job-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0c1b35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
 
-    <h3>{{ chatroom.job.title }}</h3>
+  .cr-recruiter {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-top: 1px;
+  }
 
-    <!-- CHAT LOG -->
-    <div id="chat-log">
+  .cr-online-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+    flex-shrink: 0;
+  }
+
+  /* ════════════════════════════
+     MESSAGES AREA
+  ════════════════════════════ */
+  .cr-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--chat-bg);
+    /* Subtle dot pattern */
+    background-image: radial-gradient(circle, rgba(26,95,186,0.05) 1px, transparent 1px);
+    background-size: 22px 22px;
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  .cr-body::-webkit-scrollbar { width: 4px; }
+  .cr-body::-webkit-scrollbar-track { background: transparent; }
+  .cr-body::-webkit-scrollbar-thumb { background: #c4cdd8; border-radius: 4px; }
+  .cr-body::-webkit-scrollbar-thumb:hover { background: #a0adb9; }
+
+  /* Date divider */
+  .cr-date-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0 10px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cr-date-divider::before,
+  .cr-date-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #dde3ec;
+  }
+
+  /* Message row wrapper */
+  .cr-msg-row {
+    display: flex;
+    flex-direction: column;
+    max-width: 68%;
+    animation: msgIn 0.22s ease both;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cr-msg-row.sent  { align-self: flex-end; align-items: flex-end; }
+  .cr-msg-row.recv  { align-self: flex-start; align-items: flex-start; }
+
+  /* Sender label (shown only for received) */
+  .cr-sender-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 3px;
+    padding-left: 4px;
+  }
+
+  /* Bubble */
+  .cr-bubble {
+    padding: 10px 14px;
+    border-radius: var(--radius-msg);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    position: relative;
+    word-break: break-word;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .cr-msg-row.sent .cr-bubble {
+    background: var(--sent-bg);
+    color: var(--sent-text);
+    border-bottom-right-radius: 5px;
+  }
+
+  .cr-msg-row.recv .cr-bubble {
+    background: var(--recv-bg);
+    color: var(--recv-text);
+    border-bottom-left-radius: 5px;
+    border: 1px solid #eaecf4;
+  }
+
+  /* Timestamp */
+  .cr-time {
+    font-size: 0.67rem;
+    color: var(--muted);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+  }
+
+  .cr-msg-row.sent .cr-time { justify-content: flex-end; }
+
+  /* Read tick for sent */
+  .cr-tick { color: #60a5fa; font-size: 0.7rem; }
+
+  /* ════════════════════════════
+     INPUT AREA
+  ════════════════════════════ */
+  .cr-footer {
+    background: var(--input-bg);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .cr-emoji-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: color var(--ease), background var(--ease);
+  }
+
+  .cr-emoji-btn:hover { color: #f59e0b; background: #fef3c7; }
+
+  .cr-input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #f1f4f9;
+    border-radius: 24px;
+    padding: 0 16px;
+    border: 1.5px solid transparent;
+    transition: border-color var(--ease), box-shadow var(--ease);
+  }
+
+  .cr-input-wrap:focus-within {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(147,197,253,0.20);
+    background: #fff;
+  }
+
+  #message-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font);
+    font-size: 0.92rem;
+    color: #0c1b35;
+    padding: 10px 0;
+    line-height: 1.4;
+  }
+
+  #message-input::placeholder { color: #a0adb9; }
+
+  .cr-send-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+    font-size: 0.95rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(13,37,80,0.35);
+    transition: transform var(--ease), box-shadow var(--ease), background var(--ease);
+  }
+
+  .cr-send-btn:hover {
+    transform: scale(1.08) translateY(-1px);
+    box-shadow: 0 4px 16px rgba(13,37,80,0.45);
+  }
+
+  .cr-send-btn:active { transform: scale(0.96); }
+
+  /* ════════════════════════════
+     EMPTY STATE
+  ════════════════════════════ */
+  .cr-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--muted);
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .cr-empty-icon {
+    font-size: 2.5rem;
+    opacity: 0.35;
+  }
+
+  .cr-empty p {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
+    opacity: 0.7;
+  }
+
+  /* ════════════════════════════
+     RESPONSIVE
+  ════════════════════════════ */
+  @media (max-width: 600px) {
+    .cr-page { padding: 0; height: calc(100vh - 56px); }
+    .cr-window { border-radius: 0; }
+    .cr-msg-row { max-width: 84%; }
+    .cr-body { padding: 14px 12px 8px; }
+    .cr-footer { padding: 10px 12px; }
+  }
+</style>
+
+<div class="cr-page">
+  <div class="cr-window">
+
+    <!-- ════ HEADER ════ -->
+    <div class="cr-header">
+      <a href="{% url 'my_chats' %}" class="cr-back-btn">
+        <i class="fa-solid fa-arrow-left"></i> My Chats
+      </a>
+
+      <div class="cr-avatar">
+        {{ chatroom.job.title|first|upper }}
+      </div>
+
+      <div class="cr-header-info">
+        <div class="cr-job-title">{{ chatroom.job.title }}</div>
+        <div class="cr-recruiter">
+          <i class="fa-solid fa-circle-user" style="font-size:0.7rem; margin-right:3px;"></i>
+          {{ chatroom.recruiter.username }}
+        </div>
+      </div>
+
+      <div class="cr-online-dot" title="Online"></div>
+    </div>
+
+    <!-- ════ MESSAGES ════ -->
+    <div class="cr-body" id="chat-log">
+
+      {% if messages %}
+        <div class="cr-date-divider">Today</div>
+
         {% for message in messages %}
-            <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
-                <div class="sender">
-                    {% if message.sender == request.user %}
-                        You
-                    {% else %}
-                        {{ message.sender.username }}
-                    {% endif %}
-                </div>
+          <div class="cr-msg-row {% if message.sender == request.user %}sent{% else %}recv{% endif %}">
 
-                <div>{{ message.content }}</div>
-                <div class="time">{{ message.timestamp|date:"H:i" }}</div>
+            {% if message.sender != request.user %}
+              <div class="cr-sender-label">{{ message.sender.username }}</div>
+            {% endif %}
+
+            <div class="cr-bubble">{{ message.content }}</div>
+
+            <div class="cr-time">
+              {{ message.timestamp|date:"H:i" }}
+              {% if message.sender == request.user %}
+                <span class="cr-tick"><i class="fa-solid fa-check-double"></i></span>
+              {% endif %}
             </div>
+
+          </div>
         {% endfor %}
+
+      {% else %}
+        <div class="cr-empty">
+          <div class="cr-empty-icon"><i class="fa-regular fa-comment-dots"></i></div>
+          <p>No messages yet.<br>Say hello to get started!</p>
+        </div>
+      {% endif %}
+
     </div>
 
-    <!-- INPUT -->
-    <div class="input-box">
-        <input id="message-input" type="text" placeholder="Type a message...">
-        <button id="send-btn">Send</button>
+    <!-- ════ INPUT AREA ════ -->
+    <div class="cr-footer">
+      <button class="cr-emoji-btn" type="button" title="Emoji">
+        <i class="fa-regular fa-face-smile"></i>
+      </button>
+
+      <div class="cr-input-wrap">
+        <input id="message-input" type="text" placeholder="Type a message…" autocomplete="off">
+      </div>
+
+      <button class="cr-send-btn" id="send-btn" type="button" title="Send">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
     </div>
 
-</div>
+  </div><!-- /.cr-window -->
+</div><!-- /.cr-page -->
 
+<!-- ════ WEBSOCKET JS — original logic preserved, scroll improved ════ -->
 <script>
-    const chatLog = document.getElementById("chat-log");
-    const input = document.getElementById("message-input");
-    const sendBtn = document.getElementById("send-btn");
+  const chatLog  = document.getElementById("chat-log");
+  const input    = document.getElementById("message-input");
+  const sendBtn  = document.getElementById("send-btn");
 
-    const socket = new WebSocket(
-        "ws://" + window.location.host + "/ws/chat/{{ chatroom.id }}/"
-    );
+  // ── Auto-scroll to bottom on load ──
+  function scrollToBottom(smooth) {
+    chatLog.scrollTo({
+      top: chatLog.scrollHeight,
+      behavior: smooth ? "smooth" : "auto"
+    });
+  }
 
-    // ✅ RECEIVE MESSAGE
-    socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
+  scrollToBottom(false);   // instant on page load
 
-        const div = document.createElement("div");
+  // ── WebSocket connection ──
+  const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/chat/{{ chatroom.id }}/"
+  );
 
-        div.classList.add("message");
+  // ── Build a message row element ──
+  function buildMessage(sender, text, time, isSent) {
+    const row = document.createElement("div");
+    row.classList.add("cr-msg-row", isSent ? "sent" : "recv");
 
-        if (data.sender === "{{ request.user.username }}") {
-            div.classList.add("sent");
-        } else {
-            div.classList.add("received");
-        }
-
-        div.innerHTML = `
-            <div class="sender">${data.sender}</div>
-            <div>${data.message}</div>
-            <div class="time">${data.time}</div>
-        `;
-
-        chatLog.appendChild(div);
-        chatLog.scrollTop = chatLog.scrollHeight;
-    };
-
-    // ✅ SEND MESSAGE
-    function sendMessage() {
-        const message = input.value.trim();
-
-        if (!message) return;
-
-        socket.send(JSON.stringify({
-            message: message
-        }));
-
-        input.value = "";
+    if (!isSent) {
+      const label = document.createElement("div");
+      label.classList.add("cr-sender-label");
+      label.textContent = sender;
+      row.appendChild(label);
     }
 
-    sendBtn.onclick = sendMessage;
+    const bubble = document.createElement("div");
+    bubble.classList.add("cr-bubble");
+    bubble.textContent = text;
+    row.appendChild(bubble);
 
-    input.addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-            sendMessage();
-        }
-    });
+    const timeEl = document.createElement("div");
+    timeEl.classList.add("cr-time");
+    timeEl.innerHTML = time + (isSent ? ' <span class="cr-tick"><i class="fa-solid fa-check-double"></i></span>' : "");
+    row.appendChild(timeEl);
+
+    return row;
+  }
+
+  // ── Receive message ──
+  socket.onmessage = function(e) {
+    const data   = JSON.parse(e.data);
+    const isSent = data.sender === "{{ request.user.username }}";
+
+    // Remove empty-state placeholder if present
+    const emptyEl = chatLog.querySelector(".cr-empty");
+    if (emptyEl) emptyEl.remove();
+
+    const row = buildMessage(data.sender, data.message, data.time, isSent);
+    chatLog.appendChild(row);
+    scrollToBottom(true);
+  };
+
+  // ── Send message ──
+  function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+
+    socket.send(JSON.stringify({ message: message }));
+    input.value = "";
+    input.focus();
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+
+  input.addEventListener("keypress", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
 </script>
 
-</body>
-</html>
+{% endblock %}

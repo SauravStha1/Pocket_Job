@@ -171,12 +171,20 @@ def edit_profile(request):
 
         # Applicant fields
         profile.full_name = request.POST.get("full_name")
-        profile.age = request.POST.get("age")
         profile.skills = request.POST.get("skills")
         profile.location = request.POST.get("location")
-        profile.contact_email = request.POST.get("contact_email")
         profile.description = request.POST.get("description")
 
+        # SAFE age handling
+        age = request.POST.get("age")
+        profile.age = int(age) if age else None
+
+        # SAFE contact email
+        contact_email = request.POST.get("contact_email")
+        if contact_email:
+            profile.contact_email = contact_email
+
+        # CV upload
         if request.FILES.get("cv"):
             profile.cv = request.FILES.get("cv")
 
@@ -186,16 +194,23 @@ def edit_profile(request):
         profile.company_location = request.POST.get("company_location")
         profile.company_type = request.POST.get("company_type")
         profile.phone = request.POST.get("phone")
-        profile.company_email = request.POST.get("company_email")
-        profile.founded_date = request.POST.get("founded_date")
 
+        # SAFE company email
+        company_email = request.POST.get("company_email")
+        if company_email:
+            profile.company_email = company_email
+
+        # SAFE founded date
+        founded_date = request.POST.get("founded_date")
+        profile.founded_date = founded_date if founded_date else None
+
+        # Profile picture
         if request.FILES.get("profile_pic"):
             profile.profile_pic = request.FILES.get("profile_pic")
 
         profile.save()
 
         messages.success(request, "Profile updated successfully!")
-
         return redirect("profile")
 
     return render(request, "accounts/edit_profile.html", {"profile": profile})
