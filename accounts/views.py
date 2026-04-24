@@ -112,15 +112,15 @@ def verify_otp(request):
             messages.error(request, "Invalid OTP.")
             return redirect("verify_otp")
 
-        # ❌ REMOVE duplicate logic
-        # ✅ ALWAYS create user once
+        #  REMOVE duplicate logic
+        #  ALWAYS create user once
         user = User.objects.create_user(
             username=data["username"],
             email=data["email"],
             password=data["password"]
         )
 
-        # ✅ USE SIGNAL PROFILE (important)
+        #  USE SIGNAL PROFILE (important)
         profile = user.profile
         profile.role = data["role"]
         profile.save()
@@ -136,7 +136,7 @@ def verify_otp(request):
             )
             profile.profile_pic.save(profile_pic_name, image_file, save=True)
 
-        # ✅ CLEAR FULL SESSION (important fix)
+        #  CLEAR FULL SESSION (important fix)
         request.session.flush()
 
         login(request, user)
@@ -347,7 +347,7 @@ def verify_reset_otp(request):
             messages.error(request, "No OTP found.")
             return redirect("forgot_password")
 
-        # ✅ EXPIRY CHECK
+        #  EXPIRY CHECK
         if timezone.now() > otp_obj.created_at + timedelta(minutes=5):
             messages.error(request, "OTP expired.")
             return redirect("forgot_password")

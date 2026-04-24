@@ -268,10 +268,10 @@ def job_create(request):
             job.is_active = False  # wait until payment
             job.save()
 
-            # ✅ GET PAYMENT METHOD FROM BUTTON
+            #  GET PAYMENT METHOD FROM BUTTON
             payment_method = request.POST.get('payment_method')
 
-            # ✅ CREATE PAYMENT OBJECT
+            #  CREATE PAYMENT OBJECT
             payment = Payment.objects.create(
                 recruiter=request.user,
                 job=job,
